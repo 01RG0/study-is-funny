@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/all.min.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
+
+    <style>
+        /* Styling the form */
+        h2 { text-align: center; color: #333; }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #FF8C69; box-sizing: border-box; }
+        form { background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); width: 300px; margin: auto; margin-top: 50px; }
+        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; width: 250px; }
+        button:hover { background-color: #45a049; }
+        .login-button { background-color: #007BFF; margin-top: 5px; }
+        .login-button:hover { background-color: #0056b3; }
+        .form-header { display: flex; flex-direction: column; align-items: center; margin-top: 50px; direction: rtl; }
+        .logo { max-width: 150px; border-radius: 50%; }
+        /* Loading Spinner */
+        .loading-spinner { display: none; border: 8px solid #f3f3f3; border-radius: 50%; border-top: 8px solid #008080; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Dark Mode Styles */
+        body.dark-mode { background-color: #121212; color: #e0e0e0; }
+        .dark-mode .banner { background-color: #1f1f1f; color: #e0e0e0; }
+        .dark-mode .whatsapp-button { background-color: #128C7E; }
+        .dark-mode .form-header form { background-color: #1f1f1f; }
+        .dark-mode .phone { background-color: #2a2a2a; border: 1px solid #4CAF50; color: #e0e0e0; }
+        .dark-mode .form-header h2{color: wheat;}
+        .dark-mode small a { color: #4CAF50; }
+        .dark-mode .login-button { background-color: #0056b3; }
+        .dark-mode .login-button:hover { background-color: #00408c; }
+        .dark-mode .loading-spinner { border-top: 8px solid #4CAF50; }
+
+        /* Dark Mode Toggle Switch */
+        .dark-mode-switch {
+            position: absolute;
+            right: 150px; /* Adjust to place next to WhatsApp button */
+            top: 25px;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .dark-mode-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 20px;
+            transition: 0.4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="banner">
+            <img src="../images/logo.webp" alt="Website Logo" class="logo">
+            <h1>Studyisfunny<i class="fas fa-graduation-cap"></i></h1>
+            <a href="https://wa.me/201558145450?text=Hello" target="_blank" class="whatsapp-button">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+            </a>
+            <!-- Dark Mode Toggle Switch -->
+            <label class="dark-mode-switch">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </header>
+    
+    <div class="form-header">
+        <h2>تسجيل الدخول</h2>
+        <form id="loginForm">
+            <input type="text" id="phone" class="phone" placeholder="الهاتف" required><br>
+            <button type="submit" id="loginButton">متابعة</button>
+            <!--<button class="login-button" onclick="window.location.href='../register'">إنشاء حساب جديد</button>-->
+        </form>
+        <div class="loading-spinner" id="loadingSpinner"></div> <!-- Loading Spinner -->
+    </div>
+
+    <script>
+        // Dark Mode Toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+
+        // Check localStorage for dark mode preference on page load
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.checked = true; // Ensure the toggle is in the correct state
+        }
+
+        // Listen for changes to the dark mode toggle
+        darkModeToggle.addEventListener('change', () => {
+            if (darkModeToggle.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled'); // Save preference to localStorage
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled'); // Save preference to localStorage
+            }
+        });
+
+        // Handle Login Form Submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent page reload
+
+            const phone = document.getElementById('phone').value.trim();
+            const loginButton = document.getElementById('loginButton');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const formHeader = document.querySelector('.form-header');
+
+            // Remove any existing error messages
+            const existingError = document.getElementById('dynamicError');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            // Validate phone number
+            if (!phone) {
+                const errorMessage = document.createElement('p');
+                errorMessage.id = 'dynamicError';
+                errorMessage.textContent = 'يرجى إدخال رقم الهاتف.';
+                errorMessage.style.color = 'red';
+                errorMessage.style.fontWeight = 'bold';
+                errorMessage.style.textAlign = 'center';
+                formHeader.appendChild(errorMessage);
+                return;
+            }
+
+            // Disable the login button and show the loading spinner
+            loginButton.disabled = true;
+            loadingSpinner.style.display = 'block';
+
+            // Simulate a brief loading period for better UX
+            setTimeout(() => {
+                // Store phone number in localStorage with the same variable name
+                localStorage.setItem('userPhone', phone);
+
+                // Redirect to the success page
+                window.location.href = '../grade';
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

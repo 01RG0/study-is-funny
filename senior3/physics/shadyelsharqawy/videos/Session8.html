@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lecture 8</title>
+    <link rel="icon" class="circular-icon" type="image/png" href="../../../../images/logo.png">
+
+    <style>
+        /* Style for the main iframe video */
+        .video-container {
+            max-width: 800px;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Control button styling */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #008080;
+            color: #FFFFE0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls button:hover {
+            background-color: #006666;
+        }
+        h1 {
+        font-size: 28px;
+        text-align: center;
+        margin-top: 20px;
+        color: #008080;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        font-family: Arial, sans-serif;
+    }
+    </style>
+</head>
+<body>
+    <h1>Revision on Chapter 8</h1>
+    <div class="video-container">
+        <iframe id="videoFrame" src="https://iframe.mediadelivery.net/embed/132580/39114f6f-0285-4d4d-89dc-8d9a2fac2994?autoplay=true&loop=false&muted=false&preload=true&responsive=true" frameborder="0" allow="autoplay; fullscreen"></iframe>
+    </div>
+    <div class="controls">
+        <button onclick="toggleFullscreen()">Fullscreen</button>
+    </div>
+    <script>    
+        // Google Apps Script URL
+        const sheetUrl = 'https://script.google.com/macros/s/AKfycbztx3jN1xItsx5ZUKgK0HKVTRfS-Vkeh68IoWbcfhmeK7Ptf4JLMEY1Xk27fqGVB0B2QA/exec';
+    
+        // Fetch session data and handle redirection
+        function getSession() {
+            const phone = localStorage.getItem('userPhone');
+            if (!phone) {
+                location.href = "../../dividedpagestat.html";
+                return;
+            } 
+
+            // Fetch the session from Google Sheets using the phone number
+            fetch(`${sheetUrl}?code=${phone}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        location.href = "../../dividedpagestat.html";
+                    } else {
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('accessMessage').textContent = "حدث خطأ في الاتصال.";
+                    console.error('Fetch error:', err);
+                });
+        }
+
+        window.onload = getSession;    
+        // Toggle fullscreen mode for the video container
+        function toggleFullscreen() {
+            const videoContainer = document.querySelector('.video-container');
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                videoContainer.requestFullscreen();
+            }
+        }
+    </script>
+    </body>
+</html>

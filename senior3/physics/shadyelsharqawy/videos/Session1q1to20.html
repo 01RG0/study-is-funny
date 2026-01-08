@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embedded Video</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Full screen height */
+            background-color: #2F4F4F; /* Dark Slate Gray background */
+            font-family: Arial, sans-serif;
+        }
+
+        iframe {
+            width: 90%; /* Take most of the viewport width */
+            height: 80%; /* Take most of the viewport height */
+            border: 5px solid #FFFFE0; /* Light yellow border */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7); /* Subtle shadow for depth */
+            background-color: #FFF; /* Ensure a clean white background */
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #FFFFE0; /* Light yellow text */
+            background-color: #008080; /* Teal background */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #005f5f; /* Darker teal on hover */
+        }
+
+        @media (max-width: 768px) {
+            iframe {
+                height: 40%; /* Adjust height for smaller devices */
+            }
+
+            button {
+                font-size: 14px; /* Adjust button font size */
+                padding: 8px 16px; /* Adjust button padding */
+            }
+        }
+        .pdf-button {
+        display: inline-block;
+        padding: 12px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #FFFFE0;
+        background-color: #008080;
+        border: none;
+        border-radius: 5px;
+        text-align: center;
+        text-decoration: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        transition: background-color 0.3s, transform 0.2s;
+        margin: 20px auto;
+        display: block;
+        width: 200px;
+    }
+
+    .pdf-button:hover {
+        background-color: #006666;
+        transform: scale(1.05);
+    }
+    </style>
+</head>
+<body>
+    <iframe id="videoFrame" src="lec1q1to20.html" frameborder="0"></iframe>
+    <button id="fullscreenBtn">Go Fullscreen</button>
+    <script>
+        const videoFrame = document.getElementById('videoFrame');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (videoFrame.requestFullscreen) {
+                videoFrame.requestFullscreen();
+            } else if (videoFrame.mozRequestFullScreen) { /* For Firefox */
+                videoFrame.mozRequestFullScreen();
+            } else if (videoFrame.webkitRequestFullscreen) { /* For Chrome, Safari, and Opera */
+                videoFrame.webkitRequestFullscreen();
+            } else if (videoFrame.msRequestFullscreen) { /* For IE/Edge */
+                videoFrame.msRequestFullscreen();
+            }
+        });
+    </script>
+</body>
+</html>

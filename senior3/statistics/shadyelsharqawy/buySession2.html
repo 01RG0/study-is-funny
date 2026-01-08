@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Price Manager</title>
+  <link rel="icon" class="circular-icon" type="image/png" href="../../../images/logo.png">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    .price {
+      font-size: 24px;
+      margin: 20px 0;
+      color: #34495e;
+      font-weight: bold;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #3498db;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 80%;
+      max-width: 300px;
+    }
+
+    #loading {
+      display: none;
+      color: #e67e22;
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .spinner {
+      display: none;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      margin: 10px auto;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    form {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    form input {
+      width: 100%;
+      max-width: 300px;
+    }
+
+    #output {
+      margin-top: 15px;
+      color: #c0392b;
+      font-weight: bold;
+    }
+
+    #status {
+      margin-top: 15px;
+      color: #16a085;
+      font-weight: bold;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>Buy lecture 2</h1>
+  <div class="price" id="priceDisplay">Price: 85 EGP</div>
+
+  <h1>Enter Session Code</h1>
+  <input type="text" id="sessionCode" placeholder="Enter your session code">
+  <button onclick="getSession()">Submit</button>
+  <div id="loading">Loading...</div>
+  <div class="spinner" id="spinner"></div>
+  <div id="output"></div>
+
+  <form id="phone" 
+  style="display: none;" 
+  action="https://script.google.com/macros/s/AKfycbwzF-2gtmqXlO-ZBDell969tLkq33ATbPiHkwvxV7l_P-CqXnKJXcd_XJ9ZZhqr52tWzg/exec" 
+  method="POST" 
+  onsubmit="return handleFormSubmission(event)">
+    <h1>Confirm your phone number</h1>
+    <input 
+      type="text" 
+      name="phone" 
+      placeholder="Enter your phone number" 
+      required 
+      id="holder">
+    <button type="submit">Confirm</button>
+  </form>
+
+<button onclick="startCamera()">open scanner</button>
+
+
+
+  <!--scanner-->
+  <div class="scanner">
+  <h1>QR Code Scanner</h1>
+  <video id="videoElement" autoplay></video>
+</div>
+
+  <script>
+    //redirection on submit
+    function handleFormSubmission(event) {
+        event.preventDefault(); // Prevent the default form submission
+        
+        const form = event.target;
+        const submitButton = form.querySelector("button");
+        const spinner = document.getElementById("spinner");
+        const loadingIndicator = document.getElementById("loading");
+
+        // Disable the button and show the loading spinner
+        submitButton.disabled = true;
+        spinner.style.display = 'block';
+        loadingIndicator.style.display = 'block';
+
+        // Create FormData object to send data
+        const formData = new FormData(form);
+
+        // Send the form data using Fetch API
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => {
+            if (response.ok) {
+                // Redirect to the desired page upon successful submission
+                window.location.href = "videos/Session2.html"; // Replace with your desired page
+            } else {
+                alert("Form submission failed. Please try again.");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("An error occurred during submission.");
+        })
+        .finally(() => {
+            // Re-enable the button and hide the loading spinner
+            submitButton.disabled = false;
+            spinner.style.display = 'none';
+            loadingIndicator.style.display = 'none';
+        });
+
+        return false; // Prevent default form submission
+    }
+
+    // Populate the input field with the value from local storage when the page loads
+    document.getElementById("holder").value = localStorage.getItem("userPhone") || "";
+
+    let price = 80;
+
+    function setPriceToZero() {
+      price = 0;
+      document.getElementById("priceDisplay").textContent = `Price: ${price} EGP`;
+    }
+
+    //---------------------code check url-----------------------------------
+
+    const sheetUrl = 'https://script.google.com/macros/s/AKfycbzCThdwwX1DyHWn6HpgsWWUeJGCKjSsi6er4V6c7yKDriKn5wpLJV-0IZH9m-6FLieq/exec';
+
+    // Fetch session details based on the session code
+    function getSession() {
+      const sessionCode = document.getElementById('sessionCode').value;
+      const loadingIndicator = document.getElementById('loading');
+      const output = document.getElementById('output');
+      const spinner = document.getElementById('spinner');
+    
+      if (!sessionCode) {
+          output.innerText = 'Please enter a session code.';
+          return;
+      }
+
+      loadingIndicator.style.display = 'block';
+      spinner.style.display = 'block';
+      output.innerText = ''; 
+
+      fetch(`${sheetUrl}?code=${sessionCode}`)
+          .then(response => response.json())
+          .then(data => {
+              loadingIndicator.style.display = 'none';
+              spinner.style.display = 'none';
+
+              if (data.error) {
+                  output.innerText = data.error;
+              } else {
+                  setPriceToZero();
+                  document.getElementById('phone').style.display = 'block';
+              }
+          })
+          .catch(error => {
+              loadingIndicator.style.display = 'none'; 
+              spinner.style.display = 'none'; 
+              output.innerText = 'Error fetching session data';
+          });
+    }
+  </script>
+
+
+
+
+
+
+
+  <!-- Load jsQR library -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+  <script>
+    const outputElement = document.getElementById("output");
+    const videoElement = document.getElementById("videoElement");
+
+    let canvasElement = document.createElement("canvas");
+    let canvasContext = canvasElement.getContext("2d");
+    let stream; // To store the video stream reference for stopping
+
+    // Request camera access and start video stream
+    function startCamera() {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+          .then((mediaStream) => {
+            stream = mediaStream;
+            videoElement.srcObject = mediaStream;
+            requestAnimationFrame(scanQRCode); // Start scanning when camera is ready
+          })
+          .catch((err) => {
+            console.error("Camera access denied:", err);
+            outputElement.value = "Camera access denied. Please allow camera permissions.";
+          });
+      } else {
+        outputElement.value = "Your browser does not support camera access.";
+      }
+    }
+
+    // Scan QR code from video stream
+    function scanQRCode() {
+      if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
+        canvasElement.height = videoElement.videoHeight;
+        canvasElement.width = videoElement.videoWidth;
+        canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+        const imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
+        const code = jsQR(imageData.data, canvasElement.width, canvasElement.height);
+
+        if (code) {
+            sessionCode.value = code.data; // Update the input field with the scanned data
+          
+          // Stop the video stream (close the scanner)
+          stopCamera();
+        } else {
+          outputElement.value = "No QR code found"; // Message when no code is found
+        }
+      }
+
+      // Continue scanning
+      requestAnimationFrame(scanQRCode);
+    }
+
+    // Stop the camera stream
+    function stopCamera() {
+      const tracks = stream.getTracks();
+      tracks.forEach(track => track.stop()); // Stop all media tracks
+      videoElement.srcObject = null; // Stop the video element from showing the stream
+    }
+
+    // Start the camera when the page loads
+    
+
+    function show() {
+        document.getElementById("scanner").style.display = "flex";
+    }
+  </script>
+
+</body>
+</html>
