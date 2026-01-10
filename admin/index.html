@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Study is Funny</title>
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-text">ADMIN</div>
+                <div class="admin-info">
+                    <div class="admin-user" id="admin-username-display"></div>
+                    <div class="admin-role" id="admin-role-display"></div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="#users" class="nav-item" data-section="users">
+                    <i class="fas fa-users"></i> Users
+                </a>
+                <a href="#content" class="nav-item" data-section="content">
+                    <i class="fas fa-book"></i> Content
+                </a>
+                <a href="#subscriptions" class="nav-item" data-section="subscriptions">
+                    <i class="fas fa-credit-card"></i> Subscriptions
+                </a>
+                <a href="#analytics" class="nav-item" data-section="analytics">
+                    <i class="fas fa-chart-bar"></i> Analytics
+                </a>
+                <a href="#settings" class="nav-item" data-section="settings">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1 class="page-title" id="page-title">Dashboard</h1>
+                <div class="header-actions">
+                    <button class="btn-refresh" id="refresh-btn" title="Refresh Data">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <!-- Dashboard Section -->
+                <section id="section-dashboard" class="content-section active">
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-header">TOTAL_USERS</div>
+                            <div class="metric-value" id="metric-users">0</div>
+                            <div class="metric-footer">+12 this week</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header">ACTIVE_SUBS</div>
+                            <div class="metric-value" id="metric-subs">0</div>
+                            <div class="metric-footer">68% conversion</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header">REVENUE_MTD</div>
+                            <div class="metric-value" id="metric-revenue">0 EGP</div>
+                            <div class="metric-footer">+24% vs last month</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header">TOTAL_SESSIONS</div>
+                            <div class="metric-value" id="metric-sessions">0</div>
+                            <div class="metric-footer">Across all subjects</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="dashboard-panel">
+                            <div class="panel-header">
+                                <span>RECENT ACTIVITY</span>
+                            </div>
+                            <div class="panel-content" id="recent-activity">
+                                <div class="activity-item">
+                                    <span class="activity-time">[10:23:45]</span>
+                                    <span class="activity-text">User registered: +201234567890</span>
+                                </div>
+                                <div class="activity-item">
+                                    <span class="activity-time">[10:18:32]</span>
+                                    <span class="activity-text">New subscription: Senior 1 Math</span>
+                                </div>
+                                <div class="activity-item">
+                                    <span class="activity-time">[10:05:12]</span>
+                                    <span class="activity-text">Session published: Physics L12</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-panel">
+                            <div class="panel-header">
+                                <span>QUICK ACTIONS</span>
+                            </div>
+                            <div class="panel-content quick-actions">
+                                <button class="action-btn" onclick="switchSection('users')">
+                                    <i class="fas fa-user-plus"></i> Add User
+                                </button>
+                                <button class="action-btn" onclick="switchSection('content')">
+                                    <i class="fas fa-plus"></i> New Session
+                                </button>
+                                <button class="action-btn" onclick="showExportModal()">
+                                    <i class="fas fa-download"></i> Export Data
+                                </button>
+                                <button class="action-btn" onclick="showBackupModal()">
+                                    <i class="fas fa-database"></i> Backup DB
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-panel">
+                        <div class="panel-header">
+                            <span>USER GROWTH (LAST 30 DAYS)</span>
+                        </div>
+                        <div class="panel-content">
+                            <pre class="ascii-chart" id="user-growth-chart"></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Users Section -->
+                <section id="section-users" class="content-section">
+                    <div class="section-toolbar">
+                        <div class="toolbar-left">
+                            <input type="text" id="user-search" placeholder="Search users..." class="search-input">
+                            <select id="user-grade-filter" class="filter-select">
+                                <option value="">All Grades</option>
+                                <option value="senior1">Senior 1</option>
+                                <option value="senior2">Senior 2</option>
+                                <option value="senior3">Senior 3</option>
+                            </select>
+                            <select id="user-status-filter" class="filter-select">
+                                <option value="">All Status</option>
+                                <option value="subscribed">Subscribed</option>
+                                <option value="free">Free</option>
+                                <option value="banned">Banned</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="btn-primary" onclick="showAddUserModal()">
+                                <i class="fas fa-plus"></i> Add User
+                            </button>
+                            <button class="btn-secondary" onclick="exportUsers()">
+                                <i class="fas fa-file-export"></i> Export CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table" id="users-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Phone</th>
+                                    <th>Name</th>
+                                    <th>Grade</th>
+                                    <th>Status</th>
+                                    <th>Registered</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination" id="users-pagination"></div>
+                </section>
+
+                <!-- Content Section -->
+                <section id="section-content" class="content-section">
+                    <div class="section-toolbar">
+                        <div class="toolbar-left">
+                            <select id="content-subject-filter" class="filter-select">
+                                <option value="">All Subjects</option>
+                                <option value="maths">Mathematics</option>
+                                <option value="physics">Physics</option>
+                                <option value="statistics">Statistics</option>
+                            </select>
+                            <select id="content-grade-filter" class="filter-select">
+                                <option value="">All Grades</option>
+                                <option value="senior1">Senior 1</option>
+                                <option value="senior2">Senior 2</option>
+                                <option value="senior3">Senior 3</option>
+                            </select>
+                            <select id="content-type-filter" class="filter-select">
+                                <option value="">All Types</option>
+                                <option value="session">Session</option>
+                                <option value="revision">Revision</option>
+                                <option value="video">Video</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="btn-primary" onclick="showAddContentModal()">
+                                <i class="fas fa-plus"></i> Add Content
+                            </button>
+                            <button class="btn-secondary" onclick="bulkPublish()">
+                                <i class="fas fa-eye"></i> Bulk Publish
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table" id="content-table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="select-all-content"></th>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Subject</th>
+                                    <th>Grade</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Views</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="content-table-body">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination" id="content-pagination"></div>
+                </section>
+
+                <!-- Subscriptions Section -->
+                <section id="section-subscriptions" class="content-section">
+                    <div class="metrics-grid">
+                        <div class="metric-card small">
+                            <div class="metric-header">TOTAL_REVENUE</div>
+                            <div class="metric-value" id="total-revenue">0 EGP</div>
+                        </div>
+                        <div class="metric-card small">
+                            <div class="metric-header">THIS_MONTH</div>
+                            <div class="metric-value" id="month-revenue">0 EGP</div>
+                        </div>
+                        <div class="metric-card small">
+                            <div class="metric-header">AVG_PER_USER</div>
+                            <div class="metric-value" id="avg-revenue">0 EGP</div>
+                        </div>
+                    </div>
+
+                    <div class="section-toolbar">
+                        <div class="toolbar-left">
+                            <input type="text" id="sub-search" placeholder="Search by phone..." class="search-input">
+                            <input type="date" id="sub-date-from" class="date-input">
+                            <input type="date" id="sub-date-to" class="date-input">
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="btn-primary" onclick="showGrantSubModal()">
+                                <i class="fas fa-gift"></i> Grant Access
+                            </button>
+                            <button class="btn-secondary" onclick="exportSubscriptions()">
+                                <i class="fas fa-file-export"></i> Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table" id="subscriptions-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User Phone</th>
+                                    <th>Session/Content</th>
+                                    <th>Grade</th>
+                                    <th>Subject</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subscriptions-table-body">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination" id="subscriptions-pagination"></div>
+                </section>
+
+                <!-- Analytics Section -->
+                <section id="section-analytics" class="content-section">
+                    <div class="section-toolbar">
+                        <div class="toolbar-left">
+                            <select id="analytics-period" class="filter-select">
+                                <option value="7">Last 7 Days</option>
+                                <option value="30" selected>Last 30 Days</option>
+                                <option value="90">Last 90 Days</option>
+                                <option value="365">Last Year</option>
+                            </select>
+                            <select id="analytics-subject" class="filter-select">
+                                <option value="">All Subjects</option>
+                                <option value="maths">Mathematics</option>
+                                <option value="physics">Physics</option>
+                                <option value="statistics">Statistics</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="btn-secondary" onclick="generateReport()">
+                                <i class="fas fa-file-pdf"></i> Generate Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="dashboard-panel">
+                            <div class="panel-header">
+                                <span>TOP SESSIONS (BY VIEWS)</span>
+                            </div>
+                            <div class="panel-content">
+                                <table class="simple-table" id="top-sessions-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Title</th>
+                                            <th>Subject</th>
+                                            <th>Views</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="top-sessions-body">
+                                        <!-- Populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-panel">
+                            <div class="panel-header">
+                                <span>TOP USERS (BY ACTIVITY)</span>
+                            </div>
+                            <div class="panel-content">
+                                <table class="simple-table" id="top-users-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Phone</th>
+                                            <th>Grade</th>
+                                            <th>Sessions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="top-users-body">
+                                        <!-- Populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-panel">
+                        <div class="panel-header">
+                            <span>ENGAGEMENT TRENDS</span>
+                        </div>
+                        <div class="panel-content">
+                            <pre class="ascii-chart" id="engagement-chart"></pre>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-panel">
+                        <div class="panel-header">
+                            <span>SUBJECT DISTRIBUTION</span>
+                        </div>
+                        <div class="panel-content">
+                            <div class="bar-chart" id="subject-distribution"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section id="section-settings" class="content-section">
+                    <div class="settings-grid">
+                        <div class="settings-panel">
+                            <div class="panel-header">
+                                <span>SITE CONFIGURATION</span>
+                            </div>
+                            <div class="panel-content">
+                                <div class="setting-item">
+                                    <label>Site Name</label>
+                                    <input type="text" id="site-name" value="Study is Funny" class="setting-input">
+                                </div>
+                                <div class="setting-item">
+                                    <label>Contact WhatsApp</label>
+                                    <input type="text" id="whatsapp-number" value="+201234567890" class="setting-input">
+                                </div>
+                                <div class="setting-item">
+                                    <label>Default Dark Mode</label>
+                                    <select id="default-dark-mode" class="setting-select">
+                                        <option value="off">Off</option>
+                                        <option value="on">On</option>
+                                        <option value="auto">Auto</option>
+                                    </select>
+                                </div>
+                                <div class="setting-item">
+                                    <label>Maintenance Mode</label>
+                                    <select id="maintenance-mode" class="setting-select">
+                                        <option value="off">Off</option>
+                                        <option value="on">On</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-panel">
+                            <div class="panel-header">
+                                <span>GOOGLE SCRIPTS URLs</span>
+                            </div>
+                            <div class="panel-content">
+                                <div class="setting-item">
+                                    <label>Subscription Check URL</label>
+                                    <input type="text" id="script-url-1" placeholder="https://script.google.com/..." class="setting-input">
+                                </div>
+                                <div class="setting-item">
+                                    <label>Click Tracking URL</label>
+                                    <input type="text" id="script-url-2" placeholder="https://script.google.com/..." class="setting-input">
+                                </div>
+                                <div class="setting-item">
+                                    <label>User Management URL</label>
+                                    <input type="text" id="script-url-3" placeholder="https://script.google.com/..." class="setting-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-panel">
+                            <div class="panel-header">
+                                <span>ADMIN USERS</span>
+                            </div>
+                            <div class="panel-content">
+                                <table class="simple-table" id="admin-users-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Username</th>
+                                            <th>Role</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-users-body">
+                                        <tr>
+                                            <td>admin</td>
+                                            <td>superadmin</td>
+                                            <td>
+                                                <button class="btn-icon" onclick="editAdmin('admin')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>moderator</td>
+                                            <td>moderator</td>
+                                            <td>
+                                                <button class="btn-icon" onclick="editAdmin('moderator')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn-icon danger" onclick="deleteAdmin('moderator')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <button class="btn-primary" onclick="showAddAdminModal()">
+                                    <i class="fas fa-user-plus"></i> Add Admin
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="settings-panel">
+                            <div class="panel-header">
+                                <span>BACKUP & RESTORE</span>
+                            </div>
+                            <div class="panel-content">
+                                <div class="setting-item">
+                                    <label>Export All Data</label>
+                                    <button class="btn-secondary full-width" onclick="exportAllData()">
+                                        <i class="fas fa-download"></i> Download JSON Backup
+                                    </button>
+                                </div>
+                                <div class="setting-item">
+                                    <label>Import Data</label>
+                                    <input type="file" id="import-file" accept=".json" class="file-input">
+                                    <button class="btn-secondary full-width" onclick="importData()">
+                                        <i class="fas fa-upload"></i> Restore from Backup
+                                    </button>
+                                </div>
+                                <div class="setting-item">
+                                    <label>Clear All Data</label>
+                                    <button class="btn-danger full-width" onclick="clearAllData()">
+                                        <i class="fas fa-exclamation-triangle"></i> Reset Database
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-panel full-width">
+                            <div class="panel-header">
+                                <span>CHANGE PASSWORD</span>
+                            </div>
+                            <div class="panel-content">
+                                <div class="setting-row">
+                                    <div class="setting-item">
+                                        <label>Current Password</label>
+                                        <input type="password" id="current-password" class="setting-input">
+                                    </div>
+                                    <div class="setting-item">
+                                        <label>New Password</label>
+                                        <input type="password" id="new-password" class="setting-input">
+                                    </div>
+                                    <div class="setting-item">
+                                        <label>Confirm New Password</label>
+                                        <input type="password" id="confirm-password" class="setting-input">
+                                    </div>
+                                </div>
+                                <button class="btn-primary" onclick="changePassword()">
+                                    <i class="fas fa-key"></i> Update Password
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-footer">
+                        <button class="btn-success" onclick="saveSettings()">
+                            <i class="fas fa-save"></i> Save All Settings
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-content" id="modal-content">
+            <!-- Modal content populated by JavaScript -->
+        </div>
+    </div>
+
+    <script src="../js/admin.js"></script>
+</body>
+</html>

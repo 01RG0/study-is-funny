@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics - Choose Content Type</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="../../images/logo.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        header {
+            background-color: rgba(0, 128, 128, 0.9);
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            color: #FFFFE0;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .container {
+            margin-top: 120px;
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .page-title {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .page-subtitle {
+            color: #FFFFE0;
+            font-size: 1.2rem;
+            margin-bottom: 50px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .options-container {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .option-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px 30px;
+            width: 350px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .option-card:hover::before {
+            left: 100%;
+        }
+
+        .option-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .option-card.sessions {
+            border-top: 5px solid #008080;
+        }
+
+        .option-card.revisions {
+            border-top: 5px solid #FF6347;
+        }
+
+        .option-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .option-card.sessions .option-icon {
+            color: #008080;
+        }
+
+        .option-card.revisions .option-icon {
+            color: #FF6347;
+        }
+
+        .option-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .option-description {
+            font-size: 1rem;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .option-button {
+            background: linear-gradient(135deg, #008080, #20B2AA);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 128, 128, 0.3);
+        }
+
+        .option-card.revisions .option-button {
+            background: linear-gradient(135deg, #FF6347, #FF8C69);
+            box-shadow: 0 4px 15px rgba(255, 99, 71, 0.3);
+        }
+
+        .option-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 128, 128, 0.4);
+        }
+
+        .option-card.revisions .option-button:hover {
+            box-shadow: 0 6px 20px rgba(255, 99, 71, 0.4);
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .page-subtitle {
+                font-size: 1rem;
+            }
+
+            .options-container {
+                gap: 20px;
+            }
+
+            .option-card {
+                width: 100%;
+                max-width: 350px;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="window.history.back()">
+        <i class="fas fa-arrow-left"></i> Back
+    </button>
+
+    <header>
+        <h1><i class="fas fa-chart-bar"></i> Statistics</h1>
+    </header>
+
+    <div class="container">
+        <h2 class="page-title">Choose Your Content Type</h2>
+        <p class="page-subtitle">Select between regular sessions or focused revision materials</p>
+
+        <div class="options-container">
+            <!-- Sessions Card -->
+            <div class="option-card sessions" onclick="location.href='sessions'">
+                <i class="fas fa-chalkboard-teacher option-icon"></i>
+                <h3 class="option-title">Sessions</h3>
+                <p class="option-description">
+                    Access all statistics sessions, lectures, and homework materials organized by chapters and topics.
+                </p>
+                <button class="option-button">
+                    Go to Sessions <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- Revisions Card -->
+            <div class="option-card revisions" onclick="location.href='revisions'">
+                <i class="fas fa-book-reader option-icon"></i>
+                <h3 class="option-title">Revisions</h3>
+                <p class="option-description">
+                    Quick review materials, summary notes, and focused revision content to prepare for exams.
+                </p>
+                <button class="option-button">
+                    Go to Revisions <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add click animation
+        document.querySelectorAll('.option-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Create ripple effect
+                const ripple = document.createElement('div');
+                ripple.style.position = 'absolute';
+                ripple.style.borderRadius = '50%';
+                ripple.style.background = 'rgba(255, 255, 255, 0.6)';
+                ripple.style.width = ripple.style.height = '100px';
+                ripple.style.left = e.clientX - this.offsetLeft - 50 + 'px';
+                ripple.style.top = e.clientY - this.offsetTop - 50 + 'px';
+                ripple.style.animation = 'ripple 0.6s ease-out';
+                ripple.style.pointerEvents = 'none';
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    </script>
+</body>
+</html>

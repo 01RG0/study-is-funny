@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senior 1 - Choose Your Subject</title>
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="../../images/logo.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            --card-hover-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-section img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-section h1 {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        .whatsapp-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px;
+            flex: 1;
+        }
+
+        .page-title {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .page-title h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .page-title p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .subjects-grid {
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            gap: 30px;
+        }
+
+        .subject-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            min-height: 180px;
+        }
+
+        .subject-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 6px;
+            background: var(--primary-gradient);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .subject-card:hover::before {
+            transform: scaleY(1);
+        }
+
+        .subject-card:hover {
+            transform: translateX(10px);
+            box-shadow: var(--card-hover-shadow);
+        }
+
+        .card-gradient {
+            width: 180px;
+            min-width: 180px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-gradient.physics {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card-gradient.statistics {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .card-gradient.mathematics {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .card-gradient i {
+            font-size: 5rem;
+            color: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+        }
+
+        .subject-card:hover .card-gradient i {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .card-content {
+            padding: 25px 150px 25px 30px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-content h2 {
+            font-size: 2rem;
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .teacher-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .teacher-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .teacher-details h3 {
+            font-size: 1rem;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .teacher-details p {
+            font-size: 0.85rem;
+            color: #718096;
+        }
+
+        .enter-btn {
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .enter-btn:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        footer {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: auto;
+        }
+
+        footer h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        footer p {
+            margin: 8px 0;
+            opacity: 0.9;
+        }
+
+        footer i {
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .page-title h1 {
+                font-size: 2rem;
+            }
+
+            .subjects-grid {
+                max-width: 100%;
+                padding: 0 15px;
+            }
+
+            .subject-card {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .card-gradient {
+                width: 100%;
+                height: 150px;
+            }
+
+            .enter-btn {
+                position: static;
+                transform: none;
+                width: 100%;
+                margin-top: 15px;
+                justify-content: center;
+            }
+
+            .enter-btn:hover {
+                transform: scale(1.02);
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .subject-card {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .subject-card:nth-child(1) { animation-delay: 0.1s; }
+        .subject-card:nth-child(2) { animation-delay: 0.2s; }
+        .subject-card:nth-child(3) { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="../../images/logo.webp" alt="Website Logo">
+                <h1><i class="fas fa-graduation-cap"></i> Studyisfunny</h1>
+            </div>
+            <a href="https://wa.me/201558145450?text=Hello" target="_blank" class="whatsapp-btn">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>Senior 1 Subjects</h1>
+            <p>Choose your subject and start learning with the best teachers</p>
+        </div>
+
+        <div class="subjects-grid">
+            <!-- Physics Card -->
+            <div class="subject-card" onclick="location.href='physics'">
+                <div class="card-gradient physics">
+                    <i class="fas fa-atom"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Physics</h2>
+                    <div class="teacher-info">
+                        <img src="../../images/shady.jpeg" alt="Shady Elsharqawy" class="teacher-avatar">
+                        <div class="teacher-details">
+                            <h3>ENG. Shady Elsharqawy</h3>
+                            <p>Physics Instructor</p>
+                        </div>
+                    </div>
+                    <button class="enter-btn">
+                        <span>Enter Course</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics Card -->
+            <div class="subject-card" onclick="location.href='statistics'">
+                <div class="card-gradient statistics">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Statistics</h2>
+                    <div class="teacher-info">
+                        <img src="../../images/shady.jpeg" alt="Shady Elsharqawy" class="teacher-avatar">
+                        <div class="teacher-details">
+                            <h3>ENG. Shady Elsharqawy</h3>
+                            <p>Statistics Instructor</p>
+                        </div>
+                    </div>
+                    <button class="enter-btn">
+                        <span>Enter Course</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mathematics Card -->
+            <div class="subject-card" onclick="location.href='maths'">
+                <div class="card-gradient mathematics">
+                    <i class="fas fa-square-root-alt"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Mathematics</h2>
+                    <div class="teacher-info">
+                        <img src="../../images/shady.jpeg" alt="Shady Elsharqawy" class="teacher-avatar">
+                        <div class="teacher-details">
+                            <h3>ENG. Shady Elsharqawy</h3>
+                            <p>Mathematics Instructor</p>
+                        </div>
+                    </div>
+                    <button class="enter-btn">
+                        <span>Enter Course</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer id="contact">
+        <h2><i class="fas fa-envelope"></i> Contact Us</h2>
+        <p><i class="fas fa-envelope"></i> Email: support@studyisfunny.com</p>
+        <p><i class="fas fa-phone-alt"></i> Phone: 01558145450</p>
+    </footer>
+</body>
+</html>
