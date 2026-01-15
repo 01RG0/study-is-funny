@@ -1,0 +1,678 @@
+{
+  "subjects": {
+    "physics": {
+      "name": "Physics",
+      "arabicName": "الفيزياء",
+      "icon": "fas fa-atom",
+      "description": "Physics sessions for Senior 3",
+      "teachers": {
+        "shadyelsharqawy": {
+          "name": "ENG. Shady Elsharqawy",
+          "image": "../images/shady.jpeg",
+          "sessions": {
+            "session1": {
+              "title": "Introduction To Induction",
+              "parts": [
+                {
+                  "id": "session1",
+                  "title": "Introduction To Induction - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/51de85f1-bf12-453a-8cdd-3d1676d804d5?token=232277c0b9869633b2e214df9843278d37160115caac44d12d05d0b34e0bef54&expires=1765757586&autoplay=true&loop=false&muted=false&preload=true",
+                  "next": "session1p2",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session1p2",
+                  "title": "Introduction To Induction - Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session1",
+                  "next": "session1p3",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session1p3",
+                  "title": "Introduction To Induction - Part 3",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session1p2",
+                  "next": "session1q",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session1q",
+                  "title": "Introduction To Induction - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session1p3",
+                  "next": "session1q1to20",
+                  "type": "questions"
+                },
+                {
+                  "id": "session1q1to20",
+                  "title": "Introduction To Induction - Questions 1-20",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session1q",
+                  "next": "session1q2",
+                  "type": "questions"
+                },
+                {
+                  "id": "session1q2",
+                  "title": "Introduction To Induction - Questions Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session1q1to20",
+                  "next": "session1hw",
+                  "type": "questions"
+                },
+                {
+                  "id": "session1hw",
+                  "title": "Introduction To Induction - Homework",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session1q2",
+                  "next": "session1hw2",
+                  "type": "homework"
+                },
+                {
+                  "id": "session1hw2",
+                  "title": "Introduction To Induction - Homework Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session1hw",
+                  "next": "session2",
+                  "type": "homework"
+                }
+              ]
+            },
+            "session2": {
+              "title": "Session 2 - Topic Name",
+              "parts": [
+                {
+                  "id": "session2",
+                  "title": "Session 2 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/1afa5af3-83e9-4b48-824c-432431ba2b94?token=30abc988d6ccdec777b50938bcb4188cd8081c2a2c683c4cc93bc5fa0abc90b9&expires=1765231878&autoplay=true&loop=false&muted=false&preload=true",
+                  "next": "session2p2",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session2p2",
+                  "title": "Session 2 - Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session2",
+                  "next": "session2p3",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session2p3",
+                  "title": "Session 2 - Part 3",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session2p2",
+                  "next": "session2q",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session2q",
+                  "title": "Session 2 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session2p3",
+                  "next": "session2q2",
+                  "type": "questions"
+                },
+                {
+                  "id": "session2q2",
+                  "title": "Session 2 - Questions Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session2q",
+                  "next": "session2hw",
+                  "type": "homework"
+                },
+                {
+                  "id": "session2hw",
+                  "title": "Session 2 - Homework",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session2q2",
+                  "next": "session2hw2",
+                  "type": "homework"
+                },
+                {
+                  "id": "session2hw2",
+                  "title": "Session 2 - Homework Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session2hw",
+                  "next": "session3",
+                  "type": "homework"
+                }
+              ]
+            },
+            "session3": {
+              "title": "Session 3 - Topic Name",
+              "parts": [
+                {
+                  "id": "session3",
+                  "title": "Session 3 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session3p2",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session3p2",
+                  "title": "Session 3 - Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session3",
+                  "next": "session3p3",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session3p3",
+                  "title": "Session 3 - Part 3",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session3p2",
+                  "next": "session3p4",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session3p4",
+                  "title": "Session 3 - Part 4",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session3p3",
+                  "next": "session3q",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session3q",
+                  "title": "Session 3 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session3p4",
+                  "next": "session3q2",
+                  "type": "questions"
+                },
+                {
+                  "id": "session3q2",
+                  "title": "Session 3 - Questions Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session3q",
+                  "next": "session3hw",
+                  "type": "homework"
+                },
+                {
+                  "id": "session3hw",
+                  "title": "Session 3 - Homework",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session3q2",
+                  "next": "session3hw2",
+                  "type": "homework"
+                },
+                {
+                  "id": "session3hw2",
+                  "title": "Session 3 - Homework Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session3hw",
+                  "next": "session4",
+                  "type": "homework"
+                }
+              ]
+            },
+            "session4": {
+              "title": "Session 4 - Topic Name",
+              "parts": [
+                {
+                  "id": "session4",
+                  "title": "Session 4 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session4p2",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session4p2",
+                  "title": "Session 4 - Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session4",
+                  "next": "session4q",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session4q",
+                  "title": "Session 4 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session4p2",
+                  "next": "session4hw",
+                  "type": "questions"
+                },
+                {
+                  "id": "session4hw",
+                  "title": "Session 4 - Homework",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session4q",
+                  "next": "session5",
+                  "type": "homework"
+                }
+              ]
+            },
+            "session5": {
+              "title": "Session 5 - Topic Name",
+              "parts": [
+                {
+                  "id": "session5",
+                  "title": "Session 5 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session5p2",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session5p2",
+                  "title": "Session 5 - Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session5",
+                  "next": "session5p3",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session5p3",
+                  "title": "Session 5 - Part 3",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session5p2",
+                  "next": "session5p4",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session5p4",
+                  "title": "Session 5 - Part 4",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session5p3",
+                  "next": "session5q",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session5q",
+                  "title": "Session 5 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session5p4",
+                  "next": "session5q2",
+                  "type": "questions"
+                },
+                {
+                  "id": "session5q2",
+                  "title": "Session 5 - Questions Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session5q",
+                  "next": "session5hw",
+                  "type": "homework"
+                },
+                {
+                  "id": "session5hw",
+                  "title": "Session 5 - Homework",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session5q2",
+                  "next": "session5hw2",
+                  "type": "homework"
+                },
+                {
+                  "id": "session5hw2",
+                  "title": "Session 5 - Homework Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session5hw",
+                  "next": "session6",
+                  "type": "homework"
+                }
+              ]
+            },
+            "session6": {
+              "title": "Session 6 - Topic Name",
+              "parts": [
+                {
+                  "id": "session6",
+                  "title": "Session 6 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session6p2",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session6p2",
+                  "title": "Session 6 - Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session6",
+                  "next": "session6q",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session6q",
+                  "title": "Session 6 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session6p2",
+                  "next": "session6hw",
+                  "type": "questions"
+                },
+                {
+                  "id": "session6hw",
+                  "title": "Session 6 - Homework",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session6q",
+                  "next": "session7",
+                  "type": "homework"
+                }
+              ]
+            },
+            "session7": {
+              "title": "Session 7 - Topic Name",
+              "parts": [
+                {
+                  "id": "session7",
+                  "title": "Session 7 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session8",
+                  "type": "lecture"
+                }
+              ]
+            },
+            "session8": {
+              "title": "Session 8 - Topic Name",
+              "parts": [
+                {
+                  "id": "session8",
+                  "title": "Session 8 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "type": "lecture"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "statistics": {
+      "name": "Statistics",
+      "arabicName": "الإحصاء",
+      "icon": "fas fa-chart-bar",
+      "description": "Statistics sessions for Senior 3",
+      "teachers": {
+        "shadyelsharqawy": {
+          "name": "ENG. Shady Elsharqawy",
+          "image": "../images/shady.jpeg",
+          "sessions": {
+            "session1": {
+              "title": "Introduction to Statistics",
+              "parts": [
+                {
+                  "id": "session1",
+                  "title": "Introduction to Statistics - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session1questions",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session1questions",
+                  "title": "Introduction to Statistics - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session1",
+                  "next": "session2",
+                  "type": "questions"
+                }
+              ]
+            },
+            "session2": {
+              "title": "Session 2 - Topic Name",
+              "parts": [
+                {
+                  "id": "session2",
+                  "title": "Session 2 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session2questions",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session2questions",
+                  "title": "Session 2 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session2",
+                  "next": "session3",
+                  "type": "questions"
+                }
+              ]
+            },
+            "session3": {
+              "title": "Session 3 - Topic Name",
+              "parts": [
+                {
+                  "id": "session3",
+                  "title": "Session 3 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session3questions",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session3questions",
+                  "title": "Session 3 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session3",
+                  "next": "session4",
+                  "type": "questions"
+                }
+              ]
+            },
+            "session4": {
+              "title": "Session 4 - Topic Name",
+              "parts": [
+                {
+                  "id": "session4",
+                  "title": "Session 4 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session4questions",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session4questions",
+                  "title": "Session 4 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session4",
+                  "next": "session5",
+                  "type": "questions"
+                }
+              ]
+            },
+            "session5": {
+              "title": "Session 5 - Topic Name",
+              "parts": [
+                {
+                  "id": "session5",
+                  "title": "Session 5 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session5questions",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session5questions",
+                  "title": "Session 5 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session5",
+                  "next": "session6",
+                  "type": "questions"
+                }
+              ]
+            },
+            "session6": {
+              "title": "Session 6 - Topic Name",
+              "parts": [
+                {
+                  "id": "session6",
+                  "title": "Session 6 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session6questions",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session6questions",
+                  "title": "Session 6 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session6",
+                  "next": "session7",
+                  "type": "questions"
+                }
+              ]
+            },
+            "session7": {
+              "title": "Session 7 - Topic Name",
+              "parts": [
+                {
+                  "id": "session7",
+                  "title": "Session 7 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session7questions",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session7questions",
+                  "title": "Session 7 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session7",
+                  "next": "session8",
+                  "type": "questions"
+                }
+              ]
+            },
+            "session8": {
+              "title": "Session 8 - Topic Name",
+              "parts": [
+                {
+                  "id": "session8",
+                  "title": "Session 8 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session8questions",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session8questions",
+                  "title": "Session 8 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session8",
+                  "next": "session9",
+                  "type": "questions"
+                }
+              ]
+            },
+            "session9": {
+              "title": "Session 9 - Topic Name",
+              "parts": [
+                {
+                  "id": "session9",
+                  "title": "Session 9 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session9questions",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session9questions",
+                  "title": "Session 9 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session9",
+                  "next": "session10",
+                  "type": "questions"
+                }
+              ]
+            },
+            "session10": {
+              "title": "Session 10 - Topic Name",
+              "parts": [
+                {
+                  "id": "session10",
+                  "title": "Session 10 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session10questions",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session10questions",
+                  "title": "Session 10 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session10",
+                  "next": "session11",
+                  "type": "questions"
+                }
+              ]
+            },
+            "session11": {
+              "title": "Session 11 - Topic Name",
+              "parts": [
+                {
+                  "id": "session11",
+                  "title": "Session 11 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session11questions",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session11questions",
+                  "title": "Session 11 - Questions",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session11",
+                  "next": "session12",
+                  "type": "questions"
+                }
+              ]
+            },
+            "session12": {
+              "title": "Session 12 - Topic Name",
+              "parts": [
+                {
+                  "id": "session12",
+                  "title": "Session 12 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "type": "lecture"
+                }
+              ]
+            },
+            "session13": {
+              "title": "Session 13 - Topic Name",
+              "parts": [
+                {
+                  "id": "session13",
+                  "title": "Session 13 - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "next": "session13p2",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session13p2",
+                  "title": "Session 13 - Part 2",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session13",
+                  "next": "session13p3",
+                  "type": "lecture"
+                },
+                {
+                  "id": "session13p3",
+                  "title": "Session 13 - Part 3",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "prev": "session13p2",
+                  "type": "lecture"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "mathematics": {
+      "name": "Mathematics",
+      "arabicName": "الرياضيات",
+      "icon": "fas fa-calculator",
+      "description": "Mathematics sessions for Senior 3",
+      "teachers": {
+        "shadyelsharqawy": {
+          "name": "ENG. Shady Elsharqawy",
+          "image": "../images/shady.jpeg",
+          "sessions": {
+            "session1": {
+              "title": "Introduction to Senior 3 Mathematics",
+              "parts": [
+                {
+                  "id": "session1",
+                  "title": "Introduction to Senior 3 Mathematics - Part 1",
+                  "videoUrl": "https://iframe.mediadelivery.net/embed/132580/some-video-id-here",
+                  "type": "lecture"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "pricing": {
+    "sessionPrice": 85,
+    "currency": "EGP"
+  }
+}

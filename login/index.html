@@ -166,6 +166,7 @@
             setTimeout(() => {
                 // Store phone number in localStorage with the same variable name
                 localStorage.setItem('userPhone', phone);
+                localStorage.setItem('accessGranted', 'true');
 
                 // Redirect to the success page
                 window.location.href = '../grade';

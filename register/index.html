@@ -7,6 +7,8 @@
     <!-- Firebase SDK for v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <!-- MongoDB Database Handler (for data storage) -->
+    <script src="../js/database.js"></script>
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/all.min.css">
     <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
@@ -226,7 +228,6 @@ input:checked + .slider:before {
             <select id="grade" required class="grade" class="sector">
                 <option value="senior1">الصف الأول الثانوي</option>
                 <option value="senior2">الصف الثاني الثانوي</option>
-                <option value="senior3">الصف الثالث الثانوي</option>
             </select><br><br>
 
             <button type="submit" id="registerButton">إنشاء حساب جديد</button>
@@ -307,7 +308,7 @@ darkModeToggle.addEventListener('change', () => {
         // Show the loading spinner
         loadingSpinner.style.display = 'block';
 
-        // Register user using phone number as email
+        // Register user using Firebase (authentication)
         auth.createUserWithEmailAndPassword(phone + '@example.com', password)
             .then(userCredential => {
                 console.log('User registered successfully!');
@@ -317,7 +318,12 @@ darkModeToggle.addEventListener('change', () => {
                 localStorage.setItem('accessGranted', 'true');
                 localStorage.setItem('userPhone', phone);
 
-                // Send user data to Google Sheets and wait for the request to complete
+                // Also save to MongoDB for data storage (optional - runs in background)
+                MongoDB.registerUser(name, phone, password, grade).catch(err => {
+                    console.log('MongoDB save failed (using Firebase only):', err);
+                });
+
+                // Send user data to Google Sheets
                 return fetch(webAppUrl, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -340,13 +346,14 @@ darkModeToggle.addEventListener('change', () => {
                     window.location.href = "../senior1/";
                 } else if (grade === 'senior2') {
                     window.location.href = "../senior2/";
-                } else if (grade === 'senior3') {
-                    window.location.href = "../senior3/";
+                } else {
+                    // Default to grade selection page if grade is not recognized
+                    window.location.href = "../grade/index.html";
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error occurred: ' + error.message);  // Show error message
+                alert('Error occurred: ' + error.message);
             })
             .finally(() => {
                 // Hide the loading spinner and re-enable the register button

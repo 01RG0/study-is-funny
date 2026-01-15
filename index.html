@@ -77,6 +77,8 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="css/all.min.css">
     <link rel="stylesheet" href="css/main.css">
+    <script src="js/router.js"></script>
+    <script src="js/navigation.js"></script>
     
     <!-- Schema.org Structured Data for Educational Organization -->
      
@@ -178,7 +180,104 @@ input:checked + .slider:before {
 
 
     </style>
-        
+
+    <!-- Navigation Styles -->
+    <style>
+        .main-navigation {
+            background-color: var(--contrast);
+            padding: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-navigation ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            flex-wrap: wrap;
+        }
+
+        .main-navigation li {
+            margin: 0;
+        }
+
+        .nav-link {
+            display: block;
+            color: var(--text);
+            text-decoration: none;
+            padding: 15px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--button);
+            border-bottom-color: var(--button);
+        }
+
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-bottom-color: var(--button);
+        }
+
+        .nav-link i {
+            margin-left: 8px;
+            font-size: 0.9em;
+        }
+
+        /* Mobile Navigation */
+        @media (max-width: 768px) {
+            .main-navigation ul {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .nav-link {
+                padding: 12px 15px;
+                border-bottom: none;
+                border-left: 3px solid transparent;
+            }
+
+            .nav-link:hover {
+                border-left-color: var(--button);
+                border-bottom: none;
+            }
+
+            .nav-link.active {
+                border-left-color: var(--button);
+                border-bottom: none;
+            }
+        }
+
+        /* Dark mode support for navigation */
+        body.dark-mode .main-navigation {
+            background-color: #333;
+        }
+
+        body.dark-mode .nav-link {
+            color: var(--dark-text);
+        }
+
+        body.dark-mode .nav-link:hover {
+            color: var(--dark-button);
+            border-bottom-color: var(--dark-button);
+        }
+
+        body.dark-mode .nav-link.active {
+            color: var(--dark-button);
+            border-bottom-color: var(--dark-button);
+        }
+
+        /* Smooth scrolling for anchor links */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -194,10 +293,20 @@ input:checked + .slider:before {
 </label>
       
     </div>
+
+    <!-- Navigation Menu -->
+    <nav class="main-navigation">
+        <ul>
+            <li><a href="#home" class="nav-link active"><i class="fas fa-home"></i> الرئيسية</a></li>
+            <li><a href="grade/index.html" class="nav-link"><i class="fas fa-trophy"></i> التقييمات</a></li>
+            <li><a href="#about" class="nav-link"><i class="fas fa-info-circle"></i> من نحن</a></li>
+            <li><a href="#contact" class="nav-link"><i class="fas fa-envelope"></i> اتصل بنا</a></li>
+        </ul>
+    </nav>
 </header>
 
 <!-- User Registration and Login Section -->
-<div class="users">
+<div id="home" class="users">
     <div class="register" onclick="location.href='register'">
         <i class="fas fa-user-plus"></i>
         <h1>انشاء حساب جديد</h1>
@@ -218,7 +327,7 @@ input:checked + .slider:before {
         <p>هل تبحث عن طرق جديدة تجعل <strong>الدراسة ممتعة وسهلة</strong>؟ في "Study is Funny"، نقدم لك <strong>تجربة تعليمية مبتكرة</strong> تساعدك على التعلم بطرق تفاعلية ومرحة. نحن هنا لتحويل التعليم التقليدي إلى <strong>تجربة محفزة ومثيرة</strong>، تناسب جميع الطلاب والمعلمين الباحثين عن طرق لتطوير مهاراتهم وفهم أعمق للمناهج الدراسية.</p>
     </section>
 
-    <section class="section-content">
+    <section id="about" class="section-content">
         <h2 class="section-heading">لماذا "Study is Funny"؟</h2>
         <ul class="features-list">
             <li><i class="fas fa-chalkboard-teacher"></i><strong>تعليم تفاعلي</strong>: استمتع بأنشطة وألعاب تعليمية مصممة لتسهيل فهم المناهج وتحفيز التفكير الإبداعي.</li>
@@ -232,6 +341,17 @@ input:checked + .slider:before {
     <section class="section-content">
         <h2 class="section-heading">ابدأ الآن رحلتك التعليمية الممتعة!</h2>
         <p>سواء كنت طالبًا، مدرسًا، أو ولي أمر، هنا ستجد <strong>الأدوات والموارد</strong> التي تجعل التعلم ممتعًا وسهلاً. اكتشف الآن كيف يمكن أن تكون <strong>الدراسة تجربة ممتعة</strong> ومليئة بالتحديات المثيرة!</p>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section-content">
+        <h2 class="section-heading"><i class="fas fa-envelope"></i> اتصل بنا</h2>
+        <div style="text-align: center;">
+            <p><i class="fas fa-envelope"></i> <strong>البريد الإلكتروني:</strong> support@studyisfunny.com</p>
+            <p><i class="fas fa-phone-alt"></i> <strong>الهاتف:</strong> 01558145450</p>
+            <p><i class="fab fa-whatsapp"></i> <strong>واتساب:</strong> <a href="https://wa.me/201558145450?text=Hello" target="_blank" style="color: var(--button);">اضغط هنا للمحادثة</a></p>
+            <p><i class="fas fa-map-marker-alt"></i> <strong>العنوان:</strong> مصر</p>
+        </div>
     </section>
 </div>
 
@@ -259,6 +379,48 @@ darkModeToggleCheckbox.addEventListener('change', () => {
     }
 });
 
+// Navigation active state management
+function updateActiveNavLink() {
+    const sections = ['home', 'about', 'contact'];
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    let current = 'home';
+
+    sections.forEach(section => {
+        const element = document.getElementById(section);
+        if (element) {
+            const rect = element.getBoundingClientRect();
+            if (rect.top <= 100 && rect.bottom >= 100) {
+                current = section;
+            }
+        }
+    });
+
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${current}`) {
+            link.classList.add('active');
+        }
+    });
+}
+
+// Update navigation on scroll
+window.addEventListener('scroll', updateActiveNavLink);
+window.addEventListener('load', updateActiveNavLink);
+
+// Smooth scroll for navigation links
+document.querySelectorAll('.nav-link[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
 
 </script>
 </body>
