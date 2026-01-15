@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Senior 1 Mathematics Sessions</title>
+    <title>Senior 1 Physics Sessions</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="../../../css/sessions.css">
     <link rel="stylesheet" href="../../../css/main.css">
@@ -18,6 +18,11 @@
             <a href="https://wa.me/201558145450?text=Hello" target="_blank" class="whatsapp-button">
                 <i class="fab fa-whatsapp"></i> WhatsApp
             </a>
+            <!-- Dark Mode Toggle Switch -->
+            <label class="dark-mode-switch">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider1"></span>
+            </label>
         </div>
     </header>
 
@@ -26,48 +31,71 @@
         <div class="spinner"></div>
     </div>
 
-    <!-- Sessions Cards -->
-    <section class="sessions-container">
-        <h2>Senior 1 Mathematics - ENG. Shady Elsharqawy</h2>
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sessions Cards -->
+        <section class="sessions-container">
+            <h2>Senior 1 Physics - ENG. Shady Elsharqawy</h2>
 
         <div class="session-card" data-session="1">
-            <h3>Introduction to Senior 1 Mathematics</h3>
+            <h3>Introduction to Senior 1 Physics</h3>
             <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 1</p>
             <a href="#" class="view-details" onclick="handleSessionDetails(1);">View Details</a>
         </div>
 
         <div class="session-card" data-session="2">
-            <h3>Algebra Fundamentals</h3>
+            <h3>Mechanics - Basic Concepts</h3>
             <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 2</p>
             <a href="#" class="view-details" onclick="handleSessionDetails(2);">View Details</a>
         </div>
 
         <div class="session-card" data-session="3">
-            <h3>Geometry Basics</h3>
+            <h3>Electricity Fundamentals</h3>
             <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 3</p>
             <a href="#" class="view-details" onclick="handleSessionDetails(3);">View Details</a>
         </div>
 
         <div class="session-card" data-session="4">
-            <h3>Calculus Introduction</h3>
+            <h3>Heat and Thermodynamics</h3>
             <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 4</p>
             <a href="#" class="view-details" onclick="handleSessionDetails(4);">View Details</a>
         </div>
 
         <div class="session-card" data-session="5">
-            <h3>Trigonometry</h3>
+            <h3>Light and Optics</h3>
             <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 5</p>
             <a href="#" class="view-details" onclick="handleSessionDetails(5);">View Details</a>
         </div>
-    </section>
+        </section>
 
-    <!-- Navigation -->
-    <div class="navigation">
-        <button class="nav-btn" onclick="location.href='../..'">← Back to Subjects</button>
-        <button class="nav-btn" onclick="location.href='../Homework'">📚 Homework</button>
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn" onclick="location.href='../..'">← Back to Subjects</button>
+            <button class="nav-btn" onclick="location.href='../Homework'">📚 Homework</button>
+        </div>
     </div>
 
     <script>
+        // Dark Mode Toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+
+        // Check localStorage for dark mode preference on page load
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.checked = true;
+        }
+
+        // Listen for changes to the dark mode toggle
+        darkModeToggle.addEventListener('change', () => {
+            if (darkModeToggle.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+
         function handleSessionDetails(sessionId) {
             // Show loading spinner
             document.getElementById('loadingSpinner').style.display = 'block';

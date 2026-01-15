@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Sessions - Study is Funny</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="../images/logo.webp" alt="Logo" class="sidebar-logo">
+            <h2>Admin Panel</h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="#upload-session" class="nav-item">
+                <i class="fas fa-upload"></i> Upload Session
+            </a>
+            <a href="manage-sessions.html" class="nav-item active">
+                <i class="fas fa-list"></i> Manage Sessions
+            </a>
+            <a href="manage-students.html" class="nav-item">
+                <i class="fas fa-users"></i> Students
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <i class="fas fa-chart-bar"></i> Analytics
+            </a>
+            <a href="#settings" class="nav-item">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="section-header">
+            <h1><i class="fas fa-list"></i> Manage Sessions</h1>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="filters">
+            <div class="filter-group">
+                <input type="text" id="sessionSearch" placeholder="Search sessions..." style="padding: 8px 12px; border: 1px solid #e1e8ed; border-radius: 6px; width: 250px;">
+            </div>
+
+            <div class="filter-group">
+                <label for="filterSubject">Subject:</label>
+                <select id="filterSubject">
+                    <option value="">All Subjects</option>
+                    <option value="physics">Physics</option>
+                    <option value="mathematics">Mathematics</option>
+                    <option value="statistics">Statistics</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="filterGrade">Grade:</label>
+                <select id="filterGrade">
+                    <option value="">All Grades</option>
+                    <option value="senior1">Senior 1</option>
+                    <option value="senior2">Senior 2</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="filterStatus">Status:</label>
+                <select id="filterStatus">
+                    <option value="">All Status</option>
+                    <option value="published">Published</option>
+                    <option value="draft">Draft</option>
+                    <option value="scheduled">Scheduled</option>
+                </select>
+            </div>
+
+            <button class="add-video-btn" onclick="location.href='dashboard.html'">
+                <i class="fas fa-plus"></i> Upload New Session
+            </button>
+        </div>
+
+        <!-- Sessions Table -->
+        <div class="sessions-table-container">
+            <table class="sessions-table" id="sessionsTable">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>Title</th>
+                        <th>Subject</th>
+                        <th>Grade</th>
+                        <th>Teacher</th>
+                        <th>Status</th>
+                        <th>Views</th>
+                        <th>Students</th>
+                        <th>Downloads</th>
+                        <th>Upload Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="sessionsTableBody">
+                    <!-- Sessions will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="bulk-actions" id="bulkActions" style="display: none;">
+            <span id="selectedCount">0 sessions selected</span>
+            <button class="bulk-btn" onclick="bulkPublish()">
+                <i class="fas fa-globe"></i> Publish
+            </button>
+            <button class="bulk-btn" onclick="bulkUnpublish()">
+                <i class="fas fa-eye-slash"></i> Unpublish
+            </button>
+            <button class="bulk-btn" onclick="bulkFeature()">
+                <i class="fas fa-star"></i> Feature
+            </button>
+            <button class="bulk-btn warning" onclick="bulkDelete()">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+            <button class="page-btn" id="prevPage" disabled><i class="fas fa-chevron-left"></i></button>
+            <span id="pageInfo">Page 1 of 1</span>
+            <button class="page-btn" id="nextPage" disabled><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <!-- Edit Session Modal -->
+    <div id="editSessionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Session</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="editSessionForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editTitle">Session Title</label>
+                            <input type="text" id="editTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editSubject">Subject</label>
+                            <select id="editSubject" required>
+                                <option value="physics">Physics</option>
+                                <option value="mathematics">Mathematics</option>
+                                <option value="statistics">Statistics</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editGrade">Grade</label>
+                            <select id="editGrade" required>
+                                <option value="senior1">Senior 1</option>
+                                <option value="senior2">Senior 2</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editStatus">Status</label>
+                            <select id="editStatus" required>
+                                <option value="draft">Draft</option>
+                                <option value="published">Published</option>
+                                <option value="scheduled">Scheduled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editDescription">Description</label>
+                        <textarea id="editDescription" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editMaxViews">Max Views per Student</label>
+                        <input type="number" id="editMaxViews" min="1" placeholder="Unlimited">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editDownloadable">Allow Downloads</label>
+                        <select id="editDownloadable">
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+    <script>
+        // Manage sessions functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSessionsTable();
+
+            // Search functionality
+            document.getElementById('sessionSearch').addEventListener('input', function() {
+                filterSessions(this.value);
+            });
+
+            // Filter functionality
+            document.getElementById('filterSubject').addEventListener('change', loadSessionsTable);
+            document.getElementById('filterGrade').addEventListener('change', loadSessionsTable);
+            document.getElementById('filterStatus').addEventListener('change', loadSessionsTable);
+
+            // Select all functionality
+            document.getElementById('selectAll').addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.session-checkbox');
+                checkboxes.forEach(cb => cb.checked = this.checked);
+                updateBulkActions();
+            });
+
+            // Edit session form
+            document.getElementById('editSessionForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveSessionChanges();
+            });
+        });
+
+        function loadSessionsTable() {
+            const tableBody = document.getElementById('sessionsTableBody');
+            tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px;">Loading sessions...</td></tr>';
+
+            // Simulate loading sessions data
+            setTimeout(() => {
+                const sessions = [
+                    {
+                        id: 1,
+                        title: 'Introduction to Mechanics',
+                        subject: 'Physics',
+                        grade: 'Senior 1',
+                        teacher: 'ENG. Shady Elsharqawy',
+                        status: 'published',
+                        views: 245,
+                        rating: 4.8,
+                        uploadDate: '2024-01-15',
+                        price: 85
+                    },
+                    {
+                        id: 2,
+                        title: 'Algebra Fundamentals',
+                        subject: 'Mathematics',
+                        grade: 'Senior 1',
+                        teacher: 'ENG. Shady Elsharqawy',
+                        status: 'published',
+                        views: 189,
+                        rating: 4.6,
+                        uploadDate: '2024-01-14',
+                        price: 75
+                    },
+                    {
+                        id: 3,
+                        title: 'Statistics Basics',
+                        subject: 'Statistics',
+                        grade: 'Senior 2',
+                        teacher: 'ENG. Shady Elsharqawy',
+                        status: 'draft',
+                        views: 0,
+                        rating: 0,
+                        uploadDate: '2024-01-13',
+                        price: 95
+                    },
+                    {
+                        id: 4,
+                        title: 'Electricity and Magnetism',
+                        subject: 'Physics',
+                        grade: 'Senior 2',
+                        teacher: 'ENG. Shady Elsharqawy',
+                        status: 'scheduled',
+                        views: 0,
+                        rating: 0,
+                        uploadDate: '2024-01-12',
+                        price: 120
+                    },
+                    {
+                        id: 5,
+                        title: 'Calculus Introduction',
+                        subject: 'Mathematics',
+                        grade: 'Senior 2',
+                        teacher: 'ENG. Shady Elsharqawy',
+                        status: 'published',
+                        views: 156,
+                        rating: 4.9,
+                        uploadDate: '2024-01-11',
+                        price: 100
+                    }
+                ];
+
+                tableBody.innerHTML = '';
+
+                sessions.forEach(session => {
+                    const row = document.createElement('tr');
+
+                    row.innerHTML = `
+                        <td><input type="checkbox" class="session-checkbox" value="${session.id}" onchange="updateBulkActions()"></td>
+                        <td>${session.title}</td>
+                        <td>${session.subject}</td>
+                        <td>${session.grade}</td>
+                        <td>${session.teacher}</td>
+                        <td><span class="status-badge status-${session.status}">${session.status}</span></td>
+                        <td>${session.views}</td>
+                        <td><button class="action-btn view-btn" onclick="viewStudents(${session.id})">${session.students || 0}</button></td>
+                        <td>${session.downloads || 0}</td>
+                        <td>${new Date(session.uploadDate).toLocaleDateString()}</td>
+                        <td>
+                            <button class="action-btn edit-btn" onclick="editSession(${session.id}, '${session.title}', '${session.subject}', '${session.grade}', '${session.status}', '${session.maxViews || ''}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn view-btn" onclick="viewSessionAnalytics(${session.id})">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                            <button class="action-btn delete-btn" onclick="deleteSession(${session.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+
+                    tableBody.appendChild(row);
+                });
+            }, 1000);
+        }
+
+        function filterSessions(searchTerm) {
+            const rows = document.querySelectorAll('#sessionsTableBody tr');
+            rows.forEach(row => {
+                const title = row.cells[1].textContent.toLowerCase();
+                const subject = row.cells[2].textContent.toLowerCase();
+                const teacher = row.cells[4].textContent.toLowerCase();
+
+                if (title.includes(searchTerm.toLowerCase()) ||
+                    subject.includes(searchTerm.toLowerCase()) ||
+                    teacher.includes(searchTerm.toLowerCase())) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function updateBulkActions() {
+            const selectedCheckboxes = document.querySelectorAll('.session-checkbox:checked');
+            const bulkActions = document.getElementById('bulkActions');
+            const selectedCount = document.getElementById('selectedCount');
+
+            if (selectedCheckboxes.length > 0) {
+                bulkActions.style.display = 'block';
+                selectedCount.textContent = `${selectedCheckboxes.length} session${selectedCheckboxes.length > 1 ? 's' : ''} selected`;
+            } else {
+                bulkActions.style.display = 'none';
+            }
+        }
+
+        function editSession(id, title, subject, grade, status, maxViews) {
+            document.getElementById('editTitle').value = title;
+            document.getElementById('editSubject').value = subject;
+            document.getElementById('editGrade').value = grade;
+            document.getElementById('editStatus').value = status;
+            document.getElementById('editMaxViews').value = maxViews;
+
+            document.getElementById('editSessionModal').style.display = 'block';
+        }
+
+        function saveSessionChanges() {
+            // Simulate saving changes
+            document.getElementById('editSessionModal').style.display = 'none';
+            showMessage('Session updated successfully!', 'success');
+            loadSessionsTable();
+        }
+
+        function deleteSession(sessionId) {
+            if (confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
+                showMessage('Session deleted successfully!', 'success');
+                loadSessionsTable();
+            }
+        }
+
+        // Bulk operations
+        function bulkPublish() {
+            const selectedIds = Array.from(document.querySelectorAll('.session-checkbox:checked')).map(cb => cb.value);
+            if (selectedIds.length === 0) return;
+
+            if (confirm(`Publish ${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''}?`)) {
+                showMessage(`${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''} published successfully!`, 'success');
+                loadSessionsTable();
+            }
+        }
+
+        function bulkUnpublish() {
+            const selectedIds = Array.from(document.querySelectorAll('.session-checkbox:checked')).map(cb => cb.value);
+            if (selectedIds.length === 0) return;
+
+            if (confirm(`Unpublish ${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''}?`)) {
+                showMessage(`${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''} unpublished successfully!`, 'success');
+                loadSessionsTable();
+            }
+        }
+
+        function bulkFeature() {
+            const selectedIds = Array.from(document.querySelectorAll('.session-checkbox:checked')).map(cb => cb.value);
+            if (selectedIds.length === 0) return;
+
+            if (confirm(`Feature ${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''} on homepage?`)) {
+                showMessage(`${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''} featured successfully!`, 'success');
+                loadSessionsTable();
+            }
+        }
+
+        function bulkDelete() {
+            const selectedIds = Array.from(document.querySelectorAll('.session-checkbox:checked')).map(cb => cb.value);
+            if (selectedIds.length === 0) return;
+
+            if (confirm(`⚠️ Delete ${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''}? This action cannot be undone!`)) {
+                showMessage(`${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''} deleted successfully!`, 'success');
+                loadSessionsTable();
+            }
+        }
+
+        function viewStudents(sessionId) {
+            // Simulate loading student list for this session
+            const students = [
+                { name: 'Ahmed Mohamed', phone: '+201234567890', views: 3, lastViewed: '2024-01-15' },
+                { name: 'Fatima Hassan', phone: '+201234567891', views: 2, lastViewed: '2024-01-14' },
+                { name: 'Mohamed Ali', phone: '+201234567892', views: 1, lastViewed: '2024-01-13' }
+            ];
+
+            let studentList = '<h4>Students who accessed this session:</h4><ul style="list-style: none; padding: 0;">';
+            students.forEach(student => {
+                studentList += `
+                    <li style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                        <div>
+                            <strong>${student.name}</strong><br>
+                            <small>${student.phone}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <div>${student.views} view${student.views > 1 ? 's' : ''}</div>
+                            <small>Last: ${student.lastViewed}</small>
+                        </div>
+                    </li>
+                `;
+            });
+            studentList += '</ul>';
+
+            const modal = document.getElementById('editSessionModal');
+            const modalBody = modal.querySelector('.modal-body');
+            modalBody.innerHTML = studentList;
+            modal.style.display = 'block';
+        }
+
+        function viewSessionAnalytics(sessionId) {
+            // Simulate session analytics
+            const analytics = {
+                totalViews: 245,
+                uniqueStudents: 89,
+                avgWatchTime: '18.5 min',
+                completionRate: '76%',
+                popularVideo: 'Introduction Video',
+                peakHours: '2-4 PM',
+                deviceBreakdown: { mobile: '65%', desktop: '35%' }
+            };
+
+            const analyticsHTML = `
+                <h4>Session Analytics</h4>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <h3 style="color: #008080; margin-bottom: 5px;">${analytics.totalViews}</h3>
+                        <p style="margin: 0; font-size: 0.9rem;">Total Views</p>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <h3 style="color: #008080; margin-bottom: 5px;">${analytics.uniqueStudents}</h3>
+                        <p style="margin: 0; font-size: 0.9rem;">Unique Students</p>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <h3 style="color: #008080; margin-bottom: 5px;">${analytics.avgWatchTime}</h3>
+                        <p style="margin: 0; font-size: 0.9rem;">Avg Watch Time</p>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <h3 style="color: #008080; margin-bottom: 5px;">${analytics.completionRate}</h3>
+                        <p style="margin: 0; font-size: 0.9rem;">Completion Rate</p>
+                    </div>
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <h5>Additional Insights:</h5>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li><strong>Most Popular Video:</strong> ${analytics.popularVideo}</li>
+                        <li><strong>Peak Viewing Hours:</strong> ${analytics.peakHours}</li>
+                        <li><strong>Device Usage:</strong> ${analytics.deviceBreakdown.mobile} Mobile, ${analytics.deviceBreakdown.desktop} Desktop</li>
+                    </ul>
+                </div>
+            `;
+
+            const modal = document.getElementById('editSessionModal');
+            const modalBody = modal.querySelector('.modal-body');
+            modalBody.innerHTML = analyticsHTML;
+            modal.style.display = 'block';
+        }
+
+        // Close modal functionality
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('editSessionModal');
+            if (e.target.classList.contains('close-modal') || e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

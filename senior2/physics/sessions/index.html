@@ -18,6 +18,11 @@
             <a href="https://wa.me/201558145450?text=Hello" target="_blank" class="whatsapp-button">
                 <i class="fab fa-whatsapp"></i> WhatsApp
             </a>
+            <!-- Dark Mode Toggle Switch -->
+            <label class="dark-mode-switch">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider1"></span>
+            </label>
         </div>
     </header>
 
@@ -26,9 +31,11 @@
         <div class="spinner"></div>
     </div>
 
-    <!-- Sessions Cards -->
-    <section class="sessions-container">
-        <h2>Senior 2 Physics - ENG. Shady Elsharqawy</h2>
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sessions Cards -->
+        <section class="sessions-container">
+            <h2>Senior 2 Physics - ENG. Shady Elsharqawy</h2>
 
         <div class="session-card" data-session="1">
             <h3>Introduction to Senior 2 Physics</h3>
@@ -59,15 +66,36 @@
             <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 5</p>
             <a href="#" class="view-details" onclick="handleSessionDetails(5);">View Details</a>
         </div>
-    </section>
+        </section>
 
-    <!-- Navigation -->
-    <div class="navigation">
-        <button class="nav-btn" onclick="location.href='../..'">← Back to Subjects</button>
-        <button class="nav-btn" onclick="location.href='../Homework'">📚 Homework</button>
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn" onclick="location.href='../..'">← Back to Subjects</button>
+            <button class="nav-btn" onclick="location.href='../Homework'">📚 Homework</button>
+        </div>
     </div>
 
     <script>
+        // Dark Mode Toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+
+        // Check localStorage for dark mode preference on page load
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.checked = true;
+        }
+
+        // Listen for changes to the dark mode toggle
+        darkModeToggle.addEventListener('change', () => {
+            if (darkModeToggle.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+
         function handleSessionDetails(sessionId) {
             // Show loading spinner
             document.getElementById('loadingSpinner').style.display = 'block';

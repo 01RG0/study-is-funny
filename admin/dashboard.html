@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Study is Funny</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="../images/logo.webp" alt="Logo" class="sidebar-logo">
+            <h2>Admin Panel</h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#dashboard" class="nav-item active" onclick="showSection('dashboard')">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="#upload-session" class="nav-item" onclick="showSection('upload-session')">
+                <i class="fas fa-upload"></i> Upload Session
+            </a>
+            <a href="#manage-sessions" class="nav-item" onclick="showSection('manage-sessions')">
+                <i class="fas fa-list"></i> Manage Sessions
+            </a>
+            <a href="#students" class="nav-item" onclick="showSection('students')">
+                <i class="fas fa-users"></i> Students
+            </a>
+            <a href="#analytics" class="nav-item" onclick="showSection('analytics')">
+                <i class="fas fa-chart-bar"></i> Analytics
+            </a>
+            <a href="#settings" class="nav-item" onclick="showSection('settings')">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="content-section active">
+            <div class="section-header">
+                <h1><i class="fas fa-tachometer-alt"></i> Dashboard Overview</h1>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalSessions">0</h3>
+                        <p>Total Sessions</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalStudents">0</h3>
+                        <p>Registered Students</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalViews">0</h3>
+                        <p>Session Views</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="uploadsToday">0</h3>
+                        <p>Uploads Today</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-activity">
+                <h2>Recent Activity</h2>
+                <div class="activity-list" id="recentActivity">
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div class="activity-content">
+                            <p>New session uploaded: "Physics - Mechanics"</p>
+                            <span class="activity-time">2 hours ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Session Section -->
+        <div id="upload-session" class="content-section">
+            <div class="section-header">
+                <h1><i class="fas fa-upload"></i> Upload New Session</h1>
+            </div>
+
+            <form id="sessionUploadForm" class="upload-form">
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h3>Basic Information</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sessionTitle">Session Title *</label>
+                            <input type="text" id="sessionTitle" name="sessionTitle" required placeholder="e.g., Introduction to Mechanics">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject">Subject *</label>
+                            <select id="subject" name="subject" required>
+                                <option value="">Select Subject</option>
+                                <option value="physics">Physics</option>
+                                <option value="mathematics">Mathematics</option>
+                                <option value="statistics">Statistics</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="grade">Grade Level *</label>
+                            <select id="grade" name="grade" required>
+                                <option value="">Select Grade</option>
+                                <option value="senior1">Senior 1</option>
+                                <option value="senior2">Senior 2</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="teacher">Teacher *</label>
+                            <select id="teacher" name="teacher" required>
+                                <option value="">Select Teacher</option>
+                                <option value="shadyelsharqawy">ENG. Shady Elsharqawy</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" rows="4" placeholder="Brief description of the session content..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Access Control -->
+                <div class="form-section">
+                    <h3>Access Control</h3>
+
+                    <div class="form-group">
+                        <label>Allowed Student Types *</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="studentTypes" value="all" checked> All Students
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="studentTypes" value="registered"> Registered Students Only
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="studentTypes" value="senior1"> Senior 1 Students Only
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="studentTypes" value="senior2"> Senior 2 Students Only
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxViews">Maximum Views per Student</label>
+                        <input type="number" id="maxViews" name="maxViews" min="1" placeholder="Unlimited">
+                        <small class="file-info">Leave empty for unlimited views</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="downloadable">Allow Downloads</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="downloadable" value="yes" checked> Yes
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="downloadable" value="no"> No
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Upload Section -->
+                <div class="form-section">
+                    <h3>Video Content</h3>
+                    <div id="videosContainer">
+                        <div class="video-upload-item">
+                            <h4>Video 1</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Video Type *</label>
+                                    <select name="videoType[]" required>
+                                        <option value="lecture">Lecture</option>
+                                        <option value="questions">Questions</option>
+                                        <option value="summary">Summary</option>
+                                        <option value="exercise">Exercise</option>
+                                        <option value="homework">Homework</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Video Title *</label>
+                                    <input type="text" name="videoTitle[]" required placeholder="e.g., Part 1 - Introduction">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Video File *</label>
+                                    <input type="file" name="videoFile[]" accept="video/*" required>
+                                    <small class="file-info">Supported formats: MP4, AVI, MOV (Max: 500MB)</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Thumbnail (Optional)</label>
+                                    <input type="file" name="thumbnail[]" accept="image/*">
+                                    <small class="file-info">Recommended: 1280x720px, JPG/PNG</small>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Video Description</label>
+                                <textarea name="videoDescription[]" rows="2" placeholder="Brief description of this video..."></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Duration (minutes)</label>
+                                <input type="number" name="duration[]" min="1" placeholder="Estimated duration">
+                            </div>
+
+                            <button type="button" class="remove-video-btn" style="display: none;">
+                                <i class="fas fa-trash"></i> Remove Video
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="button" id="addVideoBtn" class="add-video-btn">
+                        <i class="fas fa-plus"></i> Add Another Video
+                    </button>
+                </div>
+
+                <!-- Additional Resources -->
+                <div class="form-section">
+                    <h3>Additional Resources</h3>
+
+                    <div class="form-group">
+                        <label>PDF Materials</label>
+                        <input type="file" name="pdfFiles[]" accept=".pdf" multiple>
+                        <small class="file-info">Upload worksheets, notes, or additional materials (PDF only)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tags/Keywords</label>
+                        <input type="text" id="tags" name="tags" placeholder="e.g., mechanics, physics, motion (comma separated)">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Difficulty Level</label>
+                        <select name="difficulty">
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Schedule & Settings -->
+                <div class="form-section">
+                    <h3>Schedule & Settings</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="publishDate">Publish Date</label>
+                            <input type="datetime-local" id="publishDate" name="publishDate">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="expiryDate">Expiry Date (Optional)</label>
+                            <input type="datetime-local" id="expiryDate" name="expiryDate">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="isPublished">Publish Status</label>
+                            <select id="isPublished" name="isPublished">
+                                <option value="draft">Save as Draft</option>
+                                <option value="published">Publish Now</option>
+                                <option value="scheduled">Schedule for Later</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="featured">Featured Session</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="featured" value="yes"> Yes
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="featured" value="no" checked> No
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick="resetForm()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-upload"></i> Upload Session
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Manage Sessions Section -->
+        <div id="manage-sessions" class="content-section">
+            <div class="section-header">
+                <h1><i class="fas fa-list"></i> Manage Sessions</h1>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="filterSubject">Subject:</label>
+                    <select id="filterSubject">
+                        <option value="">All Subjects</option>
+                        <option value="physics">Physics</option>
+                        <option value="mathematics">Mathematics</option>
+                        <option value="statistics">Statistics</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterGrade">Grade:</label>
+                    <select id="filterGrade">
+                        <option value="">All Grades</option>
+                        <option value="senior1">Senior 1</option>
+                        <option value="senior2">Senior 2</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterStatus">Status:</label>
+                    <select id="filterStatus">
+                        <option value="">All Status</option>
+                        <option value="published">Published</option>
+                        <option value="draft">Draft</option>
+                        <option value="scheduled">Scheduled</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="sessions-table-container">
+                <table class="sessions-table" id="sessionsTable">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Subject</th>
+                            <th>Grade</th>
+                            <th>Status</th>
+                            <th>Views</th>
+                            <th>Upload Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sessionsTableBody">
+                        <!-- Sessions will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Other sections would go here -->
+        <div id="students" class="content-section">
+            <div class="section-header">
+                <h1><i class="fas fa-users"></i> Student Management</h1>
+            </div>
+            <p>Student management features coming soon...</p>
+        </div>
+
+        <div id="analytics" class="content-section">
+            <div class="section-header">
+                <h1><i class="fas fa-chart-bar"></i> Analytics</h1>
+            </div>
+            <p>Analytics dashboard coming soon...</p>
+        </div>
+
+        <div id="settings" class="content-section">
+            <div class="section-header">
+                <h1><i class="fas fa-cog"></i> Settings</h1>
+            </div>
+            <p>Settings panel coming soon...</p>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="editSessionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Session</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- Edit form will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

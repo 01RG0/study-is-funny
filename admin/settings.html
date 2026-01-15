@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Study is Funny</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="../images/logo.webp" alt="Logo" class="sidebar-logo">
+            <h2>Admin Panel</h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="#upload-session" class="nav-item">
+                <i class="fas fa-upload"></i> Upload Session
+            </a>
+            <a href="manage-sessions.html" class="nav-item">
+                <i class="fas fa-list"></i> Manage Sessions
+            </a>
+            <a href="manage-students.html" class="nav-item">
+                <i class="fas fa-users"></i> Students
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <i class="fas fa-chart-bar"></i> Analytics
+            </a>
+            <a href="settings.html" class="nav-item active">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="section-header">
+            <h1><i class="fas fa-cog"></i> System Settings</h1>
+        </div>
+
+        <!-- Settings Sections -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+
+            <!-- General Settings -->
+            <div class="chart-container" style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); grid-column: 1 / -1;">
+                <h3 style="margin-bottom: 20px; color: var(--admin-primary);">General Settings</h3>
+
+                <form class="settings-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="siteTitle">Site Title</label>
+                            <input type="text" id="siteTitle" value="Study is Funny">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="siteDescription">Site Description</label>
+                            <input type="text" id="siteDescription" value="Educational platform for students">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contactEmail">Contact Email</label>
+                            <input type="email" id="contactEmail" value="support@studyisfunny.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contactPhone">Contact Phone</label>
+                            <input type="tel" id="contactPhone" value="+201558145450">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Site Logo</label>
+                        <input type="file" accept="image/*">
+                        <small class="file-info">Recommended: PNG or JPG, max 2MB</small>
+                    </div>
+
+                    <button type="submit" class="submit-btn" style="margin-top: 20px;">
+                        <i class="fas fa-save"></i> Save General Settings
+                    </button>
+                </form>
+            </div>
+
+            <!-- Pricing Settings -->
+            <div class="chart-container" style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 20px; color: var(--admin-primary);">Pricing Settings</h3>
+
+                <form class="settings-form">
+                    <div class="form-group">
+                        <label for="sessionPrice">Default Session Price (EGP)</label>
+                        <input type="number" id="sessionPrice" value="85" min="0" step="0.01">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="currency">Currency</label>
+                        <select id="currency">
+                            <option value="EGP" selected>Egyptian Pound (EGP)</option>
+                            <option value="USD">US Dollar (USD)</option>
+                            <option value="EUR">Euro (EUR)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subscriptionPrice">Monthly Subscription (EGP)</label>
+                        <input type="number" id="subscriptionPrice" value="250" min="0" step="0.01">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" checked> Enable free trial period
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="trialDays">Free Trial Days</label>
+                        <input type="number" id="trialDays" value="7" min="0" max="30">
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i> Save Pricing
+                    </button>
+                </form>
+            </div>
+
+            <!-- Content Settings -->
+            <div class="chart-container" style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 20px; color: var(--admin-primary);">Content Settings</h3>
+
+                <form class="settings-form">
+                    <div class="form-group">
+                        <label>Auto-publish new sessions</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="autoPublish" value="yes" checked> Yes
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="autoPublish" value="no"> No (Require approval)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxFileSize">Maximum File Size (MB)</label>
+                        <input type="number" id="maxFileSize" value="500" min="1" max="2000">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Allowed Video Formats</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="videoFormats" value="mp4" checked> MP4
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="videoFormats" value="avi" checked> AVI
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="videoFormats" value="mov" checked> MOV
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="videoFormats" value="mkv"> MKV
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Content Moderation</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="moderation" value="auto" checked> Automatic
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="moderation" value="manual"> Manual Review
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i> Save Content Settings
+                    </button>
+                </form>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="chart-container" style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 20px; color: var(--admin-primary);">Security Settings</h3>
+
+                <form class="settings-form">
+                    <div class="form-group">
+                        <label for="sessionTimeout">Session Timeout (minutes)</label>
+                        <input type="number" id="sessionTimeout" value="60" min="5" max="480">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Two-Factor Authentication</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="twoFactor" value="required" checked> Required for all admins
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="twoFactor" value="optional"> Optional
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password Requirements</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="passwordReq" value="minLength" checked> Minimum 8 characters
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="passwordReq" value="uppercase" checked> Require uppercase
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="passwordReq" value="numbers" checked> Require numbers
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="passwordReq" value="special" checked> Require special characters
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>IP Whitelist</label>
+                        <textarea id="ipWhitelist" rows="3" placeholder="Enter allowed IP addresses (one per line)"></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i> Save Security Settings
+                    </button>
+                </form>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="chart-container" style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); grid-column: 1 / -1;">
+                <h3 style="margin-bottom: 20px; color: var(--admin-primary);">Notification Settings</h3>
+
+                <form class="settings-form">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                        <div class="notification-section">
+                            <h4>Email Notifications</h4>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="emailNotif" value="newStudent" checked> New student registration
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="emailNotif" value="sessionUpload" checked> New session uploaded
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="emailNotif" value="payment" checked> Payment received
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="emailNotif" value="systemAlert" checked> System alerts
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="notification-section">
+                            <h4>SMS Notifications</h4>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="smsNotif" value="urgent" checked> Urgent alerts only
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="smsNotif" value="payment"> Payment confirmations
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="smsNotif" value="systemDown"> System downtime
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="notification-section">
+                            <h4>Admin Alerts</h4>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="adminAlert" value="loginAttempt" checked> Failed login attempts
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="adminAlert" value="highTraffic"> High traffic alerts
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="adminAlert" value="storageFull"> Storage capacity warnings
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" style="margin-top: 20px;">
+                        <i class="fas fa-save"></i> Save Notification Settings
+                    </button>
+                </form>
+            </div>
+
+            <!-- System Maintenance -->
+            <div class="chart-container" style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); grid-column: 1 / -1;">
+                <h3 style="margin-bottom: 20px; color: var(--admin-primary);">System Maintenance</h3>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                    <button class="maintenance-btn" onclick="clearCache()">
+                        <i class="fas fa-broom"></i>
+                        <span>Clear Cache</span>
+                    </button>
+
+                    <button class="maintenance-btn" onclick="backupDatabase()">
+                        <i class="fas fa-database"></i>
+                        <span>Backup Database</span>
+                    </button>
+
+                    <button class="maintenance-btn" onclick="optimizeStorage()">
+                        <i class="fas fa-compress"></i>
+                        <span>Optimize Storage</span>
+                    </button>
+
+                    <button class="maintenance-btn warning" onclick="resetAnalytics()">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Reset Analytics</span>
+                    </button>
+                </div>
+
+                <div style="margin-top: 30px; padding: 20px; background: rgba(231, 76, 60, 0.1); border-radius: 8px; border-left: 4px solid var(--admin-accent);">
+                    <h4 style="color: var(--admin-accent); margin-bottom: 10px;"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h4>
+                    <p style="margin-bottom: 15px; color: var(--admin-text-light);">These actions are irreversible. Please proceed with caution.</p>
+
+                    <div style="display: flex; gap: 15px;">
+                        <button class="maintenance-btn danger" onclick="resetAllData()">
+                            <i class="fas fa-trash-alt"></i>
+                            <span>Reset All Data</span>
+                        </button>
+
+                        <button class="maintenance-btn danger" onclick="deleteAllSessions()">
+                            <i class="fas fa-video-slash"></i>
+                            <span>Delete All Sessions</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+    <script>
+        // Settings form handling
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load current settings (would fetch from API in production)
+            loadCurrentSettings();
+
+            // Form submissions
+            document.querySelectorAll('.settings-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveSettings(this);
+                });
+            });
+        });
+
+        function loadCurrentSettings() {
+            // Simulate loading settings from server
+            console.log('Loading current settings...');
+        }
+
+        function saveSettings(form) {
+            const formData = new FormData(form);
+            const settings = {};
+
+            for (let [key, value] of formData.entries()) {
+                if (settings[key]) {
+                    if (Array.isArray(settings[key])) {
+                        settings[key].push(value);
+                    } else {
+                        settings[key] = [settings[key], value];
+                    }
+                } else {
+                    settings[key] = value;
+                }
+            }
+
+            // Simulate saving settings
+            console.log('Saving settings:', settings);
+            showMessage('Settings saved successfully!', 'success');
+        }
+
+        // Maintenance functions
+        function clearCache() {
+            if (confirm('Are you sure you want to clear the system cache? This may temporarily slow down the system.')) {
+                showMessage('Cache cleared successfully!', 'success');
+            }
+        }
+
+        function backupDatabase() {
+            showMessage('Database backup initiated. You will receive an email when complete.', 'success');
+        }
+
+        function optimizeStorage() {
+            showMessage('Storage optimization completed!', 'success');
+        }
+
+        function resetAnalytics() {
+            if (confirm('Are you sure you want to reset all analytics data? This action cannot be undone.')) {
+                showMessage('Analytics data reset successfully!', 'success');
+            }
+        }
+
+        function resetAllData() {
+            if (confirm('⚠️ WARNING: This will delete ALL data including students, sessions, and payments. This action CANNOT be undone. Are you absolutely sure?')) {
+                const confirmation = prompt('Type "DELETE ALL DATA" to confirm:');
+                if (confirmation === 'DELETE ALL DATA') {
+                    showMessage('All data has been reset. System restored to default state.', 'success');
+                }
+            }
+        }
+
+        function deleteAllSessions() {
+            if (confirm('⚠️ WARNING: This will delete ALL uploaded sessions and videos. Students will lose access to all content. Are you sure?')) {
+                showMessage('All sessions deleted successfully!', 'success');
+            }
+        }
+    </script>
+</body>
+</html>
