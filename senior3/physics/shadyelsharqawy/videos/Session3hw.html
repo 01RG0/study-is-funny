@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HW lecture 3</title>
+    <style>
+        /* Style for the main iframe video */
+        .video-container {
+            max-width: 800px;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Control button styling */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #008080;
+            color: #FFFFE0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls button:hover {
+            background-color: #006666;
+        }
+
+        .controls button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <iframe id="videoFrame" src="https://iframe.mediadelivery.net/embed/132580/5ca0486a-8321-4759-92ab-b5cc31f6dce7?token=81dc7d7a48a5711b2f19e1f8c58bed2732ac043dd852e523166c2f4106dca0dc&expires=1765745660&autoplay=true&loop=false&muted=false&preload=true&responsive=true" frameborder="0" allow="autoplay; fullscreen"></iframe>
+    </div>
+    <div class="controls">
+        <button id="prevButton" onclick="prevVideo()" disabled>Previous Question</button>
+        <button id="nextButton" onclick="nextVideo()">Next Question</button>
+        <button onclick="toggleFullscreen()">Fullscreen</button>
+        <button onclick="location.href = 'Session3p2.html'">Explanation </button>
+        
+    </div>
+    <p id="accessMessage"></p> <!-- Display access messages here -->
+
+    <script>
+        // Array of video links
+        const videoLinks = [
+        "https://iframe.mediadelivery.net/embed/132580/5ca0486a-8321-4759-92ab-b5cc31f6dce7?token=81dc7d7a48a5711b2f19e1f8c58bed2732ac043dd852e523166c2f4106dca0dc&expires=1765745660&autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        "https://iframe.mediadelivery.net/embed/132580/4db83e2f-1750-4992-9895-59370cf1a994?token=ef30cbc906fc8b8cf092ec8e72f5e788283c997cae6326ea15427755d2abfa54&expires=1765745660&autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        "https://iframe.mediadelivery.net/embed/132580/d9598b4e-650b-4aa1-8f77-dce037272068?token=5dd0230573afb10a6e01139508481481e282dea25e43334533b1c94dccfa126c&expires=1765745660&autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        "https://iframe.mediadelivery.net/embed/132580/05c539ba-684c-4647-b810-1df1f376e597?token=1082359c9c594c1de607bcde59d14591388f4e5958aded793ba4b34971980df1&expires=1765745660&autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        "https://iframe.mediadelivery.net/embed/132580/9f005a1e-fd40-4448-be88-fe795fcc381a?token=1fda78f172cd1da1cd965662678ce1b413963dce8c80930d96de205f8aedd764&expires=1765745660&autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        "https://iframe.mediadelivery.net/embed/132580/27101d30-5a03-4f91-a542-ebff443c763b?token=64e93374edc6d516dbe5d593bb9157f30d634bd9dece88f82db7f2a7b06db14f&expires=1765745660&autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        "https://iframe.mediadelivery.net/embed/132580/3ff83a16-5395-4aad-a1e5-4b5cc9481ca2?token=2abecc64bc50650291d5afd3244e9964f79b7b148e45a64e547be8a023cbefbc&expires=1765745660&autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        "https://iframe.mediadelivery.net/embed/132580/3b7f9bdf-a331-4b0f-ba2b-647c09c9de54?token=35faafd322648f805aaf25295a7c47ff685d33d08ecba5b3a93f86362a9b4f19&expires=1765745660&autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        "https://iframe.mediadelivery.net/embed/132580/e204b55b-06c3-4e17-953a-2c93225c88f1?token=d54aecd60df1e1ef3c4a42f429bdee9b2c81d4876c6082f9a13a02650778be2b&expires=1765745660&autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        "https://iframe.mediadelivery.net/embed/132580/3630f734-c6c6-4504-b282-e5159f8aab80?token=879150dd07bedd4b1f9483558d2a4d296fa426eb92670e06ff76876bcf14df65&expires=1765745660&autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        "https://iframe.mediadelivery.net/embed/132580/787cca61-e627-48fc-82bf-5db19f6c1fe9?token=4f37f2ef4247b19be5537766385c01807fac7381014eedde69c59937a560d627&expires=1765745660&autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        "https://iframe.mediadelivery.net/embed/132580/c51f2f92-bdf8-4534-8471-991a4c86be8c?token=af3068b43f97909b45efeec9244782426ab4cdc18e33b8b35dc846f5b91c496b&expires=1765745660&autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+      
+        
+        ];
+
+        let currentVideoIndex = 0;
+
+        // Load a video by index
+        function loadVideo(index) {
+            const iframe = document.getElementById("videoFrame");
+            iframe.src = videoLinks[index];
+            updateButtons();
+        }
+
+        // Move to the next video
+        function nextVideo() {
+            if (currentVideoIndex < videoLinks.length - 1) {
+                currentVideoIndex++;
+                loadVideo(currentVideoIndex);
+            }
+        }
+
+        // Move to the previous video
+        function prevVideo() {
+            if (currentVideoIndex > 0) {
+                currentVideoIndex--;
+                loadVideo(currentVideoIndex);
+            }
+        }
+
+        // Update button states
+        function updateButtons() {
+            document.getElementById("prevButton").disabled = currentVideoIndex === 0;
+            document.getElementById("nextButton").disabled = currentVideoIndex === videoLinks.length - 1;
+        }
+
+        // Toggle fullscreen
+        function toggleFullscreen() {
+            const videoContainer = document.querySelector('.video-container');
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                videoContainer.requestFullscreen();
+            }
+        }
+
+
+
+
+
+        const sheetUrl = 'https://script.google.com/macros/s/AKfycbzVo5GGps9zA_sAsVzhR0_gjGjWx1g2SQZ9i0fA7NwyVdrUzFfnXr_8k01fBwKRte5MDw/exec';
+    
+        function getSession() {
+            const phone = localStorage.getItem('userPhone');
+            if (!phone) {
+                location.href = "studyisfunny.com/login";
+                return;
+            } 
+            fetch(`${sheetUrl}?code=${phone}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        location.href = "studyisfunny.com/login";
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                });
+        }
+        
+        window.onload = getSession;    
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lecture 1</title>
+    <link rel="icon" class="circular-icon" type="image/png" href="../../../../images/logo.png">
+
+    <style>
+        /* Style for the main iframe video */
+        .video-container {
+            max-width: 800px;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Control button styling */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #008080;
+            color: #FFFFE0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls button:hover {
+            background-color: #006666;
+        }
+        h1 {
+        font-size: 28px;
+        text-align: center;
+        margin-top: 20px;
+        color: #008080;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        font-family: Arial, sans-serif;
+    }
+    </style>
+</head>
+<body>
+    <h1>lIntroduction To Induction &  Faraday's Law diverse</h1>
+    <div class="video-container">
+        <iframe id="videoFrame" src="https://iframe.mediadelivery.net/embed/132580/ea4a2ccb-c20e-46ac-bdc0-99deca290bd7?token=730c27ccf759115e4693fb2d59e6e2b4f0849b7c97ee922d85eebd1ac8287c93&expires=1765757704&autoplay=true&loop=false&muted=false&preload=true" frameborder="0" allow="autoplay; fullscreen"></iframe>
+    </div>
+    <div class="controls">
+        <button onclick="toggleFullscreen()">Fullscreen</button>
+        
+        <button onclick="location.href = 'Session1hw.html'">homework</button>
+        <button onclick="location.href = 'Session1p3.html'">Follow lesson 1 explanation </button>
+        
+    </div>
+    <script>    
+        // Toggle fullscreen mode for the video container
+        function toggleFullscreen() {
+            const videoContainer = document.querySelector('.video-container');
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                videoContainer.requestFullscreen();
+            }
+        }
+
+
+
+
+
+
+        const sheetUrl = 'https://script.google.com/macros/s/AKfycbws23er40skaTk9VawhjnyRXM-ekvoGfop18s1q-yB3fFADCIDOjp223iz0xe-zSczDYA/exec';
+    
+        function getSession() {
+            const phone = localStorage.getItem('userPhone');
+            if (!phone) {
+                location.href = "studyisfunny.com/login";
+                return;
+            } 
+            fetch(`${sheetUrl}?code=${phone}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        location.href = "studyisfunny.com/login";
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                });
+        }
+        
+        window.onload = getSession;    
+
+    </script>
+    </body>
+</html>

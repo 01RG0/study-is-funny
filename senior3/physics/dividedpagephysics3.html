@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قسم المحتوى</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <style>
+        /* Basic reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            width: 90%;
+            max-width: 1200px;
+        }
+
+        /* Section styling */
+        .section {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            border-radius: 15px;
+            background-color: #FFFFFF;
+            color: #333;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .section:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        p {
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        /* Section background color */
+
+        .section2 {
+            background: linear-gradient(135deg, #FF6F61, #FF8A75);
+            color: #FFFFFF;
+        }
+
+
+        .section4 {
+            background: linear-gradient(135deg, #008080, #00A2A2);
+            color: #FFFFFF;
+        }
+
+        /* Icon styling */
+        .section i {
+            font-size: 2em; /* Larger icon size */
+            margin-bottom: 10px; /* Space between icon and text */
+        }
+
+        /* Loading indicator */
+        #loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;  /* Diameter of the spinner */
+            height: 50px; /* Diameter of the spinner */
+            border: 5px solid #008080; /* Spinner color */
+            border-top: 5px solid #FFFFE0; /* Color of the spinning part */
+            border-radius: 50%; /* Makes it circular */
+            animation: spin 1s linear infinite; /* Spin animation */
+        }
+
+        /* Keyframes for spinning animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.4em;
+            }
+            p {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="banner">
+            <img src="../../images/logo.webp" alt="Website Logo" class="logo">
+            <h1>Studyisfunny <i class="fas fa-graduation-cap"></i></h1>
+        </div>
+    </header>
+    <div class="body">
+        <div class="container">
+            <div class="section section2" id="exclusiveContentBtn">
+                <i class="fas fa-star"></i>
+                <h1>Lectures</h1>
+            </div>
+            <div class="section section4">
+                <i class="fas fa-book"></i>
+                <h1>HomeWork</h1>
+            </div>
+        </div>
+    
+        <div id="loading"></div>
+    </div>
+    <script>
+        const sheetUrl = 'https://script.google.com/macros/s/AKfycbzPOtdhJiejopZ1WWl0xvll2YocbP_Dmc9fLQGnhEBPiX453pFVR4qW_G9juHD28otJEQ/exec';
+
+        function getSession() {
+            const phone = localStorage.getItem('userPhone');
+            if (!phone) {
+                alert("رقم الهاتف غير موجود في التخزين المحلي.");
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'block';
+
+            fetch(`${sheetUrl}?code=${phone}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('loading').style.display = 'none';
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        window.location.href = data.session;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('loading').style.display = 'none';
+                    alert('حدث خطأ أثناء جلب بيانات الجلسة.');
+                });
+        }
+
+        document.getElementById('exclusiveContentBtn').addEventListener('click', getSession);
+    </script>
+</body>
+</html>

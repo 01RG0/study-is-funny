@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Not Available</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #FFFFE0; /* Light Yellow Background */
+            font-family: Arial, sans-serif;
+            color: #008080; /* Teal Text */
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #008080; /* Teal Title */
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: coral;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        .back-button {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #008080; /* Teal Button Background */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: coral; /* Coral on Hover */
+        }
+    </style>
+</head>
+<body>
+    <h1>Content Not Available Till Now</h1>
+    <p>Please check back later for updates.</p>
+    <button class="back-button" onclick="window.history.back()">Go Back</button>
+</body>
+</html>

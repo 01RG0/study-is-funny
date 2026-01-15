@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studyisfunny - الزتونة</title>
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../css/all.min.css">
+
+    <style>
+        /* General styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .banner {
+            background-color: #008080;
+            color: #FFFFE0;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .banner .logo {
+            width: 50px;
+            vertical-align: middle;
+        }
+
+        /* الزتونة section styling */
+        .alzatoona-section {
+            background-color: #008080;
+            color: #FFFFE0;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .alzatoona-section h2 {
+            color: coral;
+            margin-bottom: 20px;
+        }
+
+        .alzatoona-content {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .alzatoona-content .content-box {
+            background-color: #FFFFE0;
+            color: #008080;
+            width: 30%;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .alzatoona-content .content-box:hover {
+            transform: scale(1.05);
+        }
+
+        .content-box h3 {
+            margin-bottom: 10px;
+            color: coral;
+        }
+
+        
+
+        /* Responsive styling */
+        @media (max-width: 768px) {
+            .alzatoona-content .content-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <header>
+        <div class="banner">
+            <img src="../../images/logo.webp" alt="Website Logo" class="logo">
+            <h1>Studyisfunny<i class="fas fa-graduation-cap"></i></h1>
+        </div>
+    </header>
+
+    <!-- الزتونة Section at the Top -->
+    <section class="alzatoona-section">
+        <h2>الزتونة</h2>
+        <div class="alzatoona-content">
+            <!-- Summaries -->
+            <div class="content-box" onclick="location.href ='summaries/summaries.html'">
+                <h3>Summaries</h3>
+            </div>
+            <!-- Experimental Videos -->
+            <div class="content-box">
+                <h3>Experimental Videos</h3>
+            </div>
+            <!-- Question Bank -->
+            <div class="content-box">
+                <h3>Question Bank</h3>
+            </div>
+        </div>
+    </section>
+
+    <div class="lesson-card">
+        <div class="card-inner" onclick="location.href = 'dividedpagephysics3.html'">
+            <!-- Front Side -->
+            <div class="card-front">
+                <img src="../../images/shady.jpeg" alt="Shady Elsharqawy">
+                <h3>ENG. Shady Elsharqawy</h3>
+            </div>
+             <!-- Back Side -->
+           <div class="card-back">
+                <h3>اضغط هنا للدخول الى المحتويات</h3>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

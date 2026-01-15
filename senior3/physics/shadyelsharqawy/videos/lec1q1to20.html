@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch the Video</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000; /* Black background */
+            color: #FFFFE0; /* Light yellow color for text */
+            font-family: Arial, sans-serif;
+            height: 100vh; /* Full height */
+            overflow: hidden;
+        }
+
+        #videoContainer {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Ensures the video maintains its aspect ratio */
+    background-color: #000; /* Black background to fill the empty space */
+}
+
+
+        #playPauseBtn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            font-size: 18px;
+            cursor: pointer;
+            color: #FFFFE0;
+            background: linear-gradient(135deg, #e0f7fa, #008080);
+            border: none;
+            border-radius: 50px;
+            z-index: 10; /* Ensure the play button stays on top */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #customControls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5); /* Transparent background */
+            padding: 10px;
+            border-radius: 10px;
+            width: 90%; /* Ensure the timeline is properly visible */
+            z-index: 5;
+        }
+
+        #timeline {
+            width: 100%;
+            margin: 10px 0;
+            appearance: none;
+            height: 5px;
+            background: #2F4F4F;
+            outline: none;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #timeline::-webkit-slider-thumb {
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #FF8C69; /* Coral color for thumb */
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #008080; /* Teal text */
+            background: linear-gradient(135deg, #e0f7fa, #008080);
+            border: none;
+            border-radius: 8px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #e0f7fa;
+        }
+
+        .selector {
+            background-color: #008080;
+            border-radius: 25px;
+            width: 100px;
+            height: 50px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            #customControls {
+                width: 95%; /* Make controls fit within smaller screen sizes */
+                padding: 5px; /* Reduce padding for compact design */
+            }
+            #playPauseBtn {
+                width: 20px;
+                height: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            button {
+                font-size: 12px; /* Smaller font size for buttons */
+                padding: 8px 15px; /* Reduce button padding */
+            }
+
+            #timeline {
+                height: 4px; /* Slightly smaller timeline height */
+            }
+
+            #timeline::-webkit-slider-thumb {
+                width: 12px; /* Smaller thumb size */
+                height: 12px;
+            }
+
+            .selector {
+                width: 80px; /* Smaller dropdown size */
+                height: 40px;
+                font-size: 12px; /* Smaller font size for dropdowns */
+            }
+
+            #timeDisplay {
+                font-size: 12px; /* Smaller text size for time display */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="videoContainer">
+        <video id="videoPlayer" autoplay>
+            <source id="videoSource" src="lec1q1to20.mp4" type="video/mp4">
+            Your browser does not support HTML5 video.
+        </video>
+        <button id="playPauseBtn">Play</button>
+        <div id="customControls">
+            <input type="range" id="timeline" value="0" min="0" max="100" step="0.1" aria-label="Video Timeline">
+            <div id="timeDisplay">0:00 / 0:00</div>
+            <div class="selectors">
+                <select class="selector" id="qualitySelect" onchange="changeQuality()" aria-label="Select Video Quality">
+                    <option value="lecture8.mp4">480p</option>
+                    <option value="lecture8_720.mp4">720p</option>
+                    <option value="lecture8_1080.mp4">1080p</option>
+                </select>
+                <select class="selector" id="speedSelect" onchange="changeSpeed()" aria-label="Select Video Speed">
+                    <option value="0.5">0.5x</option>
+                    <option value="1" selected>1x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="2">2x</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('videoPlayer');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const timeline = document.getElementById('timeline');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const qualitySelect = document.getElementById('qualitySelect');
+        const speedSelect = document.getElementById('speedSelect');
+        const customControls = document.getElementById('customControls');
+
+        playPauseBtn.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+                playPauseBtn.style.display = 'none';
+                customControls.style.display = 'none';
+                
+            } else {
+                video.pause();
+                playPauseBtn.style.display = 'flex';
+                customControls.style.display = 'flex';
+            }
+        });
+
+        video.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+                playPauseBtn.style.display = 'none';
+                customControls.style.display = 'none';
+            } else {
+                video.pause();
+                playPauseBtn.style.display = 'flex';
+                customControls.style.display = 'flex';
+            }
+        });
+
+        video.addEventListener('timeupdate', () => {
+            const percentage = (video.currentTime / video.duration) * 100;
+            timeline.value = percentage;
+
+            const currentMinutes = Math.floor(video.currentTime / 60);
+            const currentSeconds = Math.floor(video.currentTime % 60).toString().padStart(2, '0');
+            const totalMinutes = Math.floor(video.duration / 60);
+            const totalSeconds = Math.floor(video.duration % 60).toString().padStart(2, '0');
+            timeDisplay.textContent = `${currentMinutes}:${currentSeconds} / ${totalMinutes}:${totalSeconds}`;
+        });
+
+        timeline.addEventListener('input', () => {
+            const newTime = (timeline.value / 100) * video.duration;
+            video.currentTime = newTime;
+        });
+
+        function changeQuality() {
+            const newSource = qualitySelect.value;
+            video.pause();
+            document.getElementById('videoSource').src = newSource;
+            video.load();
+            video.play();
+        }
+
+        function changeSpeed() {
+            video.playbackRate = parseFloat(speedSelect.value);
+        }
+    </script>
+</body>
+</html>
