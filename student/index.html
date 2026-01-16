@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الطالب - Study is Funny</title>
+    <link rel="stylesheet" href="css/student.css">
+    <link rel="stylesheet" href="../css/all.min.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="student-container">
+        <!-- Header -->
+        <header class="student-header">
+            <div class="header-content">
+                <img src="../images/logo.webp" alt="Logo" class="header-logo">
+                <div class="header-text">
+                    <h1>Study is Funny</h1>
+                    <p>لوحة تحكم الطالب</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+                </button>
+            </div>
+        </header>
+
+        <!-- Student Info -->
+        <div class="student-info-card">
+            <div class="student-avatar">
+                <img src="../images/shady.jpeg" alt="Student Avatar">
+            </div>
+            <div class="student-details">
+                <h2 id="studentName">جاري التحميل...</h2>
+                <p id="studentPhone">رقم الهاتف: ...</p>
+                <p id="studentGrade">الصف: ...</p>
+                <p id="joinDate">تاريخ الانضمام: ...</p>
+            </div>
+            <div class="student-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalSessions">0</span>
+                    <span class="stat-label">الجلسات المتاحة</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="watchedSessions">0</span>
+                    <span class="stat-label">الجلسات المشاهدة</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="totalWatchTime">0h</span>
+                    <span class="stat-label">وقت المشاهدة</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Codes Section -->
+        <div class="qr-codes-section">
+            <h2><i class="fas fa-qrcode"></i> رموز QR الخاصة بك</h2>
+            <p class="qr-description">
+                استخدم هذه الرموز QR للوصول إلى جلساتك في المواد المختلفة.
+                كل رمز QR يخص مادة محددة.
+            </p>
+
+            <div class="qr-actions">
+                <button onclick="openQRScanner()" class="qr-scan-btn">
+                    <i class="fas fa-camera"></i> مسح رمز QR
+                </button>
+                <a href="../qr-scanner.html" class="qr-scan-btn">
+                    <i class="fas fa-external-link-alt"></i> فتح ماسح QR
+                </a>
+            </div>
+
+            <div id="qrCodesContainer" class="qr-codes-grid">
+                <!-- QR codes will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="activity-section">
+            <h2><i class="fas fa-history"></i> الأنشطة الأخيرة</h2>
+            <div id="recentActivity" class="activity-list">
+                <!-- Recent activity will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Available Sessions -->
+        <div class="sessions-section">
+            <h2><i class="fas fa-play-circle"></i> الجلسات المتاحة</h2>
+            <div id="availableSessions" class="sessions-grid">
+                <!-- Available sessions will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>جاري التحميل...</p>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="modal">
+        <div class="modal-content qr-modal-content">
+            <div class="modal-header">
+                <h3>رمز QR للمادة</h3>
+                <span class="close-modal" onclick="closeQRModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="qrModalContent">
+                    <!-- QR code content will be loaded here -->
+                </div>
+                <div class="qr-instructions">
+                    <h4>كيفية الاستخدام:</h4>
+                    <ol>
+                        <li>افتح تطبيق الكاميرا على هاتفك</li>
+                        <li>وجّه الكاميرا نحو رمز QR</li>
+                        <li>اضغط على الرابط الذي سيظهر</li>
+                        <li>ستنتقل إلى جلسات هذه المادة</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/database.js"></script>
+    <script src="js/student.js"></script>
+</body>
+</html>

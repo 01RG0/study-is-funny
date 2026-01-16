@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test MongoDB Connection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .warning { border-left: 4px solid #ffc107; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .student-card {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #008080;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 اختبار اتصال MongoDB</h1>
+
+    <div class="test-section">
+        <h2>🔗 اختبار الاتصال الأساسي</h2>
+        <button onclick="testConnection()">اختبر الاتصال</button>
+        <div id="connectionResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>👥 عرض الطلاب</h2>
+        <button onclick="loadStudents()">تحميل الطلاب</button>
+        <div id="studentsResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 البحث عن طالب بالهاتف</h2>
+        <input type="text" id="searchPhone" placeholder="أدخل رقم الهاتف" style="padding: 8px; margin: 5px;">
+        <button onclick="searchStudent()">البحث</button>
+        <div id="searchResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 إنشاء رمز QR لطالب</h2>
+        <input type="text" id="studentId" placeholder="أدخل ID الطالب" style="padding: 8px; margin: 5px;">
+        <button onclick="generateStudentQR()">إنشاء رمز QR</button>
+        <div id="qrResult"></div>
+    </div>
+
+    <script src="js/database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+    <script>
+        async function testConnection() {
+            const resultDiv = document.getElementById('connectionResult');
+            resultDiv.innerHTML = '<div class="result warning">جاري الاختبار...</div>';
+
+            try {
+                // Test basic connection by trying to find one document
+                const result = await MongoDB.request('/action/findOne', {
+                    collection: 'users'
+                });
+
+                if (result.document !== undefined) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            ✅ الاتصال ناجح!<br>
+                            تم العثور على قاعدة البيانات وجمع الطلاب
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            ❌ خطأ في الاتصال<br>
+                            تحقق من إعدادات MongoDB Atlas Data API
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ خطأ في الاتصال: ${error.message}<br>
+                        تحقق من:<br>
+                        • App ID<br>
+                        • API Key<br>
+                        • تفعيل Data API<br>
+                        • أذونات الشبكة
+                    </div>
+                `;
+            }
+        }
+
+        async function loadStudents() {
+            const resultDiv = document.getElementById('studentsResult');
+            resultDiv.innerHTML = '<div class="result warning">جاري تحميل الطلاب...</div>';
+
+            try {
+                const result = await MongoDB.request('/action/find', {
+                    collection: 'users',
+                    sort: { createdAt: -1 }
+                });
+
+                if (result.documents && result.documents.length > 0) {
+                    let html = `<div class="result success">✅ تم العثور على ${result.documents.length} طالب:</div>`;
+
+                    result.documents.slice(0, 5).forEach(student => { // Show first 5
+                        html += `
+                            <div class="student-card">
+                                <strong>${student.name}</strong><br>
+                                الهاتف: ${student.phone}<br>
+                                الصف: ${student.grade}<br>
+                                الحالة: ${student.isActive ? 'نشط' : 'غير نشط'}<br>
+                                المواد: ${student.subjects ? student.subjects.join(', ') : 'لا توجد'}<br>
+                                الجلسات المشاهدة: ${student.totalSessionsViewed || 0}<br>
+                                وقت المشاهدة: ${formatWatchTime(student.totalWatchTime || 0)}
+                            </div>
+                        `;
+                    });
+
+                    if (result.documents.length > 5) {
+                        html += `<div class="result warning">... و ${result.documents.length - 5} طالب آخرين</div>`;
+                    }
+
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result warning">
+                            ⚠️ لم يتم العثور على أي طلاب<br>
+                            تأكد من وجود بيانات في مجموعة "users"
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ خطأ في تحميل الطلاب: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function searchStudent() {
+            const phone = document.getElementById('searchPhone').value.trim();
+            const resultDiv = document.getElementById('searchResult');
+
+            if (!phone) {
+                resultDiv.innerHTML = '<div class="result error">يرجى إدخال رقم الهاتف</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="result warning">جاري البحث...</div>';
+
+            try {
+                const result = await MongoDB.request('/action/findOne', {
+                    collection: 'users',
+                    filter: { phone: phone }
+                });
+
+                if (result.document) {
+                    const student = result.document;
+                    resultDiv.innerHTML = `
+                        <div class="result success">✅ تم العثور على الطالب:</div>
+                        <div class="student-card">
+                            <strong>${student.name}</strong><br>
+                            ID: ${student._id}<br>
+                            الهاتف: ${student.phone}<br>
+                            الصف: ${student.grade}<br>
+                            الحالة: ${student.isActive ? 'نشط' : 'غير نشط'}<br>
+                            تاريخ الانضمام: ${new Date(student.joinDate).toLocaleDateString('ar-EG')}<br>
+                            آخر دخول: ${student.lastLogin ? new Date(student.lastLogin).toLocaleDateString('ar-EG') : 'لم يسجل دخول'}<br>
+                            المواد: ${student.subjects ? student.subjects.join(', ') : 'لا توجد'}<br>
+                            الجلسات المشاهدة: ${student.totalSessionsViewed || 0}<br>
+                            وقت المشاهدة: ${formatWatchTime(student.totalWatchTime || 0)}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            ❌ لم يتم العثور على طالب برقم الهاتف: ${phone}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ خطأ في البحث: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function generateStudentQR() {
+            const studentId = document.getElementById('studentId').value.trim();
+            const resultDiv = document.getElementById('qrResult');
+
+            if (!studentId) {
+                resultDiv.innerHTML = '<div class="result error">يرجى إدخال ID الطالب</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="result warning">جاري إنشاء رمز QR...</div>';
+
+            try {
+                // Get student data
+                const result = await MongoDB.request('/action/findOne', {
+                    collection: 'users',
+                    filter: { _id: { $oid: studentId } }
+                });
+
+                if (result.document) {
+                    const student = result.document;
+
+                    resultDiv.innerHTML = `
+                        <div class="result success">✅ تم إنشاء رموز QR للطالب: ${student.name}</div>
+                    `;
+
+                    if (student.subjects && student.subjects.length > 0) {
+                        student.subjects.forEach(subject => {
+                            const qrData = JSON.stringify({
+                                studentPhone: student.phone,
+                                subject: subject,
+                                grade: student.grade,
+                                timestamp: Date.now(),
+                                accessToken: generateAccessToken(student.phone, subject)
+                            });
+
+                            const accessUrl = `${window.location.origin}/senior${student.grade === 'senior1' ? '1' : '2'}/${subject}/qr-access/?qr=${encodeURIComponent(qrData)}`;
+
+                            const subjectDiv = document.createElement('div');
+                            subjectDiv.className = 'student-card';
+                            subjectDiv.innerHTML = `
+                                <strong>مادة: ${getSubjectName(subject)}</strong><br>
+                                <canvas id="qr-${studentId}-${subject}" style="margin: 10px 0;"></canvas>
+                                <button onclick="downloadQR('qr-${studentId}-${subject}', '${subject}')">تحميل QR</button>
+                            `;
+
+                            resultDiv.appendChild(subjectDiv);
+
+                            // Generate QR code
+                            setTimeout(() => {
+                                QRCode.toCanvas(document.getElementById(`qr-${studentId}-${subject}`), accessUrl, {
+                                    width: 150,
+                                    height: 150
+                                });
+                            }, 100);
+                        });
+                    } else {
+                        resultDiv.innerHTML += '<div class="result warning">لا توجد مواد مسجلة لهذا الطالب</div>';
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            ❌ لم يتم العثور على طالب بالـ ID: ${studentId}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ خطأ في إنشاء رمز QR: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function generateAccessToken(phone, subject) {
+            return btoa(`${phone}:${subject}:${Date.now()}`).substring(0, 16);
+        }
+
+        function getSubjectName(subject) {
+            const names = {
+                physics: 'الفيزياء',
+                mathematics: 'الرياضيات',
+                statistics: 'الإحصاء'
+            };
+            return names[subject] || subject;
+        }
+
+        function formatWatchTime(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours}h ${mins}m`;
+        }
+
+        function downloadQR(canvasId, subject) {
+            const canvas = document.getElementById(canvasId);
+            if (canvas) {
+                const link = document.createElement('a');
+                link.download = `QR-${subject}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            }
+        }
+    </script>
+</body>
+</html>

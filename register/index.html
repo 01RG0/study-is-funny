@@ -362,6 +362,15 @@ darkModeToggle.addEventListener('change', () => {
             });
     });
 
+    // Get subjects for grade
+    function getSubjectsForGrade(grade) {
+        const subjectsMap = {
+            'senior1': ['physics', 'mathematics', 'statistics'],
+            'senior2': ['physics', 'mathematics', 'statistics']
+        };
+        return subjectsMap[grade] || [];
+    }
+
     // Redirect to login page
     function redirectToLogin() {
         window.location.href = "../login";

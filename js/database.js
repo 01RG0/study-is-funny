@@ -3,30 +3,43 @@
  * Uses MongoDB Atlas Data API (REST) - No Node.js required!
  */
 
-const MONGODB_API_URL = 'https://data.mongodb-api.com/app/YOUR_APP_ID/endpoint/data/v1';
-const MONGODB_API_KEY = 'YOUR_API_KEY';
+// PHP Backend API Configuration
+// Now using PHP backend that connects directly to MongoDB using your connection string:
+// mongodb+srv://root:root@cluster0.vkskqhg.mongodb.net/attendance_system?appName=Cluster0
+
+const API_BASE_URL = 'api'; // Relative path to PHP API
 const DATABASE_NAME = 'attendance_system';
 const COLLECTION_USERS = 'users';
 const COLLECTION_CONTENT = 'content';
 const COLLECTION_PROGRESS = 'progress';
 
 class MongoDB {
-    static async request(endpoint, method = 'GET', data = null) {
+    static async request(endpoint, method = 'POST', data = null) {
+        const payload = {
+            dataSource: MONGODB_DATA_SOURCE,
+            database: DATABASE_NAME,
+            ...data
+        };
+
         const options = {
-            method,
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'api-key': MONGODB_API_KEY
-            }
+            },
+            body: JSON.stringify(payload)
         };
-
-        if (data) {
-            options.body = JSON.stringify(data);
-        }
 
         try {
             const response = await fetch(`${MONGODB_API_URL}${endpoint}`, options);
-            return await response.json();
+            const result = await response.json();
+
+            if (!response.ok) {
+                console.error('MongoDB API Error:', result);
+                return { error: result, success: false };
+            }
+
+            return result;
         } catch (error) {
             console.error('MongoDB API Error:', error);
             // Fallback to localStorage if API fails
@@ -176,3 +189,67 @@ class MongoDB {
         });
     }
 }
+
+// Database selection logic
+const USE_DEMO_MODE = MONGODB_API_KEY === 'YOUR_API_KEY_HERE' || MONGODB_API_URL.includes('YOUR_APP_ID');
+const USE_FIREBASE = typeof firebase !== 'undefined' && firebase.apps.length > 0;
+
+if (USE_FIREBASE) {
+    console.log('🔥 Using Firebase Database');
+
+    // Load Firebase database functions
+    fetch('js/database-firebase.js')
+        .then(response => response.text())
+        .then(script => {
+            const scriptElement = document.createElement('script');
+            scriptElement.textContent = script;
+            document.head.appendChild(scriptElement);
+
+            // Override functions after Firebase database loads
+            setTimeout(() => {
+                window.getStudentData = FirebaseDB.getStudentData;
+                window.MongoDB = {
+                    registerUser: FirebaseDB.registerUser,
+                    loginUser: FirebaseDB.loginUser,
+                    request: async function(endpoint, data) {
+                        if (endpoint.includes('find')) {
+                            return FirebaseDB.getAllStudents();
+                        }
+                        return { documents: [] };
+                    }
+                };
+            }, 100);
+        });
+
+} else if (USE_DEMO_MODE) {
+    console.log('🔧 Using Demo Database - Configure Firebase for production');
+
+    // Load demo database
+    fetch('js/demo-database.js')
+        .then(response => response.text())
+        .then(script => {
+            const scriptElement = document.createElement('script');
+            scriptElement.textContent = script;
+            document.head.appendChild(scriptElement);
+
+            // Override functions after demo database loads
+            setTimeout(() => {
+                window.getStudentData = async function(phone) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    return DemoDatabase.getStudentData(phone);
+                };
+
+                window.MongoDB = {
+                    registerUser: DemoDatabase.registerUser,
+                    loginUser: DemoDatabase.loginUser,
+                    request: async function() { return { documents: [] }; }
+                };
+            }, 100);
+        });
+} else {
+    console.log('🚀 Using MongoDB Atlas Data API');
+}
+
+// Export for global use
+window.MongoDB = window.MongoDB || MongoDB;
+window.StudentManager = StudentManager;

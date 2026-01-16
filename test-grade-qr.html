@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Grade QR Codes</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 10px; }
+        .result { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 اختبار رموز QR في صفحة السنة الدراسية</h1>
+
+    <div class="test-section">
+        <h2>👤 محاكاة تسجيل دخول الطالب</h2>
+        <input type="text" id="testPhone" placeholder="رقم الهاتف (مثال: +201234567890)" value="+201234567890">
+        <button onclick="simulateLogin()">محاكاة تسجيل الدخول</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 اختبار تحميل رموز QR</h2>
+        <button onclick="testQRCodes()">اختبر تحميل رموز QR</button>
+        <div id="qrResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔗 فتح صفحة السنة الدراسية</h2>
+        <button onclick="openGradePage()">افتح صفحة السنة الدراسية</button>
+        <p><small>سيتم فتح صفحة grade/index.html في تبويب جديد</small></p>
+    </div>
+
+    <div class="test-section">
+        <h2>🗑️ مسح بيانات الاختبار</h2>
+        <button onclick="clearTestData()">مسح بيانات localStorage</button>
+        <div id="clearResult"></div>
+    </div>
+
+    <script src="js/database.js"></script>
+    <script>
+        function simulateLogin() {
+            const phone = document.getElementById('testPhone').value.trim();
+            const resultDiv = document.getElementById('loginResult');
+
+            if (!phone) {
+                resultDiv.innerHTML = '<div class="result error">يرجى إدخال رقم الهاتف</div>';
+                return;
+            }
+
+            // Simulate login by setting localStorage
+            localStorage.setItem('accessGranted', 'true');
+            localStorage.setItem('userPhone', phone);
+
+            resultDiv.innerHTML = `
+                <div class="result success">
+                    ✅ تم محاكاة تسجيل الدخول بنجاح<br>
+                    رقم الهاتف: ${phone}<br>
+                    يمكنك الآن اختبار تحميل رموز QR
+                </div>
+            `;
+        }
+
+        async function testQRCodes() {
+            const resultDiv = document.getElementById('qrResult');
+            const userPhone = localStorage.getItem('userPhone');
+
+            if (!userPhone) {
+                resultDiv.innerHTML = '<div class="result error">يرجى تسجيل الدخول أولاً</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="result">جاري تحميل بيانات الطالب...</div>';
+
+            try {
+                // Test getting student data
+                const studentData = await getStudentData(userPhone);
+
+                if (studentData) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            ✅ تم العثور على بيانات الطالب<br>
+                            الاسم: ${studentData.name}<br>
+                            الصف: ${studentData.grade}<br>
+                            المواد: ${studentData.subjects ? studentData.subjects.join(', ') : 'لا توجد'}<br>
+                            الجلسات المشاهدة: ${studentData.totalSessionsViewed || 0}
+                        </div>
+                    `;
+
+                    // Test QR code generation
+                    if (studentData.subjects && studentData.subjects.length > 0) {
+                        const subjectNames = {
+                            physics: 'الفيزياء',
+                            mathematics: 'الرياضيات',
+                            statistics: 'الإحصاء'
+                        };
+
+                        let qrHTML = '<div class="result success">🎯 تم إنشاء رموز QR للمواد التالية:</div>';
+
+                        studentData.subjects.forEach(subject => {
+                            const subjectName = subjectNames[subject] || subject;
+                            const qrData = JSON.stringify({
+                                studentPhone: studentData.phone,
+                                subject: subject,
+                                grade: studentData.grade,
+                                timestamp: Date.now(),
+                                accessToken: generateAccessToken(studentData.phone, subject)
+                            });
+
+                            qrHTML += `
+                                <div style="display: inline-block; margin: 10px; text-align: center;">
+                                    <h4>${subjectName}</h4>
+                                    <canvas id="test-qr-${subject}" width="100" height="100"></canvas>
+                                </div>
+                            `;
+                        });
+
+                        resultDiv.innerHTML += qrHTML;
+
+                        // Generate QR codes
+                        studentData.subjects.forEach(subject => {
+                            const qrData = JSON.stringify({
+                                studentPhone: studentData.phone,
+                                subject: subject,
+                                grade: studentData.grade,
+                                timestamp: Date.now(),
+                                accessToken: generateAccessToken(studentData.phone, subject)
+                            });
+
+                            const accessUrl = `${window.location.origin}/senior${studentData.grade === 'senior1' ? '1' : '2'}/${subject}/qr-access/?qr=${encodeURIComponent(qrData)}`;
+
+                            setTimeout(() => {
+                                QRCode.toCanvas(document.getElementById(`test-qr-${subject}`), accessUrl, {
+                                    width: 100,
+                                    height: 100
+                                });
+                            }, 100);
+                        });
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            ❌ لم يتم العثور على بيانات الطالب<br>
+                            تأكد من وجود الطالب في قاعدة البيانات<br>
+                            رقم الهاتف: ${userPhone}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ خطأ في تحميل البيانات: ${error.message}<br>
+                        تأكد من إعداد MongoDB Atlas Data API بشكل صحيح
+                    </div>
+                `;
+            }
+        }
+
+        function generateAccessToken(phone, subject) {
+            return btoa(`${phone}:${subject}:${Date.now()}`).substring(0, 16);
+        }
+
+        function openGradePage() {
+            window.open('grade/index.html', '_blank');
+        }
+
+        function clearTestData() {
+            localStorage.removeItem('accessGranted');
+            localStorage.removeItem('userPhone');
+            document.getElementById('clearResult').innerHTML = `
+                <div class="result success">
+                    ✅ تم مسح بيانات localStorage<br>
+                    يرجى إعادة تسجيل الدخول للاختبار
+                </div>
+            `;
+        }
+
+        // Auto-check login status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const userPhone = localStorage.getItem('userPhone');
+            if (userPhone) {
+                document.getElementById('testPhone').value = userPhone;
+                document.getElementById('loginResult').innerHTML = `
+                    <div class="result success">
+                        ✅ الطالب مسجل دخول حالياً<br>
+                        رقم الهاتف: ${userPhone}
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

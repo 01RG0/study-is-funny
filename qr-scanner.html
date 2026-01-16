@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ماسح QR - Study is Funny</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="images/logo.png">
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
+</head>
+<body>
+    <div class="qr-scanner-container">
+        <header>
+            <div class="banner">
+                <img src="images/logo.webp" alt="Logo" class="logo">
+                <h1>Study is Funny <i class="fas fa-graduation-cap"></i></h1>
+                <a href="https://wa.me/201558145450?text=Hello" target="_blank" class="whatsapp-button">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+            </div>
+        </header>
+
+        <div class="scanner-content">
+            <h2><i class="fas fa-qrcode"></i> ماسح رموز QR</h2>
+            <p>امسح رمز QR الخاص بك للوصول إلى جلسات المادة</p>
+
+            <div class="scanner-area">
+                <video id="video" width="300" height="200" style="border: 2px solid #008080; border-radius: 10px;"></video>
+                <canvas id="canvas" style="display: none;"></canvas>
+            </div>
+
+            <div class="scanner-controls">
+                <button id="startScan" class="scan-btn">
+                    <i class="fas fa-play"></i> بدء المسح
+                </button>
+                <button id="stopScan" class="scan-btn stop" style="display: none;">
+                    <i class="fas fa-stop"></i> إيقاف المسح
+                </button>
+            </div>
+
+            <div id="scanResult" class="scan-result" style="display: none;">
+                <h3>تم مسح رمز QR بنجاح!</h3>
+                <div id="scanData"></div>
+                <button id="accessContent" class="access-btn">
+                    <i class="fas fa-external-link-alt"></i> الوصول إلى المحتوى
+                </button>
+            </div>
+
+            <div class="manual-entry">
+                <p>أو أدخل رمز QR يدوياً:</p>
+                <input type="text" id="manualQR" placeholder="أدخل رمز QR هنا..." style="width: 100%; padding: 10px; border: 2px solid #e1e8ed; border-radius: 8px; margin-bottom: 10px;">
+                <button id="manualSubmit" class="scan-btn">
+                    <i class="fas fa-search"></i> البحث
+                </button>
+            </div>
+        </div>
+
+        <div class="scanner-info">
+            <h3>كيفية الاستخدام:</h3>
+            <ol>
+                <li>اضغط على "بدء المسح"</li>
+                <li>اسمح للتطبيق بالوصول إلى الكاميرا</li>
+                <li>وجه الكاميرا نحو رمز QR</li>
+                <li>سيتم توجيهك تلقائياً إلى المحتوى</li>
+            </ol>
+        </div>
+    </div>
+
+    <script src="js/database.js"></script>
+    <script>
+        let codeReader;
+        let isScanning = false;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize ZXing QR code reader
+            codeReader = new ZXing.BrowserQRCodeReader();
+
+            document.getElementById('startScan').addEventListener('click', startScanning);
+            document.getElementById('stopScan').addEventListener('click', stopScanning);
+            document.getElementById('manualSubmit').addEventListener('click', manualScan);
+            document.getElementById('accessContent').addEventListener('click', accessContent);
+        });
+
+        async function startScanning() {
+            try {
+                isScanning = true;
+                document.getElementById('startScan').style.display = 'none';
+                document.getElementById('stopScan').style.display = 'inline-block';
+
+                const videoElement = document.getElementById('video');
+                const result = await codeReader.decodeOnceFromVideoDevice(undefined, videoElement);
+
+                if (result) {
+                    handleScanResult(result.text);
+                }
+            } catch (error) {
+                console.error('QR scan error:', error);
+                alert('حدث خطأ في مسح رمز QR. تأكد من السماح بالوصول إلى الكاميرا.');
+                stopScanning();
+            }
+        }
+
+        function stopScanning() {
+            isScanning = false;
+            codeReader.reset();
+            document.getElementById('video').srcObject = null;
+            document.getElementById('startScan').style.display = 'inline-block';
+            document.getElementById('stopScan').style.display = 'none';
+        }
+
+        function manualScan() {
+            const manualCode = document.getElementById('manualQR').value.trim();
+            if (manualCode) {
+                handleScanResult(manualCode);
+            } else {
+                alert('يرجى إدخال رمز QR');
+            }
+        }
+
+        function handleScanResult(qrData) {
+            try {
+                const data = JSON.parse(qrData);
+                validateAndDisplayResult(data);
+            } catch (error) {
+                alert('رمز QR غير صالح أو تالف');
+                console.error('QR parse error:', error);
+            }
+        }
+
+        async function validateAndDisplayResult(data) {
+            // Validate QR data structure
+            if (!data.studentPhone || !data.subject || !data.accessToken) {
+                alert('رمز QR غير صالح - بيانات ناقصة');
+                return;
+            }
+
+            // Check if student exists and has access to this subject
+            const studentData = await getStudentData(data.studentPhone);
+
+            if (!studentData) {
+                alert('الطالب غير مسجل في النظام');
+                return;
+            }
+
+            if (!studentData.subjects.includes(data.subject)) {
+                alert('الطالب غير مشترك في هذه المادة');
+                return;
+            }
+
+            // Validate access token (simplified check)
+            if (!validateAccessToken(data.accessToken, data.studentPhone, data.subject)) {
+                alert('رمز QR منتهي الصلاحية أو غير صالح');
+                return;
+            }
+
+            // Display success result
+            document.getElementById('scanResult').style.display = 'block';
+            document.getElementById('scanData').innerHTML = `
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p><strong>الطالب:</strong> ${studentData.name}</p>
+                    <p><strong>المادة:</strong> ${getSubjectName(data.subject)}</p>
+                    <p><strong>الصف:</strong> ${studentData.grade}</p>
+                    <p><strong>تاريخ المسح:</strong> ${new Date().toLocaleString('ar-EG')}</p>
+                </div>
+            `;
+
+            // Store access data for redirect
+            localStorage.setItem('qrAccessData', JSON.stringify({
+                studentPhone: data.studentPhone,
+                subject: data.subject,
+                timestamp: Date.now()
+            }));
+
+            stopScanning();
+        }
+
+        function validateAccessToken(token, phone, subject) {
+            // Simplified token validation
+            try {
+                const decoded = atob(token);
+                const parts = decoded.split(':');
+                return parts[0] === phone && parts[1] === subject;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function getSubjectName(subject) {
+            const names = {
+                physics: 'الفيزياء',
+                mathematics: 'الرياضيات',
+                statistics: 'الإحصاء'
+            };
+            return names[subject] || subject;
+        }
+
+        function accessContent() {
+            const accessData = JSON.parse(localStorage.getItem('qrAccessData'));
+            if (accessData) {
+                // Set student session and redirect to subject page
+                localStorage.setItem('accessGranted', 'true');
+                localStorage.setItem('userPhone', accessData.studentPhone);
+
+                const gradeNum = accessData.grade === 'senior1' ? '1' : '2';
+                const subjectPath = `senior${gradeNum}/${accessData.subject}/sessions`;
+                window.location.href = subjectPath;
+            }
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (codeReader) {
+                codeReader.reset();
+            }
+        });
+    </script>
+
+    <style>
+        .qr-scanner-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .scanner-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .scanner-content h2 {
+            color: #008080;
+            margin-bottom: 10px;
+        }
+
+        .scanner-content > p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .scanner-area {
+            margin: 30px 0;
+        }
+
+        #video {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .scanner-controls {
+            margin: 20px 0;
+        }
+
+        .scan-btn {
+            background: linear-gradient(135deg, #008080 0%, #00a3a3 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .scan-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 128, 128, 0.3);
+        }
+
+        .scan-btn.stop {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .scan-result {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .access-btn {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .access-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .manual-entry {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+
+        .manual-entry p {
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .scanner-info {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .scanner-info h3 {
+            color: #008080;
+            margin-bottom: 15px;
+        }
+
+        .scanner-info ol {
+            padding-right: 20px;
+        }
+
+        .scanner-info li {
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .qr-scanner-container {
+                padding: 15px;
+            }
+
+            .scanner-content {
+                padding: 20px;
+            }
+
+            .scanner-controls {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .scan-btn {
+                margin: 0;
+                width: 100%;
+            }
+        }
+    </style>
+</body>
+</html>
