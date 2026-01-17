@@ -1,38 +1,64 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>عرض الطلاب - Study is Funny</title>
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
 </head>
 <body>
-    <div class="dashboard-container">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h3>Admin Panel</h3>
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li><a href="manage-sessions.html"><i class="fas fa-video"></i> Manage Sessions</a></li>
-                <li><a href="students-view.html" class="active"><i class="fas fa-users"></i> View Students</a></li>
-                <li><a href="analytics.html"><i class="fas fa-chart-line"></i> Analytics</a></li>
-                <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
-                <li><a href="#" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </aside>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="../images/logo.webp" alt="Logo" class="sidebar-logo">
+            <h2>Admin Panel</h2>
+        </div>
 
-        <main class="main-content">
-            <header class="main-header">
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="dashboard.html#upload-session" class="nav-item">
+                <i class="fas fa-upload"></i> Upload Session
+            </a>
+            <a href="dashboard.html#manage-sessions" class="nav-item">
+                <i class="fas fa-list"></i> Manage Sessions
+            </a>
+            <a href="students-view.html" class="nav-item active">
+                <i class="fas fa-users"></i> View Students
+            </a>
+            <a href="dashboard.html#students" class="nav-item">
+                <i class="fas fa-user-cog"></i> Manage Students
+            </a>
+            <a href="dashboard.html#analytics" class="nav-item">
+                <i class="fas fa-chart-bar"></i> Analytics
+            </a>
+            <a href="dashboard.html#settings" class="nav-item">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-section active">
+            <div class="section-header">
                 <h1><i class="fas fa-users"></i> عرض الطلاب</h1>
                 <div class="header-actions">
                     <button id="refreshBtn" class="btn-primary">
                         <i class="fas fa-sync"></i> تحديث البيانات
                     </button>
                 </div>
-            </header>
+            </div>
 
             <!-- Search and Filter -->
             <div class="filters-section">
@@ -74,7 +100,7 @@
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
 
     <script src="../js/database.js"></script>
@@ -92,7 +118,6 @@
             document.getElementById('gradeFilter').addEventListener('change', filterStudents);
             document.getElementById('statusFilter').addEventListener('change', filterStudents);
             document.getElementById('refreshBtn').addEventListener('click', loadStudents);
-            document.getElementById('logoutButton').addEventListener('click', logout);
         }
 
         async function loadStudents() {
@@ -898,5 +923,7 @@
             }
         }
     </style>
+    
+    <script src="js/admin.js"></script>
 </body>
 </html>
