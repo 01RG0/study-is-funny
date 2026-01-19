@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../../../css/main.css"> <!-- Link to your CSS file -->
+  <link rel="stylesheet" href="css/all.min.css"> <!-- Font Awesome -->
+  <title>Math Page</title>
+  <style>
+    /* General Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #8dc5eb;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      color: #333;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Floating Circles Background */
+    .floating-circles {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .circle {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(0, 128, 128, 0.3);
+      animation: float 8s infinite;
+    }
+
+    .circle:nth-child(1) { left: 10%; animation-delay: 0s; }
+    .circle:nth-child(2) { left: 30%; animation-delay: 2s; }
+    .circle:nth-child(3) { left: 70%; animation-delay: 4s; }
+    .circle:nth-child(4) { left: 90%; animation-delay: 6s; }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh);
+        opacity: 0.1;
+      }
+      50% {
+        opacity: 0.4;
+      }
+      100% {
+        transform: translateY(-20vh);
+        opacity: 0.1;
+      }
+    }
+
+    .banner {
+      background-color: #008080;
+      color: #ffffff;
+      padding: 20px;
+    }
+
+    .container {
+      margin: 40px auto;
+    }
+    .redirect-button {
+      display: inline-block;
+      margin: 20px;
+      padding: 20px 40px;
+      background-color: #008080;
+      color: #ffffff;
+      font-size: 18px;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background-color 0.3s, transform 0.3s;
+      cursor: pointer;
+      animation: fly 2s infinite;
+    }
+    .redirect-button:hover {
+      background-color: #005050;
+      transform: scale(1.05);
+    }
+    @keyframes fly {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-5px);
+      }
+    }
+
+    /* Fun Fact Section */
+    .fun-fact {
+      margin-top: 30px;
+      padding: 15px 20px;
+      background-color: #fffae6;
+      border: 1px solid #ffc107;
+      border-radius: 10px;
+      font-size: 18px;
+      color: #555;
+      max-width: 80%;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Quiz Game Section */
+    .quiz-section {
+      margin-top: 40px;
+    }
+    .quiz-question {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .quiz-options button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      color: #ffffff;
+      background-color: #008080;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .quiz-options button:hover {
+      background-color: #005050;
+    }
+    .quiz-result {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #008080;
+    }
+    .whatsapp-button {
+        display: inline-block;
+        background-color: #25D366; /* WhatsApp green */
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        padding: 10px 15px;
+        border-radius: 50px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: absolute;
+        right: 10px; /* Adjust the position as needed */
+        top: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease;
+    }
+
+    .whatsapp-button i {
+        font-size: 16px;
+    }
+
+    .whatsapp-button:hover {
+        background-color: #1DA853; /* Darker green on hover */
+    }
+  </style>
+</head>
+<body>
+  <!-- Floating Circle Background -->
+  <div class="floating-circles">
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+  </div>
+
+  <header>
+    <div class="banner">
+      <img src="../../../images/logo.webp" alt="Website Logo" class="logo">
+      <h1>Studyisfunny <i class="fas fa-graduation-cap"></i></h1>
+      <a href="https://wa.me/201558145450?text=Hello" target="_blank" class="whatsapp-button">
+        <i class="fab fa-whatsapp"></i> WhatsApp
+    </a>
+    </div>
+  </header>
+
+  <div class="container">
+    <a class="redirect-button" href="mathlecture11.html">Lecture 11</a>
+    <a class="redirect-button" href="mathlecture12.html">Lecture 12</a>
+  </div>
+
+
+
+  <!-- Quiz Section -->
+  <div class="quiz-section" id="quizSection">
+    <div class="quiz-question" id="quizQuestion">
+      Is Newton's first law also known as the law of inertia?
+    </div>
+    <div class="quiz-options">
+      <button onclick="checkAnswer(true)">True</button>
+      <button onclick="checkAnswer(false)">False</button>
+    </div>
+    <div class="quiz-result" id="quizResult"></div>
+  </div>
+
+  <script>
+    // Fun Fact Generator
+    const facts = [
+      "Did you know? Mechanics is the oldest branch of physics!",
+      "Did you know? Isaac Newton formulated the three laws of motion!",
+      "Did you know? Friction is necessary for walking and driving!",
+      "Did you know? Simple machines like levers and pulleys are examples of mechanics!"
+    ];
+    document.getElementById('funFact').innerText = facts[Math.floor(Math.random() * facts.length)];
+
+    // Quiz Game
+    function checkAnswer(isTrue) {
+      const quizResult = document.getElementById('quizResult');
+      if (isTrue) {
+        quizResult.innerText = "Correct! It's also called the law of inertia.";
+      } else {
+        quizResult.innerText = "Oops! That's incorrect. Try again!";
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* Style for the main iframe video */
+        .video-container {
+            max-width: 800px;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Control button styling */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #008080;
+            color: #FFFFE0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls button:hover {
+            background-color: #006666;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <iframe id="videoFrame" src="https://iframe.mediadelivery.net/embed/201512/a1a2f774-8708-49fe-a280-61e72b14b668?autoplay=false&loop=false&muted=false&preload=true&responsive=true" frameborder="0" allow="autoplay; fullscreen"></iframe>
+    </div>
+    <div class="controls">
+        <button onclick="toggleFullscreen()">Fullscreen</button>
+    </div>
+    <p id="accessMessage"></p> <!-- Display access messages here -->
+
+    <script>
+        function toggleFullscreen() {
+            const videoContainer = document.querySelector('.video-container');
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                videoContainer.requestFullscreen();
+            }
+        }
+
+        
+
+        // Check if access is granted
+        const sheetUrl = 'https://script.google.com/macros/s/AKfycbzPOtdhJiejopZ1WWl0xvll2YocbP_Dmc9fLQGnhEBPiX453pFVR4qW_G9juHD28otJEQ/exec'; // Replace with your Web App URL
+
+        // Fetch session details based on the phone number
+        function getSession() {
+            const phone = localStorage.getItem('userPhone');
+            if (!phone) {
+                alert("رقم الهاتف غير موجود في التخزين المحلي.");
+                return;
+            }
+
+            // Fetch the session from Google Sheets using the phone number
+            fetch(`${sheetUrl}?code=${phone}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('accessMessage').textContent = data.error;
+                        location.href = "notsubs.html";
+                    } else {
+                        
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('accessMessage').textContent = "حدث خطأ في الاتصال.";
+                    console.error('Fetch error:', err);
+                });
+        }
+
+        window.onload = getSession;
+
+        // Function to redirect to the selected page
+        function redirectTo(page) {
+            window.location.href = page; // Redirect to the specified page
+        }
+    </script>
+</body>
+</html>

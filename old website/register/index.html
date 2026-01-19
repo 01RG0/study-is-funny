@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب</title>
+    <!-- Firebase SDK for v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/all.min.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
+
+
+    <style>
+
+        /* Styling the form section */
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #FF8C69;
+            box-sizing: border-box;  /* Ensure padding is included within the width */
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+            direction: rtl;
+        }
+
+        .registerform {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin-top: 20px;
+            padding-left: 40px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 250px;
+
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .login-button {
+            background-color: #007BFF;
+            margin-top: 5px;
+        }
+
+        .login-button:hover {
+            background-color: #0056b3;
+        }
+
+        .form-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+            direction: rtl;
+        }
+
+        .logo {
+            max-width: 150px;
+            border-radius: 50%;
+        }
+
+        .grade:hover {
+            cursor: pointer;
+        }
+
+        .password-field {
+            position: relative;
+        }
+
+        .password-field input {
+            width: 100%;
+            padding-left: 30px; /* Add padding to the left to avoid overlap with the icon */
+            border-radius: 5px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            left: 10px; /* Adjust to position it at the top left */
+            top: 10px; /* Adjust vertical position */
+            cursor: pointer;
+            padding: 10px;
+            background: transparent; /* Transparent background */
+            z-index: 1; /* Ensure it stays on top of the input */
+        }
+
+        #toggleIcon {
+            color: #FF8C69;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 8px solid #008080; /* Spinner color */
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /*dark mode*/
+                        /* Dark Mode Styles */
+                        body.dark-mode { background-color: #121212; color: #e0e0e0; }
+        .dark-mode .banner { background-color: #1f1f1f; color: #e0e0e0; }
+        .dark-mode h2 {color: wheat;}
+        .dark-mode .whatsapp-button { background-color: #128C7E; }
+        .dark-mode form { background-color: #1f1f1f; }
+        .dark-mode .password-field input { background-color: #2a2a2a; border: 1px solid #4CAF50; color: #e0e0e0; }
+        .dark-mode #name { background-color: #2a2a2a; border: 1px solid #4CAF50; color: #e0e0e0; }
+        .dark-mode #phone { background-color: #2a2a2a; border: 1px solid #4CAF50; color: #e0e0e0; }
+        .dark-mode .grade { background-color: #2a2a2a; border: 1px solid #4CAF50; color: coral; }
+        .dark-mode .form-header h2{color: wheat;}
+        .dark-mode .password-toggle { color: #4CAF50; }
+        .dark-mode small a { color: #4CAF50; }
+        .dark-mode .login-button { background-color: #0056b3; }
+        .dark-mode .login-button:hover { background-color: #00408c; }
+        .dark-mode .loading-spinner { border-top: 8px solid #4CAF50; }
+
+        /* Dark Mode Toggle Switch */
+.dark-mode-switch {
+    position: absolute;
+    right: 150px; /* Adjust to place next to WhatsApp button */
+    top: 25px;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+}
+
+.dark-mode-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: 20px;
+    transition: 0.4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.4s;
+}
+
+input:checked + .slider {
+    background-color: #4CAF50;
+}
+
+input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+    </style>
+</head>
+<body>
+    <header>
+        <div class="banner">
+            <img src="../images/logo.webp" alt="Website Logo" class="logo">
+        <h1>Studyisfunny<i class="fas fa-graduation-cap"></i></h1>
+        <a href="https://wa.me/201558145450?text=Hello" target="_blank" class="whatsapp-button">
+            <i class="fab fa-whatsapp"></i> WhatsApp
+        </a>
+                    <!-- Dark Mode Toggle Switch -->
+                    <label class="dark-mode-switch">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="slider"></span>
+                    </label>
+        </div>
+    </header>
+    
+    <div class="container">
+        <h2>إنشاء حساب جديد</h2>
+        <form id="registerForm" class="registerform">
+            <input type="text" id="name" placeholder="الاسم" required>
+            <input type="text" id="phone" placeholder="رقم الهاتف" required>
+            <div class="password-field">
+                <input type="password" id="password" placeholder="كلمة المرور" required autocomplete="new-password">
+                <input type="password" id="confirmpassword" placeholder="تأكيد كلمة المرور" required autocomplete="new-password">
+                <span class="password-toggle" onclick="togglePassword()"><i id="toggleIcon" class="fas fa-eye"></i></span>
+            </div>
+            <!-- Dropdown list for grade selection -->
+            <label for="grade" class="grade">اختر الصف الدراسي:</label>
+            <select id="grade" required class="grade" class="sector">
+                <option value="senior1">الصف الأول الثانوي</option>
+                <option value="senior2">الصف الثاني الثانوي</option>
+                <option value="senior3">الصف الثالث الثانوي</option>
+            </select><br><br>
+
+            <button type="submit" id="registerButton">إنشاء حساب جديد</button>
+            <button class="login-button" onclick="redirectToLogin()">تسجيل الدخول</button>
+        </form>
+
+        <div class="loading-spinner" id="loadingSpinner"></div> <!-- Loading Spinner -->
+
+    </div>
+    <script>
+                   // Dark Mode Toggle
+const darkModeToggle = document.getElementById('darkModeToggle');
+
+// Check localStorage for dark mode preference on page load
+if (localStorage.getItem('darkMode') === 'enabled') {
+    document.body.classList.add('dark-mode');
+    darkModeToggle.checked = true; // Ensure the toggle is in the correct state
+}
+
+// Listen for changes to the dark mode toggle
+darkModeToggle.addEventListener('change', () => {
+    if (darkModeToggle.checked) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('darkMode', 'enabled'); // Save preference to localStorage
+    } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('darkMode', 'disabled'); // Save preference to localStorage
+    }
+});
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+    </script>
+
+<script>
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyC7GD79H7F-DT8H-sl75uBtes5N6AxlMOQ",
+        authDomain: "studyisfunny-a12a7.firebaseapp.com",
+        databaseURL: "https://studyisfunny-a12a7-default-rtdb.firebaseio.com",
+        projectId: "studyisfunny-a12a7",
+        storageBucket: "studyisfunny-a12a7.appspot.com",
+        messagingSenderId: "325862354665",
+        appId: "1:325862354665:web:fe17ba82c8f226944a8a78",
+        measurementId: "G-NPF83VEYXK"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Google Apps Script Web App URL
+    const webAppUrl = 'https://script.google.com/macros/s/AKfycbygIFF_njBDGIH5KmFyzSZbTzMn20NKiaX-hBPTbKoRtVlQdEYFFpDfO47ZAcjHZolo/exec';
+
+    // Handle Registration
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        e.preventDefault();  // Prevent page reload
+
+        const name = document.getElementById('name').value;
+        const phone = document.getElementById('phone').value;
+        const password = document.getElementById('password').value;
+        const confirmpassword = document.getElementById('confirmpassword').value;
+        const grade = document.getElementById('grade').value;
+        const registerButton = document.getElementById('registerButton');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        // Disable the register button to prevent multiple clicks
+        registerButton.disabled = true;
+
+        // Show the loading spinner
+        loadingSpinner.style.display = 'block';
+
+        // Register user using phone number as email
+        auth.createUserWithEmailAndPassword(phone + '@example.com', password)
+            .then(userCredential => {
+                console.log('User registered successfully!');
+                console.log('User:', userCredential.user);
+
+                // Store the access variable and phone number in localStorage
+                localStorage.setItem('accessGranted', 'true');
+                localStorage.setItem('userPhone', phone);
+
+                // Send user data to Google Sheets and wait for the request to complete
+                return fetch(webAppUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        phone: phone,
+                        password: password,
+                        grade: grade
+                    })
+                });
+            })
+            .then(response => {
+                console.log('Data sent to Google Sheets');
+
+                // Redirect to the appropriate page based on the grade
+                if (grade === 'senior1') {
+                    window.location.href = "../senior1/Senior 1.html";
+                } else if (grade === 'senior2') {
+                    window.location.href = "../senior2/Senior 2.html";
+                } else if (grade === 'senior3') {
+                    window.location.href = "../senior3/Senior 3.html";
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error occurred: ' + error.message);  // Show error message
+            })
+            .finally(() => {
+                // Hide the loading spinner and re-enable the register button
+                loadingSpinner.style.display = 'none';
+                registerButton.disabled = false;
+            });
+    });
+
+    // Redirect to login page
+    function redirectToLogin() {
+        window.location.href = "../login";
+    }
+
+    // Toggle password visibility
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('toggleIcon');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+
+    // Restrict Arabic numbers, spaces, and Arabic letters in the password field
+    document.getElementById('password').addEventListener('input', function(e) {
+        const value = e.target.value;
+        // Only allow English letters, numbers, and special characters (no spaces, Arabic numbers, or Arabic letters)
+        const filteredValue = value.replace(/[\u0660-\u0669\u06F0-\u06F9\u0600-\u06FF\s]/g, '');
+        
+        if (value !== filteredValue) {
+            alert('Please use English letters and numbers only.');
+            e.target.value = filteredValue;
+        }
+    });
+    // Restrict Arabic numbers, spaces, and Arabic letters in the password field
+    document.getElementById('phone').addEventListener('input', function(e) {
+        const value = e.target.value;
+        // Only allow English letters, numbers, and special characters (no spaces, Arabic numbers, or Arabic letters)
+        const filteredValue = value.replace(/[\u0660-\u0669\u06F0-\u06F9\u0600-\u06FF\s]/g, '');
+        
+        if (value !== filteredValue) {
+            alert('Please use English letters and numbers only.');
+            e.target.value = filteredValue;
+        }
+    });
+    
+</script>
+
+
+</body>
+</html>

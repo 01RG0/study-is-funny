@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Cards</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #FFFFE0; /* Light Yellow Background */
+            color: #008080; /* Teal Text */
+        }
+
+        h1 {
+            color: coral;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.2s;
+            border: 2px solid #008080; /* Teal Border */
+            margin: 10px;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            border-color: coral; /* Coral Border on Hover */
+            cursor: pointer;
+        }
+
+        .card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .card-body {
+            padding: 15px;
+            background-color: #FFFFE0; /* Light Yellow Background for Card Body */
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+            color: #008080; /* Teal Title Text */
+            text-align: center;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: coral; /* Coral for Description Text */
+        }
+    </style>
+</head>
+<body>
+    <h1>Summaries</h1>
+    <div class="container">
+        <div class="card" onclick="location.href ='chapter1.html'">
+            <img src="lecture1p1.jpg" alt="Content Image 1">
+            <div class="card-body">
+                <h2 class="card-title">Chapter 1</h2>
+            </div>
+        </div>
+        <div class="card" onclick="location.href ='contentnotavilable.html'">
+            <img src="contentnotavilable.webp" alt="Content Image 2">
+            <div class="card-body">
+                <h2 class="card-title">Chapter 2</h2>
+            </div>
+        </div>
+        <div class="card" onclick="location.href ='contentnotavilable.html'">
+            <img src="contentnotavilable.webp" alt="Content Image 3">
+            <div class="card-body">
+                <h2 class="card-title">Chapter 3</h2>
+            </div>
+        </div>
+        <div class="card" onclick="location.href ='contentnotavilable.html'">
+            <img src="contentnotavilable.webp" alt="Content Image 4">
+            <div class="card-body">
+                <h2 class="card-title">Chapter 4</h2>
+            </div>
+        
+        </div>
+        <div class="card" onclick="location.href ='contentnotavilable.html'">
+            <img src="contentnotavilable.webp" alt="Content Image 4">
+            <div class="card-body">
+                <h2 class="card-title">Chapter 5</h2>
+            </div>
+        </div>
+        <div class="card" onclick="location.href ='contentnotavilable.html'">
+            <img src="contentnotavilable.webp" alt="Content Image 4">
+            <div class="card-body">
+                <h2 class="card-title">Chapter 6</h2>
+            </div>
+        </div>
+        <div class="card" onclick="location.href ='contentnotavilable.html'">
+            <img src="contentnotavilable.webp" alt="Content Image 4">
+            <div class="card-body">
+                <h2 class="card-title">Chapter 7</h2>
+            </div>
+        </div>
+        <div class="card" onclick="location.href ='contentnotavilable.html'">
+            <img src="contentnotavilable.webp" alt="Content Image 4">
+            <div class="card-body">
+                <h2 class="card-title">Chapter 8</h2>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

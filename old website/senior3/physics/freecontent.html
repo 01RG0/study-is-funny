@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Hub</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f3f3f3;
+        }
+
+        .content {
+            display: flex;
+            gap: 40px;
+            text-align: center;
+        }
+
+        .item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .item:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .icon {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="summaries" onclick="location.href ='summaries/summaries.html'">
+        <a href="#" class="item">
+            <img class="icon" src="https://img.icons8.com/external-flat-juicy-fish/60/000000/external-summarize-communication-flat-flat-juicy-fish.png" alt="Summaries Icon">
+            <div class="title">Summaries</div>
+        </a>
+    </div>
+    <div class="videos">
+        <a href="#" class="item">
+            <img class="icon" src="https://img.icons8.com/external-flat-juicy-fish/60/000000/external-video-multimedia-flat-flat-juicy-fish.png" alt="Short Videos Icon">
+            <div class="title">Short Videos</div>
+        </a>
+    </div>
+    </div>
+</body>
+</html>

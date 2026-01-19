@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Navigation</title>
+    <style>
+        /* Style for the main iframe video */
+        .video-container {
+            max-width: 800px;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Control button styling */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #008080;
+            color: #FFFFE0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls button:hover {
+            background-color: #006666;
+        }
+
+        .controls button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <iframe id="videoFrame" src="https://iframe.mediadelivery.net/embed/132580/72d0eff6-e479-4a10-b072-2ddb7b61e93f?autoplay=true&loop=false&muted=false&preload=true&responsive=true" frameborder="0" allow="autoplay; fullscreen"></iframe>
+    </div>
+    <div class="controls">
+        <button id="prevButton" onclick="prevVideo()" disabled>Previous Question</button>
+        <button id="nextButton" onclick="nextVideo()">Next Question</button>
+        <button onclick="toggleFullscreen()">Fullscreen</button>
+        <button onclick="location.href = 'Session2p2.html'">Explanation Electric Power</button>
+        <button onclick="location.href = 'Session2q.html'">questions Factors Effect On Resistance</button>
+        <button onclick="location.href = 'Session2hw.html'">HomeWork Factors Effect On Resistance</button>
+        <button onclick="location.href = 'Session2q2.html'">questions Electric Power</button>
+        <button onclick="location.href = 'Session2.html'">Explanation Factors Effect On Resistance</button>    </div>
+    <p id="accessMessage"></p> <!-- Display access messages here -->
+
+    <script>
+        // Array of video links
+        const videoLinks = [
+        /*1*/    "https://iframe.mediadelivery.net/embed/132580/72d0eff6-e479-4a10-b072-2ddb7b61e93f?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*2*/    "https://iframe.mediadelivery.net/embed/132580/97442703-4238-4722-bfe6-75e54ceaf24b?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*3*/    "https://iframe.mediadelivery.net/embed/132580/be50070b-d265-4017-a5e0-9f63aac1bec3?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*4*/    "https://iframe.mediadelivery.net/embed/132580/943ccd35-5a06-4449-bcd6-50c5bf597334?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*5*/    "https://iframe.mediadelivery.net/embed/132580/1303e8ce-30f8-4c65-9e1c-7653f92881bd?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*6*/    "https://iframe.mediadelivery.net/embed/132580/bc87908c-bdb5-42e8-bade-92a44530a604?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*7*/    "https://iframe.mediadelivery.net/embed/132580/b9f4243b-bd9b-4c03-9cc2-5311c0f99d2b?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*8*/    "https://iframe.mediadelivery.net/embed/132580/77c60b1c-b648-48da-a5e6-156f5c70a7ea?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*9*/    "https://iframe.mediadelivery.net/embed/132580/0b450b3e-a24c-488b-967b-93bf9e8f18df?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*10*/    "https://iframe.mediadelivery.net/embed/132580/a9d452f5-3034-457b-8b3e-29eaefe3718e?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*11*/    "https://iframe.mediadelivery.net/embed/132580/d7f8af82-6555-4ce7-a514-c8890a48fc16?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*12*/    "https://iframe.mediadelivery.net/embed/132580/08d07ca7-60c4-49a5-8ec3-e258e24b536a?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*14*/    "https://iframe.mediadelivery.net/embed/132580/7c8f93d8-974e-4dfc-b7d0-4ed74c5c7150?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*14*/    "https://iframe.mediadelivery.net/embed/132580/4742290b-5346-432c-8381-3d31123bcb32?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*15*/    "https://iframe.mediadelivery.net/embed/132580/0b067042-ccd0-4869-9585-bd3a7eb17aa0?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        ];
+
+        let currentVideoIndex = 0;
+
+        // Load a video by index
+        function loadVideo(index) {
+            const iframe = document.getElementById("videoFrame");
+            iframe.src = videoLinks[index];
+            updateButtons();
+        }
+
+        // Move to the next video
+        function nextVideo() {
+            if (currentVideoIndex < videoLinks.length - 1) {
+                currentVideoIndex++;
+                loadVideo(currentVideoIndex);
+            }
+        }
+
+        // Move to the previous video
+        function prevVideo() {
+            if (currentVideoIndex > 0) {
+                currentVideoIndex--;
+                loadVideo(currentVideoIndex);
+            }
+        }
+
+        // Update button states
+        function updateButtons() {
+            document.getElementById("prevButton").disabled = currentVideoIndex === 0;
+            document.getElementById("nextButton").disabled = currentVideoIndex === videoLinks.length - 1;
+        }
+
+        // Toggle fullscreen
+        function toggleFullscreen() {
+            const videoContainer = document.querySelector('.video-container');
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                videoContainer.requestFullscreen();
+            }
+        }
+
+
+
+
+
+        const sheetUrl = 'https://script.google.com/macros/s/AKfycbzriORC97nRRPZudRD3Dhff-gb1LPZ2EY14CujkZQ73tMnfWx89822h0XHY2tRB6trAFg/exec';
+    
+        function getSession() {
+            const phone = localStorage.getItem('userPhone');
+            if (!phone) {
+                location.href = "studyisfunny.com/login";
+                return;
+            } 
+            fetch(`${sheetUrl}?code=${phone}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        location.href = "studyisfunny.com/login";
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                });
+        }
+        
+        window.onload = getSession;    
+
+    </script>
+</body>
+</html>

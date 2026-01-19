@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Navigation</title>
+    <style>
+        /* Style for the main iframe video */
+        .video-container {
+            max-width: 800px;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Control button styling */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #008080;
+            color: #FFFFE0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls button:hover {
+            background-color: #006666;
+        }
+
+        .controls button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <iframe id="videoFrame" src="https://iframe.mediadelivery.net/embed/201512/7a7a5245-3070-4ce8-a4b6-da399e818a6c?autoplay=true&loop=false&muted=false&preload=true&responsive=true" frameborder="0" allow="autoplay; fullscreen"></iframe>
+    </div>
+    <div class="controls">
+        <button id="prevButton" onclick="prevVideo()" disabled>Previous Question</button>
+        <button id="nextButton" onclick="nextVideo()">Next Question</button>
+        <button onclick="toggleFullscreen()">Fullscreen</button>
+        <button onclick="location.href = 'Session2p2.html'">Explanation Electric Power</button>
+        <button onclick="location.href = 'Session2q.html'">questions Factors Effect On Resistance</button>
+        <button onclick="location.href = 'Session2.html'">Explanation Factors Effect On Resistance</button>
+        <button onclick="location.href = 'Session2q2.html'">questions Electric Power</button>
+        <button onclick="location.href = 'Session2hw2.html'">HomeWork Electric Power</button>
+    </div>
+    <p id="accessMessage"></p> <!-- Display access messages here -->
+
+    <script>
+        // Array of video links
+        const videoLinks = [
+        /*1*/    "https://iframe.mediadelivery.net/embed/132580/9f05efd9-ff15-4580-af30-5040e0a49168?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*2*/    "https://iframe.mediadelivery.net/embed/132580/1e64eef9-20af-4669-8dfb-cec1b2783299?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*3*/    "https://iframe.mediadelivery.net/embed/132580/f4c2fc2d-45b8-4ee0-ad6b-1d1161076374?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*4*/    "https://iframe.mediadelivery.net/embed/132580/1e20bdd9-f36a-40e7-9998-b1e6e2c0fdee?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*5*/    "https://iframe.mediadelivery.net/embed/132580/4dc8e58f-94c5-4f8c-9cd8-9239745a5d55?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*6*/    "https://iframe.mediadelivery.net/embed/132580/985b81e3-bd24-4f09-abb3-44ff605cff5f?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*7*/    "https://iframe.mediadelivery.net/embed/132580/985b81e3-bd24-4f09-abb3-44ff605cff5f?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*8*/    "https://iframe.mediadelivery.net/embed/132580/bbf846f2-8437-4226-80a2-f413dc9baec2?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*9*/    "https://iframe.mediadelivery.net/embed/132580/af354b65-e759-4c80-b573-2b9b4515456a?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*10*/    "https://iframe.mediadelivery.net/embed/132580/f374eb05-457a-45cf-abe5-d79bdf4906d8?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*11*/    "https://iframe.mediadelivery.net/embed/132580/a9fcd72c-825d-4267-be34-fc8c3cec91b8?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*12*/    "https://iframe.mediadelivery.net/embed/132580/fff4786f-5d34-420e-bfec-2805a17a2e53?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*14*/    "https://iframe.mediadelivery.net/embed/132580/6e3a60c1-73d8-4c03-b583-5226cb639793?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*14*/    "https://iframe.mediadelivery.net/embed/132580/a6d4a064-6870-4d90-acf5-2cd58abc4c80?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*15*/    "https://iframe.mediadelivery.net/embed/132580/25ba0f7f-4935-44aa-90f3-2389f31346e8?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*16*/    "https://iframe.mediadelivery.net/embed/132580/571fa7b0-2633-48f9-8e71-f37302db8c28?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*17*/    "https://iframe.mediadelivery.net/embed/132580/a3354443-c11b-4280-8d4a-84b7a3cc79b3?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*18*/    "https://iframe.mediadelivery.net/embed/132580/ca1f3b3e-db0d-4822-b720-dbcec3d28b91?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*19*/    "https://iframe.mediadelivery.net/embed/132580/b71e040d-db06-4831-ab4f-9aec683dc146?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*20*/    "https://iframe.mediadelivery.net/embed/132580/1a8a3b83-a51a-471d-b869-e3f2f9fb3ccf?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*21*/    "https://iframe.mediadelivery.net/embed/132580/74ebd299-a9dd-499a-ab95-7f2fb1cb72fd?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*22*/    "https://iframe.mediadelivery.net/embed/132580/ea4b4bc2-8c3e-4998-bf7e-5fbfb18c15ea?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        /*23*/    "https://iframe.mediadelivery.net/embed/132580/76855df3-32fd-4684-b5ff-2f8145001627?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+        ];
+
+        let currentVideoIndex = 0;
+
+        // Load a video by index
+        function loadVideo(index) {
+            const iframe = document.getElementById("videoFrame");
+            iframe.src = videoLinks[index];
+            updateButtons();
+        }
+
+        // Move to the next video
+        function nextVideo() {
+            if (currentVideoIndex < videoLinks.length - 1) {
+                currentVideoIndex++;
+                loadVideo(currentVideoIndex);
+            }
+        }
+
+        // Move to the previous video
+        function prevVideo() {
+            if (currentVideoIndex > 0) {
+                currentVideoIndex--;
+                loadVideo(currentVideoIndex);
+            }
+        }
+
+        // Update button states
+        function updateButtons() {
+            document.getElementById("prevButton").disabled = currentVideoIndex === 0;
+            document.getElementById("nextButton").disabled = currentVideoIndex === videoLinks.length - 1;
+        }
+
+        // Toggle fullscreen
+        function toggleFullscreen() {
+            const videoContainer = document.querySelector('.video-container');
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                videoContainer.requestFullscreen();
+            }
+        }
+
+
+
+
+
+        const sheetUrl = 'https://script.google.com/macros/s/AKfycbzriORC97nRRPZudRD3Dhff-gb1LPZ2EY14CujkZQ73tMnfWx89822h0XHY2tRB6trAFg/exec';
+    
+        function getSession() {
+            const phone = localStorage.getItem('userPhone');
+            if (!phone) {
+                location.href = "studyisfunny.com/login";
+                return;
+            } 
+            fetch(`${sheetUrl}?code=${phone}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        location.href = "studyisfunny.com/login";
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                });
+        }
+        
+        window.onload = getSession;    
+
+    </script>
+</body>
+</html>
