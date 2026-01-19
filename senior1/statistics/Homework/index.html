@@ -1,184 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Senior 1 Statistics Homework</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="../../../css/main.css">
-    <link rel="icon" class="circular-icon" type="image/png" href="../../../images/logo.png">
-    <style>
-        .homework-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homework Statistics Senior 1</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
 
-        .homework-header {
-            text-align: center;
-            background-color: #008080;
-            color: #FFFFE0;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
+    h1 {
+      text-align: center;
+      margin: 40px 0 20px;
+      font-size: 2.5rem;
+      color: #2c3e50;
+      font-weight: 700;
+    }
 
-        .homework-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+    }
 
-        .homework-card {
-            background-color: #FFFFE0;
-            border: 2px solid #008080;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
-        }
+    .link-box {
+      background: #fff;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      border-left: 8px solid transparent;
+    }
 
-        .homework-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-        }
+    /* Hover effect */
+    .link-box:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    }
 
-        .homework-card h3 {
-            color: #008080;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-        }
+    .link-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
 
-        .homework-card .date {
-            color: #FF8C69;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
+    .link-sub {
+      font-size: 1rem;
+      color: #555;
+    }
 
-        .homework-card .description {
-            color: #333;
-            margin-bottom: 15px;
-        }
+    /* Different accent colors per lecture */
+    .lecture1 { border-left-color: #42a5f5; } /* Blue */
+    .lecture2 { border-left-color: #66bb6a; } /* Green */
+    .lecture3 { border-left-color: #ffa726; } /* Orange */
+    .lecture4 { border-left-color: #ab47bc; } /* Purple */
+    .lecture5 { border-left-color: #ef5350; } /* Red */
+    .lecture6 { border-left-color: pink; } /* Pink */
+    .lecture7 { border-left-color: #42a5f5; } /* Blue */
+    .lecture8 { border-left-color:  #66bb6a; } /* Green */
+    .lecture9 { border-left-color: #ffa726; } /* Orange */
+    .lecture10 { border-left-color:  #ab47bc; } /* Purple */
+    .lecture11 { border-left-color:  #ef5350; } /* Red */
+    .lecture12 { border-left-color:  pink; } /* Red */
+    .lecture13 { border-left-color:   #42a5f5; } /* Blue */
+    .lecture14 { border-left-color:    #66bb6a; } /* Green */
+    .lecture15 { border-left-color:   #ffa726; } /* Orange */
 
-        .homework-card .download-btn {
-            background-color: #FF8C69;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .homework-card .download-btn:hover {
-            background-color: #FF6347;
-        }
-
-        .navigation {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
-        }
-
-        .nav-btn {
-            background-color: #008080;
-            color: #FFFFE0;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-
-        .nav-btn:hover {
-            background-color: #005050;
-        }
-
-        @media (max-width: 768px) {
-            .navigation {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .nav-btn {
-                width: 100%;
-            }
-        }
-    </style>
+  </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="banner">
-            <img src="../../../images/logo.webp" alt="Website Logo" class="logo">
-            <h1>Studyisfunny <i class="fas fa-graduation-cap"></i></h1>
-            <a href="https://wa.me/201558145450?text=Hello" target="_blank" class="whatsapp-button">
-                <i class="fab fa-whatsapp"></i> WhatsApp
-            </a>
-        </div>
-    </header>
 
-    <div class="homework-container">
-        <div class="homework-header">
-            <h1><i class="fas fa-chart-bar"></i> Senior 1 Statistics Homework</h1>
-            <p>ENG. Shady Elsharqawy</p>
-        </div>
+  <h1>Homework Page</h1>
 
-        <div class="homework-grid">
-            <div class="homework-card" onclick="downloadHomework(1)">
-                <h3>Homework 1</h3>
-                <div class="date">Due: October 15, 2024</div>
-                <div class="description">Introduction to Statistics</div>
-                <button class="download-btn">📥 Download PDF</button>
-            </div>
-
-            <div class="homework-card" onclick="downloadHomework(2)">
-                <h3>Homework 2</h3>
-                <div class="date">Due: October 22, 2024</div>
-                <div class="description">Data Collection Methods</div>
-                <button class="download-btn">📥 Download PDF</button>
-            </div>
-
-            <div class="homework-card" onclick="downloadHomework(3)">
-                <h3>Homework 3</h3>
-                <div class="date">Due: October 29, 2024</div>
-                <div class="description">Measures of Central Tendency</div>
-                <button class="download-btn">📥 Download PDF</button>
-            </div>
-
-            <div class="homework-card" onclick="downloadHomework(4)">
-                <h3>Homework 4</h3>
-                <div class="date">Due: November 5, 2024</div>
-                <div class="description">Probability Concepts</div>
-                <button class="download-btn">📥 Download PDF</button>
-            </div>
-        </div>
-
-        <!-- Navigation -->
-        <div class="navigation">
-            <button class="nav-btn" onclick="location.href='../..'">← Back to Subjects</button>
-            <button class="nav-btn" onclick="location.href='../sessions'">🎬 Watch Lectures</button>
-        </div>
+  <div class="container">
+    <div class="link-box lecture1" onclick="location.href='t1/HW1.html'">
+      <div class="link-title">Lecture 1</div>
+      <div class="link-sub">Introduction to Statistics</div>
     </div>
 
-    <script>
-        function downloadHomework(homeworkId) {
-            // Show loading message
-            const btn = event.target;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '⏳ Loading...';
-            btn.disabled = true;
+    <div class="link-box lecture2" onclick="location.href='t1/HW2.html'">
+      <div class="link-title">Lecture 2</div>
+      <div class="link-sub">Data Collection and Organization</div>
+    </div>
 
-            // Simulate download delay
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                alert(`Homework ${homeworkId} PDF download would start here. Content coming soon!`);
-            }, 1500);
-        }
-    </script>
+    <div class="link-box lecture3" onclick="location.href='t1/HW3.html'">
+      <div class="link-title">Lecture 3</div>
+      <div class="link-sub">Measures of Central Tendency</div>
+    </div>
+
+    <div class="link-box lecture4" onclick="location.href='t1/HW4.html'">
+      <div class="link-title">Lecture 4</div>
+      <div class="link-sub">Probability Fundamentals</div>
+    </div>
+
+    <div class="link-box lecture5" onclick="location.href='t1/HW5.html'">
+      <div class="link-title">Lecture 5</div>
+      <div class="link-sub">Data Analysis Techniques</div>
+    </div>
+    <div class="link-box lecture6" onclick="location.href='t1/HW6.html'">
+      <div class="link-title">Lecture 6</div>
+      <div class="link-sub">Statistical Distributions</div>
+    </div>
+     <div class="link-box lecture7" onclick="location.href='t1/HW7.html'">
+      <div class="link-title">Lecture 7</div>
+      <div class="link-sub">Hypothesis Testing</div>
+    </div>
+
+    <div class="link-box lecture8" onclick="location.href='t1/HW8.html'">
+      <div class="link-title">Lecture 8</div>
+      <div class="link-sub">Regression Analysis</div>
+    </div>
+        <div class="link-box lecture9" onclick="location.href='t1/HW9.html'">
+      <div class="link-title">Lecture 9</div>
+      <div class="link-sub">Sampling Methods</div>
+    </div>
+        <div class="link-box lecture10" onclick="location.href='t1/HW10.html'">
+      <div class="link-title">Lecture 10</div>
+      <div class="link-sub">Confidence Intervals</div>
+    </div>
+        <div class="link-box lecture11" onclick="location.href='t1/HW11.html'">
+      <div class="link-title">Lecture 11</div>
+      <div class="link-sub">Chi-Square Tests</div>
+    </div>
+        <div class="link-box lecture12" onclick="location.href='t1/HW12.html'">
+      <div class="link-title">Lecture 12</div>
+      <div class="link-sub">Time Series Analysis</div>
+    </div>
+        <div class="link-box lecture13" onclick="location.href='t1/HW13.html'">
+      <div class="link-title">Lecture 13</div>
+      <div class="link-sub">Non-parametric Statistics</div>
+    </div>
+        <div class="link-box lecture14" onclick="location.href='t1/HW14.html'">
+      <div class="link-title">Lecture 14</div>
+      <div class="link-sub">Statistical Software Applications</div>
+    </div>
+        <div class="link-box lecture15" onclick="location.href='t1/HW15.html'">
+      <div class="link-title">Lecture 15</div>
+      <div class="link-sub">Final Statistics Comprehensive Review</div>
+    </div>
+  </div>
 </body>
 </html>

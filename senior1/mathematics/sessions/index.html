@@ -5,10 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Senior 1 Mathematics Sessions</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Font Awesome -->
     <link rel="stylesheet" href="../../../css/sessions.css">
     <link rel="stylesheet" href="../../../css/main.css">
     <link rel="icon" class="circular-icon" type="image/png" href="../../../images/logo.png">
+    <style type="text/css" media="all">
+    </style>
 </head>
 
 <body>
@@ -28,10 +30,19 @@
         </div>
     </header>
 
-    <!-- Loading Spinner -->
-    <div class="loading-spinner" id="loadingSpinner">
-        <div class="spinner"></div>
+    <!-- Popup Element -->
+    <div class="overlay" onclick="closePopup()"></div>
+    <div class="popup">
+        <div class="popup-header">Subscription Details</div>
+        <div class="popup-content">
+            <!-- Add your dynamic content here -->
+        </div>
+        <button class="popup-close" onclick="closePopup()">Close</button>
     </div>
+    <!-- Loading Spinner -->
+<div class="loading-spinner" id="loadingSpinner">
+    <div class="spinner"></div>
+</div>
 
     <!-- Main Container -->
     <div class="main-container">
@@ -41,31 +52,36 @@
 
             <div class="session-card" data-session="1">
                 <h3>Introduction to Algebra</h3>
+                <p class="sessionname">(Lesson 1 Algebra)</p>
+                <p class="session-date"><i class="fas fa-calendar-alt"></i> Date: September 6, 2025</p>
                 <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 1</p>
                 <a href="#" class="view-details" onclick="handleSessionDetails(1);">View Details</a>
             </div>
-
-            <div class="session-card" data-session="2">
+            <div class="session-card" data-session="1">
                 <h3>Complex Numbers Foundations</h3>
+                <p class="sessionname">(Lesson 1 Algebra)</p>
+                <p class="session-date"><i class="fas fa-calendar-alt"></i> Date: September 13, 2025</p>
                 <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 2</p>
                 <a href="#" class="view-details" onclick="handleSessionDetails(2);">View Details</a>
             </div>
-
-            <div class="session-card" data-session="3">
+             <div class="session-card" data-session="1">
                 <h3>Trigonometric Identities</h3>
+                <p class="sessionname">(lesson 1 Trig)</p>
+                <p class="session-date"><i class="fas fa-calendar-alt"></i> Date: September 20, 2025</p>
                 <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 3</p>
                 <a href="#" class="view-details" onclick="handleSessionDetails(3);">View Details</a>
             </div>
-
-            <div class="session-card" data-session="4">
+             <div class="session-card" data-session="1">
                 <h3>Coordinate Geometry</h3>
+                <p class="sessionname">(Lesson 1 Geometry)</p>
+                <p class="session-date"><i class="fas fa-calendar-alt"></i> Date: September 27, 2025</p>
                 <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 4</p>
                 <a href="#" class="view-details" onclick="handleSessionDetails(4);">View Details</a>
             </div>
-
-            <div class="session-card" data-session="5">
+              <div class="session-card" data-session="1">
                 <h3>Matrices and Determinants</h3>
-                <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 5</p>
+                <p class="session-date"><i class="fas fa-calendar-alt"></i> Date: October 4, 2025</p>
+                <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 5 </p>
                 <a href="#" class="view-details" onclick="handleSessionDetails(5);">View Details</a>
             </div>
         </section>
@@ -77,7 +93,234 @@
         </div>
     </div>
 
+    <!-- Footer -->
+    <footer>
+        <h2>Contact Us</h2>
+        <p><i class="fas fa-envelope"></i> Email: support@studyisfunny.com</p>
+        <p><i class="fas fa-phone-alt"></i> Phone: 01558145450</p>
+    </footer>
+
     <script>
+        // Define the mapping of session numbers to their specific Google Script URLs
+        const googleScriptUrls = {
+            1: "https://script.google.com/macros/s/AKfycbwXF7b3mGj7BsZH_5ct-9Y8hdXtPoL2gfY6dqm02XqnwAjEbsNrvZGrtQV8zoHKc46taQ/exec",
+            2: "https://script.google.com/macros/s/AKfycbye79vC9YmZUgchRdHJl1SDyKRPGvYIkW0wfmYKoyeCCfUQalv5MLZUTq8_xl_QMcBX9Q/exec",
+            3: "https://script.google.com/macros/s/AKfycbwcYBRaCbLZsY2jiOjyTpRu1mQE1HL9rTdIMolRX5I-S9wsSywPLkNMdYFA-JoFnIdq3w/exec",
+            4: "https://script.google.com/macros/s/AKfycbyLtqbVkuHzqa-a2OdPnWc1WTcKq-qNjaDdAujJb-4CO1tJjnxJRoPLxK8TBvjVoz6wcw/exec",
+            5: "https://script.google.com/macros/s/AKfycbyiL6iqyee59BYEraFYKP055Rfq1ZjHW5cAGqv1VrssRad7c0ZvKY2Sog4RRq9wgDeHFw/exec",
+            6: "https://script.google.com/macros/s/AKfycbytv--mFPxm6tua5wFjiJVToZo_kQOkgJZRDJAfkQqJkEeysLFE4JEQB6ld6gy6X6iJfQ/exec",
+            7: "https://script.google.com/macros/s/AKfycbwiy54I6M3EKai3vPsFnjoVp5s4e09C27JgIxxrnN4iLW79F32PtAGKrQO1V2zcOghHSA/exec",
+            8: "https://script.google.com/macros/s/AKfycbxNmeMHFPEr25uDC6vCJDooWFU9nQtzpVcHlhEcduc8Ms_0MGZCmi44MxmORHcxnCwXgA/exec",
+            9: "https://script.google.com/macros/s/AKfycbzMDd-q3c7mjXIlOVe7194Ky5HVIxrGvuVYS8B4fSNP8envYU057RsQrDRnrln9nD0hyQ/exec",
+            10: "https://script.google.com/macros/s/AKfycbxUaBDuQ1j_oW7qMDFDxHDvEvHp9nua2EDf_6HC-CLfDh3MSYnudBYYuwhLxed_0yex3Q/exec",
+            11: "https://script.google.com/macros/s/AKfycbxcO5MMNUUA1BMuFzB3qHPB0llrkha0Az5JKrjhEKj6qv-J49ZqtdhN15ELrT-1h4cWFQ/exec",
+            12: "https://script.google.com/macros/s/AKfycbyBSWbViykxv_uhx9L6ZlS16utSCkBxGmxLQ8xk1ZybgOe9BCeecUOjXj3GO948JmRamw/exec",
+            13:"https://script.google.com/macros/s/AKfycbxs2VGWNSQ0tQLrgOuk9N6k7epGBsyEABNX8_qKisSX-E1f3oTfHBdHQR6D7dFG4VPG4g/exec",
+            14:"https://script.google.com/macros/s/AKfycbzcMxjB9JtSizogPbRu2BgCpofBGoBj1560Yc0Jn0jWA0zJJMYRXL_b98UCzApMQdZx-g/exec",
+            15:"https://script.google.com/macros/s/AKfycbwJp-shqDNgLaif_P89FfzVVE3hIC2qUftBtDv1toJMD-R8-9BU3tsq80yY8SFWZL2kNg/exec",
+
+        };
+
+        // Handle Session Details
+        function handleSessionDetails(sessionNumber) {
+            const userPhone = localStorage.getItem("userPhone");
+            if (!userPhone) {
+                alert("Phone number is not found in localStorage!");
+                return;
+            }
+
+            const sessionUrl = googleScriptUrls[sessionNumber];
+            if (!sessionUrl) {
+                alert(`No URL found for session ${sessionNumber}`);
+                return;
+            }
+            document.getElementById('loadingSpinner').style.display = 'flex';
+
+            fetch(`${sessionUrl}?code=${userPhone}&session=${sessionNumber}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(`Response for session ${sessionNumber}:`, data);
+                    const contentContainer = document.querySelector(".popup-content");
+                    document.querySelector(".overlay").style.display = "block";
+                    document.querySelector(".popup").style.display = "block";
+
+                    if (data.error) {
+                        contentContainer.innerHTML = `
+    <div class="first" style="text-align: center; font-family: Arial, sans-serif;  border: 2px solid #008080; border-radius: 10px; background-color: #FFFFE0; max-width: 90%; margin: 0 auto;">
+        <h2 class="no" style="color: #2F4F4F;">Subscription Required</h2>
+        <p class="no" style="color: #2F4F4F; font-size: 16px;">
+            You are not subscribed to this Lecture. Please subscribe to gain access to the materials.
+        </p>
+        <div class="second" style="text-align: center; font-family: Arial, sans-serif; ">
+            <h2 style="color: #2F4F4F;">Let's Subscribe and Buy the Session!</h2>
+            <p style="color: #2F4F4F; font-size: 16px; margin-bottom: 20px;">
+                You can subscribe and buy the session from here. Click one of the options below to proceed.
+            </p>
+            <button
+                onclick="buysession(${sessionNumber})"
+                style="
+                    padding: 10px 20px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    background-color: #008080;
+                    color: #FFFFE0;
+                    border: none;
+                    border-radius: 5px;
+                    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+                    margin-bottom: 10px;
+                    width: 80%;
+                    max-width: 250px;
+                "
+            >
+                I Have a Code
+            </button>
+            <br>
+            <button
+                onclick="window.open('https://wa.me/201000733148', '_blank')"
+                style="
+                    padding: 10px 20px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    background-color: #25D366;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+                    width: 80%;
+                    max-width: 250px;
+                "
+            >
+                Don't Have a Code? Contact Us
+            </button>
+        </div>
+    </div>
+
+    <style>
+        .first {
+        padding: 20px;
+        }
+        .second {
+        padding: 20px;
+        }
+        @media screen and (max-width: 768px) {
+        .popup {
+        padding:0px;
+        }
+        .first {
+        padding:0px;
+        }
+        .second {
+        padding:0px;
+        }
+            .none {
+                padding: 0px; /* Adjust padding for mobile */
+                max-width: 100%; /* Make the popup wider */
+                width: 90%; /* Ensure it's wider on mobile */
+                margin: 0 auto;
+            }
+
+            h2 {
+                font-size: 20px; /* Smaller font size for better fitting */
+            }
+
+            p {
+                font-size: 14px; /* Adjust paragraph font size */
+                margin-bottom: 15px; /* Decrease spacing for compactness */
+            }
+
+            button {
+                font-size: 14px; /* Adjust button font size */
+                padding: 12px 24px; /* Make buttons a bit wider */
+                width: 90%; /* Make buttons fill more of the available space */
+                max-width: 320px; /* Increase button width for mobile */
+                margin-bottom: 12px; /* Adjust space between buttons */
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+
+        .first {
+        padding:0px;
+        }
+        .second {
+        padding:0px;
+        }
+            .none {
+                padding: 0px; /* Reduce padding even more for small screens */
+                max-width: 100%; /* Full width */
+                width: 90%; /* Ensure it's fitting well on smaller screens */
+                margin: 0 auto;
+            }
+            .no{
+                display:none;
+            }
+            h2 {
+                font-size: 18px; /* Smaller font size */
+            }
+
+            p {
+                font-size: 12px; /* Adjust paragraph font size */
+            }
+
+            button {
+                font-size: 14px; /* Adjust button font size */
+                padding: 12px 24px;
+                width: 90%; /* Make buttons fill most of the screen */
+                max-width: 280px; /* Adjust max-width */
+                }
+                }
+            </style>
+        `;
+        document.getElementById('loadingSpinner').style.display = 'none';
+
+                    } else {
+
+                        gosession(sessionNumber);
+
+document.getElementById('loadingSpinner').style.display = 'none';
+
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('loadingSpinner').style.display = 'none';
+
+                    console.error(`Error fetching session ${sessionNumber}:`, error);
+                    alert("An error occurred while processing your request.");
+                });
+        }
+
+        function closePopup() {
+            document.querySelector(".overlay").style.display = "none";
+            document.querySelector(".popup").style.display = "none";
+        }
+
+        // Example usage for multiple sessions
+        for (let i = 1; i <= 25; i++) {
+            const userPhone = localStorage.getItem("userPhone");
+            if (userPhone) {
+                const sessionUrl = googleScriptUrls[i];
+                fetch(`${sessionUrl}?code=${userPhone}&session=${i}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(`Session ${i} preload data:`, data);
+                        localStorage.setItem(`lecture_${i}`, data.error ? "Unsubscribed" : "Subscribed");
+                    });
+            }
+        }
+
+        //testing the function to buy
+        function buysession(sessionNumber){
+            location.href = `../buySession${sessionNumber}.html`;
+        }
+        function gosession(sessionNumber){
+            location.href = `../videos/Session${sessionNumber}.html`;
+        }
+
         // Dark Mode Toggle
         const darkModeToggle = document.getElementById('darkModeToggle');
 
@@ -97,17 +340,6 @@
                 localStorage.setItem('darkMode', 'disabled');
             }
         });
-
-        function handleSessionDetails(sessionId) {
-            // Show loading spinner
-            document.getElementById('loadingSpinner').style.display = 'block';
-
-            // Simulate loading time
-            setTimeout(() => {
-                document.getElementById('loadingSpinner').style.display = 'none';
-                alert(`Session ${sessionId} details would open here. Content coming soon!`);
-            }, 1000);
-        }
     </script>
 </body>
 
