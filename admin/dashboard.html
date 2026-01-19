@@ -203,15 +203,21 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="downloadable">Allow Downloads</label>
-                        <div class="radio-group">
-                            <label class="radio-label">
-                                <input type="radio" name="downloadable" value="yes" checked> Yes
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="downloadable" value="no"> No
-                            </label>
-                        </div>
+                        <label for="sessionAccess">Restrict to Specific Session</label>
+                        <select id="sessionAccess" name="sessionAccess">
+                            <option value="">No restriction - Available to all</option>
+                            <option value="session-1">Session 1</option>
+                            <option value="session-2">Session 2</option>
+                            <option value="session-3">Session 3</option>
+                            <option value="session-4">Session 4</option>
+                            <option value="session-5">Session 5</option>
+                            <option value="session-6">Session 6</option>
+                            <option value="session-7">Session 7</option>
+                            <option value="session-8">Session 8</option>
+                            <option value="session-9">Session 9</option>
+                            <option value="session-10">Session 10</option>
+                        </select>
+                        <small class="file-info">Optionally restrict this content to students who have accessed a specific session</small>
                     </div>
                 </div>
 
@@ -241,16 +247,36 @@
 
                             <div class="form-row">
                                 <div class="form-group">
+                                    <label>Video Source *</label>
+                                    <div class="radio-group">
+                                        <label class="radio-label">
+                                            <input type="radio" name="videoSource[]" value="upload" checked onchange="toggleVideoInput(this)"> Upload File
+                                        </label>
+                                        <label class="radio-label">
+                                            <input type="radio" name="videoSource[]" value="link" onchange="toggleVideoInput(this)"> Video Link
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group video-upload-group">
                                     <label>Video File *</label>
                                     <input type="file" name="videoFile[]" accept="video/*" required>
                                     <small class="file-info">Supported formats: MP4, AVI, MOV (Max: 500MB)</small>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group video-link-group" style="display: none;">
+                                    <label>Video URL *</label>
+                                    <input type="url" name="videoLink[]" placeholder="e.g., https://youtube.com/watch?v=... or direct video URL">
+                                    <small class="file-info">YouTube, Vimeo, or direct video links supported</small>
+                                </div>
+
+                                <!-- <div class="form-group">
                                     <label>Thumbnail (Optional)</label>
                                     <input type="file" name="thumbnail[]" accept="image/*">
                                     <small class="file-info">Recommended: 1280x720px, JPG/PNG</small>
-                                </div>
+                                </div> -->
                             </div>
 
                             <div class="form-group">
@@ -272,31 +298,6 @@
                     <button type="button" id="addVideoBtn" class="add-video-btn">
                         <i class="fas fa-plus"></i> Add Another Video
                     </button>
-                </div>
-
-                <!-- Additional Resources -->
-                <div class="form-section">
-                    <h3>Additional Resources</h3>
-
-                    <div class="form-group">
-                        <label>PDF Materials</label>
-                        <input type="file" name="pdfFiles[]" accept=".pdf" multiple>
-                        <small class="file-info">Upload worksheets, notes, or additional materials (PDF only)</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Tags/Keywords</label>
-                        <input type="text" id="tags" name="tags" placeholder="e.g., mechanics, physics, motion (comma separated)">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Difficulty Level</label>
-                        <select name="difficulty">
-                            <option value="beginner">Beginner</option>
-                            <option value="intermediate">Intermediate</option>
-                            <option value="advanced">Advanced</option>
-                        </select>
-                    </div>
                 </div>
 
                 <!-- Schedule & Settings -->
@@ -323,18 +324,6 @@
                                 <option value="published">Publish Now</option>
                                 <option value="scheduled">Schedule for Later</option>
                             </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="featured">Featured Session</label>
-                            <div class="radio-group">
-                                <label class="radio-label">
-                                    <input type="radio" name="featured" value="yes"> Yes
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="featured" value="no" checked> No
-                                </label>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -424,7 +413,182 @@
             <div class="section-header">
                 <h1><i class="fas fa-chart-bar"></i> Analytics</h1>
             </div>
-            <p>Analytics dashboard coming soon...</p>
+
+            <!-- Analytics Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>2,847</h3>
+                        <p>Total Students</p>
+                        <small style="color: #28a745;"><i class="fas fa-arrow-up"></i> 12% this month</small>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>4,521h</h3>
+                        <p>Watch Time</p>
+                        <small style="color: #28a745;"><i class="fas fa-arrow-up"></i> 8% this month</small>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>4.8/5</h3>
+                        <p>Average Rating</p>
+                        <small style="color: #28a745;"><i class="fas fa-arrow-up"></i> 0.3 increase</small>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>87%</h3>
+                        <p>Completion Rate</p>
+                        <small style="color: #dc3545;"><i class="fas fa-arrow-down"></i> 2% this month</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-top: 30px;">
+                <!-- Student Growth Chart -->
+                <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0 0 20px 0; color: #333;"><i class="fas fa-users"></i> Student Growth</h3>
+                    <div style="height: 250px; display: flex; align-items: flex-end; justify-content: space-around; gap: 10px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1;">
+                            <div style="width: 100%; background: linear-gradient(to top, #667eea, #764ba2); border-radius: 8px 8px 0 0; height: 60%;"></div>
+                            <small style="color: #666; font-size: 0.8rem;">Jan</small>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1;">
+                            <div style="width: 100%; background: linear-gradient(to top, #667eea, #764ba2); border-radius: 8px 8px 0 0; height: 75%;"></div>
+                            <small style="color: #666; font-size: 0.8rem;">Feb</small>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1;">
+                            <div style="width: 100%; background: linear-gradient(to top, #667eea, #764ba2); border-radius: 8px 8px 0 0; height: 85%;"></div>
+                            <small style="color: #666; font-size: 0.8rem;">Mar</small>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1;">
+                            <div style="width: 100%; background: linear-gradient(to top, #667eea, #764ba2); border-radius: 8px 8px 0 0; height: 70%;"></div>
+                            <small style="color: #666; font-size: 0.8rem;">Apr</small>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1;">
+                            <div style="width: 100%; background: linear-gradient(to top, #667eea, #764ba2); border-radius: 8px 8px 0 0; height: 95%;"></div>
+                            <small style="color: #666; font-size: 0.8rem;">May</small>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1;">
+                            <div style="width: 100%; background: linear-gradient(to top, #667eea, #764ba2); border-radius: 8px 8px 0 0; height: 100%;"></div>
+                            <small style="color: #666; font-size: 0.8rem;">Jun</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subject Distribution -->
+                <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0 0 20px 0; color: #333;"><i class="fas fa-book"></i> Subject Distribution</h3>
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="color: #666;">Physics</span>
+                                <span style="color: #333; font-weight: bold;">45%</span>
+                            </div>
+                            <div style="background: #e0e0e0; height: 12px; border-radius: 6px; overflow: hidden;">
+                                <div style="background: linear-gradient(90deg, #667eea, #764ba2); width: 45%; height: 100%;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="color: #666;">Mathematics</span>
+                                <span style="color: #333; font-weight: bold;">35%</span>
+                            </div>
+                            <div style="background: #e0e0e0; height: 12px; border-radius: 6px; overflow: hidden;">
+                                <div style="background: linear-gradient(90deg, #f093fb, #f5576c); width: 35%; height: 100%;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="color: #666;">Statistics</span>
+                                <span style="color: #333; font-weight: bold;">20%</span>
+                            </div>
+                            <div style="background: #e0e0e0; height: 12px; border-radius: 6px; overflow: hidden;">
+                                <div style="background: linear-gradient(90deg, #4facfe, #00f2fe); width: 20%; height: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 25px; display: flex; justify-content: center; align-items: center; height: 150px; position: relative;">
+                        <div style="width: 150px; height: 150px; border-radius: 50%; background: conic-gradient(#667eea 0deg 162deg, #f093fb 162deg 288deg, #4facfe 288deg 360deg); display: flex; align-items: center; justify-content: center;">
+                            <div style="width: 100px; height: 100px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #333;">100%</div>
+                                <div style="font-size: 0.7rem; color: #666;">Total</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Sessions Table -->
+            <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-top: 30px;">
+                <h3 style="margin: 0 0 20px 0; color: #333;"><i class="fas fa-fire"></i> Top Performing Sessions</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #e0e0e0;">
+                            <th style="text-align: left; padding: 12px; color: #666; font-weight: 600;">Session</th>
+                            <th style="text-align: left; padding: 12px; color: #666; font-weight: 600;">Subject</th>
+                            <th style="text-align: left; padding: 12px; color: #666; font-weight: 600;">Views</th>
+                            <th style="text-align: left; padding: 12px; color: #666; font-weight: 600;">Rating</th>
+                            <th style="text-align: left; padding: 12px; color: #666; font-weight: 600;">Completion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid #f0f0f0;">
+                            <td style="padding: 15px; color: #333;">Introduction to Mechanics</td>
+                            <td style="padding: 15px;"><span style="background: #e3f2fd; color: #1976d2; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Physics</span></td>
+                            <td style="padding: 15px; color: #333;">1,247</td>
+                            <td style="padding: 15px; color: #f39c12;">⭐ 4.9</td>
+                            <td style="padding: 15px; color: #28a745; font-weight: 600;">94%</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f0f0f0;">
+                            <td style="padding: 15px; color: #333;">Calculus Fundamentals</td>
+                            <td style="padding: 15px;"><span style="background: #fce4ec; color: #c2185b; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Math</span></td>
+                            <td style="padding: 15px; color: #333;">1,089</td>
+                            <td style="padding: 15px; color: #f39c12;">⭐ 4.8</td>
+                            <td style="padding: 15px; color: #28a745; font-weight: 600;">89%</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f0f0f0;">
+                            <td style="padding: 15px; color: #333;">Probability Theory</td>
+                            <td style="padding: 15px;"><span style="background: #e0f2f1; color: #00796b; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Statistics</span></td>
+                            <td style="padding: 15px; color: #333;">956</td>
+                            <td style="padding: 15px; color: #f39c12;">⭐ 4.7</td>
+                            <td style="padding: 15px; color: #28a745; font-weight: 600;">91%</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f0f0f0;">
+                            <td style="padding: 15px; color: #333;">Electromagnetism Basics</td>
+                            <td style="padding: 15px;"><span style="background: #e3f2fd; color: #1976d2; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Physics</span></td>
+                            <td style="padding: 15px; color: #333;">847</td>
+                            <td style="padding: 15px; color: #f39c12;">⭐ 4.6</td>
+                            <td style="padding: 15px; color: #28a745; font-weight: 600;">86%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 15px; color: #333;">Linear Algebra</td>
+                            <td style="padding: 15px;"><span style="background: #fce4ec; color: #c2185b; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Math</span></td>
+                            <td style="padding: 15px; color: #333;">734</td>
+                            <td style="padding: 15px; color: #f39c12;">⭐ 4.5</td>
+                            <td style="padding: 15px; color: #28a745; font-weight: 600;">83%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div id="settings" class="content-section">
@@ -673,5 +837,29 @@
     </div>
 
     <script src="js/admin.js"></script>
+    <script>
+        // Toggle between video upload and link input
+        function toggleVideoInput(radio) {
+            const container = radio.closest('.video-upload-item');
+            const uploadGroup = container.querySelector('.video-upload-group');
+            const linkGroup = container.querySelector('.video-link-group');
+            const uploadInput = uploadGroup.querySelector('input[name="videoFile[]"]');
+            const linkInput = linkGroup.querySelector('input[name="videoLink[]"]');
+            
+            if (radio.value === 'upload') {
+                uploadGroup.style.display = 'block';
+                linkGroup.style.display = 'none';
+                uploadInput.required = true;
+                linkInput.required = false;
+                linkInput.value = '';
+            } else {
+                uploadGroup.style.display = 'none';
+                linkGroup.style.display = 'block';
+                uploadInput.required = false;
+                uploadInput.value = '';
+                linkInput.required = true;
+            }
+        }
+    </script>
 </body>
 </html>
