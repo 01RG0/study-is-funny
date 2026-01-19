@@ -92,7 +92,7 @@ function registerStudent($data) {
             'phone' => $phone,
             'password' => $data['password'],
             'grade' => $data['grade'],
-            'subjects' => $data['grade'] === 'senior1' ? ["physics", "mathematics", "statistics"] : ["physics", "mathematics", "statistics"],
+            'subjects' => $data['grade'] === 'senior1' ? ["mathematics"] : ["physics", "mathematics", "mechanics"],
             'joinDate' => new MongoDB\BSON\UTCDateTime(),
             'lastLogin' => new MongoDB\BSON\UTCDateTime(),
             'isActive' => true,
@@ -180,43 +180,117 @@ function getStudent() {
         $databaseName = $GLOBALS['databaseName'];
 
         $phone = $_GET['phone'] ?? '';
-
         if (!$phone) {
             echo json_encode(['success' => false, 'message' => 'Phone number required']);
             return;
         }
 
-        $filter = ['phone' => $phone, 'isActive' => true];
-        $query = new MongoDB\Driver\Query($filter);
-        $cursor = $client->executeQuery("$databaseName.users", $query);
-        $student = current($cursor->toArray());
-
-        if ($student) {
-            $studentArray = [
-                'name' => $student->name,
-                'phone' => $student->phone,
-                'grade' => $student->grade,
-                'subjects' => $student->subjects,
-                'joinDate' => $student->joinDate ? $student->joinDate->toDateTime()->format('c') : null,
-                'lastLogin' => $student->lastLogin ? $student->lastLogin->toDateTime()->format('c') : null,
-                'isActive' => $student->isActive,
-                'totalSessionsViewed' => $student->totalSessionsViewed ?? 0,
-                'totalWatchTime' => $student->totalWatchTime ?? 0,
-                'totalSessions' => isset($student->subjects) ? count($student->subjects) * 5 : 0,
-                'watchedSessions' => $student->totalSessionsViewed ?? 0,
-                'totalWatchTimeFormatted' => formatWatchTime($student->totalWatchTime ?? 0)
-            ];
-
-            echo json_encode([
-                'success' => true,
-                'student' => $studentArray
-            ]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Student not found']);
+        // Normalize phone formats
+        $phonesToTry = [$phone];
+        $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
+        if (strlen($cleanPhone) === 11 && substr($cleanPhone, 0, 1) === '0') {
+            $phonesToTry[] = '+2' . $cleanPhone;
+            $phonesToTry[] = $cleanPhone;
         }
 
+        // 1. PRIMARY: Search 'all_students_view' (management system - MOST ACCURATE)
+        $viewQuery = new MongoDB\Driver\Query(['phone' => ['$in' => $phonesToTry]]);
+        $viewCursor = $client->executeQuery("$databaseName.all_students_view", $viewQuery);
+        $allMatches = $viewCursor->toArray();
+
+        if (!empty($allMatches)) {
+            // Initialize merged student data from first match
+            $merged = [
+                'name' => $allMatches[0]->studentName ?? $allMatches[0]->name ?? 'Student',
+                'phone' => $phone,
+                'subjects' => [],
+                'subjectIds' => [], // Map of subject => studentId
+                'grade' => 'senior1',
+                'isActive' => true
+            ];
+
+            // Advanced Subject Mapping
+            $subjectMapping = [
+                'math' => 'mathematics',
+                'pure math' => 'mathematics',
+                'physics' => 'physics',
+                'mechanics' => 'mechanics',
+                'stat' => 'mathematics'
+            ];
+
+            foreach ($allMatches as $match) {
+                $rawSubject = strtolower($match->subject ?? '');
+                
+                // Determine grade from subject field
+                if (isset($match->subject)) {
+                    if (strpos($match->subject, 'S1') !== false) $merged['grade'] = 'senior1';
+                    elseif (strpos($match->subject, 'S2') !== false) $merged['grade'] = 'senior2';
+                    elseif (strpos($match->subject, 'S3') !== false) $merged['grade'] = 'senior3';
+                }
+
+                // Map subject names and store studentId for each subject
+                foreach ($subjectMapping as $key => $slug) {
+                    if (strpos($rawSubject, $key) !== false) {
+                        if (!in_array($slug, $merged['subjects'])) {
+                            $merged['subjects'][] = $slug;
+                            // Store the studentId for this specific subject
+                            $merged['subjectIds'][$slug] = $match->studentId ?? null;
+                        }
+                    }
+                }
+            }
+
+            // Fallback subjects
+            if (empty($merged['subjects'])) {
+                $merged['subjects'] = ($merged['grade'] === 'senior1') ? ['mathematics'] : ['physics', 'mathematics', 'mechanics'];
+            }
+
+            $studentArray = [
+                'name' => $merged['name'],
+                'phone' => $phone,
+                'grade' => $merged['grade'],
+                'subjects' => array_values($merged['subjects']),
+                'subjectIds' => $merged['subjectIds'], // Include subject-to-ID mapping
+                'isActive' => true,
+                'totalSessionsViewed' => 0,
+                'totalWatchTime' => 0,
+                'totalSessions' => count($merged['subjects']) * 5,
+                'watchedSessions' => 0,
+                'totalWatchTimeFormatted' => '0h 0m'
+            ];
+
+            echo json_encode(['success' => true, 'student' => $studentArray]);
+            return;
+        }
+
+        // 2. FALLBACK: Try 'users' collection (platform accounts)
+        $filter = ['phone' => ['$in' => $phonesToTry]];
+        $query = new MongoDB\Driver\Query($filter);
+        $cursor = $client->executeQuery("$databaseName.users", $query);
+        $platformStudent = current($cursor->toArray());
+
+        if ($platformStudent) {
+            $studentArray = [
+                'name' => $platformStudent->name ?? 'Student',
+                'phone' => $phone,
+                'grade' => $platformStudent->grade ?? 'senior1',
+                'subjects' => isset($platformStudent->subjects) ? array_values((array)$platformStudent->subjects) : (($platformStudent->grade ?? 'senior1') === 'senior1' ? ['mathematics'] : ['physics', 'mathematics', 'mechanics']),
+                'isActive' => $platformStudent->isActive ?? true,
+                'totalSessionsViewed' => $platformStudent->totalSessionsViewed ?? 0,
+                'totalWatchTime' => $platformStudent->totalWatchTime ?? 0,
+                'totalSessions' => isset($platformStudent->subjects) ? count((array)$platformStudent->subjects) * 5 : 15,
+                'watchedSessions' => $platformStudent->totalSessionsViewed ?? 0,
+                'totalWatchTimeFormatted' => formatWatchTime($platformStudent->totalWatchTime ?? 0)
+            ];
+
+            echo json_encode(['success' => true, 'student' => $studentArray]);
+            return;
+        }
+
+        echo json_encode(['success' => false, 'message' => "Student not found with phone: " . implode(', ', $phonesToTry)]);
+
     } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => 'Error fetching student: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
     }
 }
 

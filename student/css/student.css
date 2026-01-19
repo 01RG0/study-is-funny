@@ -73,6 +73,26 @@ body {
     display: flex;
     justify-content: flex-end;
     margin-top: 15px;
+    gap: 10px;
+}
+
+.session-btn {
+    background: var(--student-secondary);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.session-btn:hover {
+    background: #e67e5a;
+    transform: translateY(-1px);
 }
 
 .logout-btn {
@@ -610,5 +630,413 @@ body {
     .activity-section,
     .sessions-section {
         padding: 20px;
+    }
+}
+
+/* Sessions Page Styles */
+.sessions-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.sessions-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.sessions-header h1 {
+    color: var(--student-primary);
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.sessions-header p {
+    color: var(--student-text-light);
+    font-size: 1.1rem;
+}
+
+/* Subject Selector */
+.subject-selector {
+    margin-bottom: 40px;
+}
+
+.selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.selector-item {
+    background: white;
+    border: 2px solid var(--student-border);
+    border-radius: 15px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--student-shadow);
+}
+
+.selector-item:hover {
+    border-color: var(--student-primary);
+    transform: translateY(-5px);
+    box-shadow: var(--student-shadow-hover);
+}
+
+.selector-item i {
+    font-size: 3rem;
+    color: var(--student-primary);
+    margin-bottom: 15px;
+    display: block;
+}
+
+.selector-item span {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--student-text);
+}
+
+/* Session Number Selector */
+.session-selector {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: var(--student-shadow);
+}
+
+.selector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.selector-header h2 {
+    color: var(--student-primary);
+    font-size: 1.8rem;
+}
+
+.back-btn {
+    background: var(--student-secondary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    background: #e67e5a;
+}
+
+.session-numbers {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.numbers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 15px;
+}
+
+.session-number {
+    aspect-ratio: 1;
+    background: var(--student-light);
+    border: 2px solid var(--student-border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--student-text);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.session-number:hover {
+    background: var(--student-primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Session Content */
+.session-content {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: var(--student-shadow);
+    margin-top: 30px;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--student-border);
+}
+
+.session-info h2 {
+    color: var(--student-primary);
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+.session-meta {
+    display: flex;
+    gap: 20px;
+    color: var(--student-text-light);
+}
+
+.session-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.close-session-btn {
+    background: var(--student-secondary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.close-session-btn:hover {
+    background: #e67e5a;
+}
+
+.content-body {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+}
+
+.video-player {
+    background: var(--student-light);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.video-player h3 {
+    color: var(--student-primary);
+    margin-bottom: 20px;
+}
+
+.video-item {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.video-item.active {
+    border-left: 4px solid var(--student-primary);
+}
+
+.video-item h4 {
+    color: var(--student-primary);
+    margin-bottom: 8px;
+}
+
+.video-item p {
+    color: var(--student-text-light);
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+.video-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.play-btn {
+    background: var(--student-primary);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.play-btn:hover {
+    background: var(--student-accent);
+}
+
+.duration {
+    color: var(--student-text-light);
+    font-size: 0.9rem;
+}
+
+.session-materials {
+    background: var(--student-light);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.session-materials h3 {
+    color: var(--student-primary);
+    margin-bottom: 20px;
+}
+
+.material-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--student-border);
+}
+
+.material-item:last-child {
+    border-bottom: none;
+}
+
+.material-item i {
+    color: var(--student-secondary);
+    font-size: 1.2rem;
+}
+
+.material-item span {
+    flex: 1;
+    color: var(--student-text);
+}
+
+.download-btn {
+    background: var(--student-success);
+    color: white;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+    background: #229954;
+}
+
+/* Loading and Error States */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loading-spinner {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: var(--student-shadow);
+}
+
+.loading-spinner i {
+    font-size: 2rem;
+    color: var(--student-primary);
+    margin-bottom: 15px;
+}
+
+.error-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.error-content {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: var(--student-shadow);
+    max-width: 400px;
+    width: 90%;
+}
+
+.error-content i {
+    font-size: 3rem;
+    color: #e74c3c;
+    margin-bottom: 20px;
+}
+
+.error-content h3 {
+    color: #e74c3c;
+    margin-bottom: 15px;
+}
+
+.error-content p {
+    color: var(--student-text);
+    margin-bottom: 20px;
+}
+
+.error-content button {
+    background: var(--student-primary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .content-body {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .selector-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .numbers-grid {
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        gap: 10px;
+    }
+
+    .session-number {
+        font-size: 1rem;
+    }
+
+    .content-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .session-meta {
+        justify-content: center;
+        flex-wrap: wrap;
     }
 }

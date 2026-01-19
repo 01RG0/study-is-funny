@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sessions - Study is Funny</title>
+    <link rel="stylesheet" href="css/student.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="student-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="../images/logo.webp" alt="Logo" class="nav-logo-img">
+                <span>Study is Funny</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="sessions.html" class="nav-link active">
+                    <i class="fas fa-play-circle"></i> Sessions
+                </a>
+                <a href="#" class="nav-link" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="sessions-container">
+        <div class="sessions-header">
+            <h1><i class="fas fa-play-circle"></i> Online Sessions</h1>
+            <p>Select your subject and session number to access online content</p>
+        </div>
+
+        <!-- Subject Selection -->
+        <div class="subject-selector">
+            <div class="selector-grid">
+                <div class="selector-item" data-subject="physics" onclick="selectSubject('physics')">
+                    <i class="fas fa-atom"></i>
+                    <span>Physics</span>
+                </div>
+                <div class="selector-item" data-subject="mathematics" onclick="selectSubject('mathematics')">
+                    <i class="fas fa-calculator"></i>
+                    <span>Mathematics</span>
+                </div>
+                <div class="selector-item" data-subject="mechanics" onclick="selectSubject('mechanics')">
+                    <i class="fas fa-cogs"></i>
+                    <span>Mechanics</span>
+                </div>
+                <div class="selector-item" data-subject="statistics" onclick="selectSubject('statistics')">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Statistics</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Number Selection -->
+        <div id="sessionSelector" class="session-selector" style="display: none;">
+            <div class="selector-header">
+                <h2 id="selectedSubjectTitle">Select Session Number</h2>
+                <button class="back-btn" onclick="backToSubjects()">
+                    <i class="fas fa-arrow-left"></i> Back to Subjects
+                </button>
+            </div>
+
+            <div class="session-numbers">
+                <div class="numbers-grid" id="sessionNumbersGrid">
+                    <!-- Session numbers will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Content -->
+        <div id="sessionContent" class="session-content" style="display: none;">
+            <div class="content-header">
+                <div class="session-info">
+                    <h2 id="sessionTitle">Session Title</h2>
+                    <div class="session-meta">
+                        <span id="sessionSubject">Subject</span>
+                        <span id="sessionTeacher">Teacher</span>
+                        <span id="sessionDuration">Duration</span>
+                    </div>
+                </div>
+                <button class="close-session-btn" onclick="closeSession()">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+
+            <div class="content-body">
+                <!-- Video Player -->
+                <div id="videoPlayer" class="video-player">
+                    <!-- Video content will be loaded here -->
+                </div>
+
+                <!-- Session Materials -->
+                <div id="sessionMaterials" class="session-materials">
+                    <!-- Materials will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading session...</p>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="error-message" style="display: none;">
+        <div class="error-content">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Access Denied</h3>
+            <p id="errorText">You don't have access to this session.</p>
+            <button onclick="hideError()">Close</button>
+        </div>
+    </div>
+
+    <script src="../js/database.js"></script>
+    <script src="../js/navigation.js"></script>
+    <script src="js/student.js"></script>
+    <script>
+        let selectedSubject = '';
+        let currentStudent = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initStudentSession();
+            loadAvailableSubjects();
+        });
+
+        async function initStudentSession() {
+            // Get current student data
+            const urlParams = new URLSearchParams(window.location.search);
+            const studentPhone = urlParams.get('phone') || localStorage.getItem('userPhone');
+
+            if (!studentPhone) {
+                window.location.href = '../login/index.html';
+                return;
+            }
+
+            try {
+                currentStudent = await getStudentData(studentPhone);
+                if (!currentStudent) {
+                    window.location.href = '../login/index.html';
+                    return;
+                }
+
+                // Store grade for session access
+                localStorage.setItem('studentGrade', currentStudent.grade);
+            } catch (error) {
+                console.error('Error loading student data:', error);
+                showError('Failed to load student data');
+            }
+        }
+
+        function loadAvailableSubjects() {
+            if (!currentStudent || !currentStudent.subjects) return;
+
+            // Hide subjects not available to this student
+            const subjectItems = document.querySelectorAll('.selector-item');
+            subjectItems.forEach(item => {
+                const subject = item.dataset.subject;
+                if (!currentStudent.subjects.includes(subject)) {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function selectSubject(subject) {
+            selectedSubject = subject;
+            document.querySelector('.subject-selector').style.display = 'none';
+            document.getElementById('sessionSelector').style.display = 'block';
+            document.getElementById('selectedSubjectTitle').textContent =
+                `Select ${subject.charAt(0).toUpperCase() + subject.slice(1)} Session Number`;
+
+            loadSessionNumbers(subject);
+        }
+
+        function backToSubjects() {
+            document.querySelector('.subject-selector').style.display = 'block';
+            document.getElementById('sessionSelector').style.display = 'none';
+            document.getElementById('sessionContent').style.display = 'none';
+            selectedSubject = '';
+        }
+
+        function loadSessionNumbers(subject) {
+            const grid = document.getElementById('sessionNumbersGrid');
+            grid.innerHTML = '';
+
+            // Generate session numbers 1-30 (typical for a semester)
+            for (let i = 1; i <= 30; i++) {
+                const sessionBtn = document.createElement('div');
+                sessionBtn.className = 'session-number';
+                sessionBtn.textContent = i;
+                sessionBtn.onclick = () => checkSessionAccess(subject, i);
+                grid.appendChild(sessionBtn);
+            }
+        }
+
+        async function checkSessionAccess(subject, sessionNumber) {
+            if (!currentStudent) {
+                showError('Student data not loaded');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch(`${window.APP_BASE_URL}api/sessions.php?action=check-access&studentId=${currentStudent.studentId || currentStudent._id}&sessionNumber=${sessionNumber}&subject=${subject}&grade=${currentStudent.grade}`);
+                const result = await response.json();
+
+                hideLoading();
+
+                if (result.success && result.hasAccess) {
+                    loadSessionContent(result.sessionContent, sessionNumber);
+                } else {
+                    let errorMsg = 'You don\'t have access to this session.';
+                    if (result.isExpired) {
+                        errorMsg = 'This session has expired.';
+                    }
+                    showError(errorMsg);
+                }
+            } catch (error) {
+                hideLoading();
+                console.error('Error checking session access:', error);
+                showError('Failed to check session access');
+            }
+        }
+
+        function loadSessionContent(session, sessionNumber) {
+            if (!session) {
+                showError('Session content not available');
+                return;
+            }
+
+            document.getElementById('sessionSelector').style.display = 'none';
+            document.getElementById('sessionContent').style.display = 'block';
+
+            // Update session info
+            document.getElementById('sessionTitle').textContent = `${session.title} (Session ${sessionNumber})`;
+            document.getElementById('sessionSubject').textContent = session.subject;
+            document.getElementById('sessionTeacher').textContent = `By ${session.teacher}`;
+
+            // Calculate total duration
+            const totalDuration = session.videos.reduce((sum, video) => sum + (video.duration || 0), 0);
+            document.getElementById('sessionDuration').textContent = `${totalDuration} min`;
+
+            // Load video content
+            loadVideoContent(session.videos);
+
+            // Load materials
+            loadMaterials(session.pdfFiles);
+        }
+
+        function loadVideoContent(videos) {
+            const videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.innerHTML = '';
+
+            if (!videos || videos.length === 0) {
+                videoPlayer.innerHTML = '<p class="no-content">No video content available for this session.</p>';
+                return;
+            }
+
+            videos.forEach((video, index) => {
+                const videoItem = document.createElement('div');
+                videoItem.className = 'video-item';
+
+                videoItem.innerHTML = `
+                    <h4>${video.title}</h4>
+                    <p>${video.description || 'No description available'}</p>
+                    <div class="video-controls">
+                        <button class="play-btn" onclick="playVideo('${video.file?.filename || ''}', ${index})">
+                            <i class="fas fa-play"></i> Play Video
+                        </button>
+                        <span class="duration">${video.duration || 0} min</span>
+                    </div>
+                `;
+
+                videoPlayer.appendChild(videoItem);
+            });
+        }
+
+        function loadMaterials(pdfFiles) {
+            const materials = document.getElementById('sessionMaterials');
+            materials.innerHTML = '<h3>Materials</h3>';
+
+            if (!pdfFiles || pdfFiles.length === 0) {
+                materials.innerHTML += '<p class="no-content">No additional materials available.</p>';
+                return;
+            }
+
+            pdfFiles.forEach(pdf => {
+                const materialItem = document.createElement('div');
+                materialItem.className = 'material-item';
+
+                materialItem.innerHTML = `
+                    <i class="fas fa-file-pdf"></i>
+                    <span>${pdf.originalName || pdf.filename}</span>
+                    <a href="${window.APP_BASE_URL}uploads/sessions/${pdf.filename}" target="_blank" class="download-btn">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                `;
+
+                materials.appendChild(materialItem);
+            });
+        }
+
+        function playVideo(filename, index) {
+            if (!filename) {
+                showError('Video file not available');
+                return;
+            }
+
+            // For demo purposes, show a placeholder
+            // In production, this would load the actual video
+            const videoItems = document.querySelectorAll('.video-item');
+            videoItems.forEach(item => item.classList.remove('active'));
+            videoItems[index].classList.add('active');
+
+            showMessage('Video player would open here with: ' + filename, 'info');
+        }
+
+        function closeSession() {
+            document.getElementById('sessionContent').style.display = 'none';
+            document.getElementById('sessionSelector').style.display = 'block';
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').style.display = 'flex';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function logout() {
+            localStorage.removeItem('studentPhone');
+            window.location.href = '../login/index.html';
+        }
+    </script>
+</body>
+</html>

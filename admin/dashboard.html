@@ -141,24 +141,32 @@
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="grade">Grade Level *</label>
-                            <select id="grade" name="grade" required>
-                                <option value="">Select Grade</option>
-                                <option value="senior1">Senior 1</option>
-                                <option value="senior2">Senior 2</option>
-                            </select>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="grade">Grade Level *</label>
+                                <select id="grade" name="grade" required>
+                                    <option value="">Select Grade</option>
+                                    <option value="senior1">Senior 1</option>
+                                    <option value="senior2">Senior 2</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="teacher">Teacher *</label>
+                                <select id="teacher" name="teacher" required>
+                                    <option value="">Select Teacher</option>
+                                    <option value="shadyelsharqawy">ENG. Shady Elsharqawy</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="teacher">Teacher *</label>
-                            <select id="teacher" name="teacher" required>
-                                <option value="">Select Teacher</option>
-                                <option value="shadyelsharqawy">ENG. Shady Elsharqawy</option>
-                            </select>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="sessionNumber">Session Number *</label>
+                                <input type="number" id="sessionNumber" name="sessionNumber" required min="1" max="100" placeholder="e.g., 1, 2, 3...">
+                                <small class="file-info">Session number corresponds to student's session_X field</small>
+                            </div>
                         </div>
-                    </div>
 
                     <div class="form-group">
                         <label for="description">Description</label>
@@ -378,6 +386,10 @@
                         <option value="scheduled">Scheduled</option>
                     </select>
                 </div>
+
+                <button class="add-session-btn" onclick="openCreateSessionModal()">
+                    <i class="fas fa-plus"></i> Create New Session
+                </button>
             </div>
 
             <div class="sessions-table-container">
@@ -432,6 +444,230 @@
             </div>
             <div class="modal-body">
                 <!-- Edit form will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Session Modal -->
+    <div id="createSessionModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-plus"></i> Create New Session</h2>
+                <span class="close-modal" onclick="closeCreateSessionModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="createSessionForm" class="session-form">
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="modalSessionTitle">Session Title *</label>
+                                <input type="text" id="modalSessionTitle" name="sessionTitle" required placeholder="e.g., Introduction to Mechanics">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="modalSubject">Subject *</label>
+                                <select id="modalSubject" name="subject" required>
+                                    <option value="">Select Subject</option>
+                                    <option value="physics">Physics</option>
+                                    <option value="mathematics">Mathematics</option>
+                                    <option value="statistics">Statistics</option>
+                                    <option value="mechanics">Mechanics</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="modalGrade">Grade Level *</label>
+                                <select id="modalGrade" name="grade" required>
+                                    <option value="">Select Grade</option>
+                                    <option value="senior1">Senior 1</option>
+                                    <option value="senior2">Senior 2</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="modalTeacher">Teacher *</label>
+                                <select id="modalTeacher" name="teacher" required>
+                                    <option value="">Select Teacher</option>
+                                    <option value="shadyelsharqawy">ENG. Shady Elsharqawy</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="modalSessionNumber">Session Number *</label>
+                                <input type="number" id="modalSessionNumber" name="sessionNumber" required min="1" max="100" placeholder="e.g., 1, 2, 3...">
+                                <small class="file-info">Session number corresponds to student's session_X field</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="modalDescription">Description</label>
+                                <textarea id="modalDescription" name="description" rows="2" placeholder="Brief description..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Access Control -->
+                    <div class="form-section">
+                        <h3>Access Control</h3>
+
+                        <div class="form-group">
+                            <label>Allowed Student Types *</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="studentTypes" value="all" checked> All Students
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="studentTypes" value="registered"> Registered Students Only
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="studentTypes" value="senior1"> Senior 1 Students Only
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="studentTypes" value="senior2"> Senior 2 Students Only
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="modalMaxViews">Maximum Views per Student</label>
+                                <input type="number" id="modalMaxViews" name="maxViews" min="1" placeholder="Unlimited">
+                                <small class="file-info">Leave empty for unlimited views</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="modalDownloadable">Allow Downloads</label>
+                                <div class="radio-group">
+                                    <label class="radio-label">
+                                        <input type="radio" name="downloadable" value="yes" checked> Yes
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="downloadable" value="no"> No
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Videos Section -->
+                    <div class="form-section">
+                        <h3>Video Content</h3>
+                        <div id="modalVideosContainer">
+                            <div class="video-item">
+                                <h4>Video 1</h4>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Video Type *</label>
+                                        <select name="videoType[]" required>
+                                            <option value="lecture">Lecture</option>
+                                            <option value="questions">Questions</option>
+                                            <option value="summary">Summary</option>
+                                            <option value="exercise">Exercise</option>
+                                            <option value="homework">Homework</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Video Title *</label>
+                                        <input type="text" name="videoTitle[]" required placeholder="e.g., Part 1 - Introduction">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Video Description</label>
+                                    <textarea name="videoDescription[]" rows="2" placeholder="Brief description of this video..."></textarea>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Duration (minutes)</label>
+                                        <input type="number" name="duration[]" min="1" placeholder="Estimated duration">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <button type="button" class="remove-video-btn" onclick="removeModalVideo(this)" style="display: none;">
+                                            <i class="fas fa-trash"></i> Remove Video
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" id="modalAddVideoBtn" class="add-video-btn">
+                            <i class="fas fa-plus"></i> Add Another Video
+                        </button>
+                    </div>
+
+                    <!-- Additional Settings -->
+                    <div class="form-section">
+                        <h3>Additional Settings</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="modalPublishDate">Publish Date</label>
+                                <input type="datetime-local" id="modalPublishDate" name="publishDate">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="modalExpiryDate">Expiry Date (Optional)</label>
+                                <input type="datetime-local" id="modalExpiryDate" name="expiryDate">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="modalIsPublished">Publish Status</label>
+                                <select id="modalIsPublished" name="isPublished">
+                                    <option value="draft">Save as Draft</option>
+                                    <option value="published">Publish Now</option>
+                                    <option value="scheduled">Schedule for Later</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="modalDifficulty">Difficulty Level</label>
+                                <select id="modalDifficulty" name="difficulty">
+                                    <option value="beginner">Beginner</option>
+                                    <option value="intermediate">Intermediate</option>
+                                    <option value="advanced">Advanced</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="modalTags">Tags/Keywords</label>
+                            <input type="text" id="modalTags" name="tags" placeholder="e.g., mechanics, physics, motion (comma separated)">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="modalFeatured">Featured Session</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="featured" value="yes"> Yes
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="featured" value="no" checked> No
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn" onclick="closeCreateSessionModal()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-save"></i> Create Session
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

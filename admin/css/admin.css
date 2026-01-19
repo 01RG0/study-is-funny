@@ -757,3 +757,120 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Validation and Error Styles */
+.form-group.error input,
+.form-group.error select,
+.form-group.error textarea {
+    border-color: var(--admin-accent);
+    box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.1);
+}
+
+.form-group.error .file-info {
+    color: var(--admin-accent);
+}
+
+.validation-errors {
+    background-color: #fee;
+    border: 1px solid var(--admin-accent);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-bottom: 20px;
+    color: var(--admin-accent);
+}
+
+.validation-errors ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.validation-errors li {
+    margin-bottom: 5px;
+}
+
+.form-group.success input,
+.form-group.success select,
+.form-group.success textarea {
+    border-color: var(--admin-success);
+    box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.1);
+}
+
+/* Enhanced Modal Styles for Large Modals */
+.modal.large-modal .modal-content {
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal.large-modal .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Session Form Enhancements */
+.session-form .form-section {
+    background: var(--admin-light);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--admin-secondary);
+}
+
+.session-form .form-section h3 {
+    color: var(--admin-primary);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.video-item {
+    background: white;
+    border: 1px solid #e1e8ed;
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.video-item h4 {
+    color: var(--admin-primary);
+    margin-bottom: 10px;
+    border-bottom: 1px solid #e1e8ed;
+    padding-bottom: 5px;
+}
+
+/* Button Enhancements */
+.add-session-btn,
+.add-video-btn {
+    background: var(--admin-secondary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.add-session-btn:hover,
+.add-video-btn:hover {
+    background: var(--admin-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+}
+
+.remove-video-btn {
+    background: var(--admin-accent);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.remove-video-btn:hover {
+    background: #c0392b;
+}

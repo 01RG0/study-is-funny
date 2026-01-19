@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,7 @@
     <link rel="stylesheet" href="../css/main.css"> <!-- Link to your CSS file -->
     <link rel="stylesheet" href="../css/all.min.css"> <!-- Font Awesome -->
     <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png"> <!-- Favicon -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+    <script src="../js/qrcode.min.js"></script>
 
     <!-- Firebase SDKs (uncomment to use Firebase instead of demo) -->
     <!--
@@ -15,37 +16,249 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     -->
     <style>
-        :root { --light-gray: #F0F0F0; --dark-gray: #121212; --contrast: #008080; --text: #FFFFE0; --button: #FF8C69; --dark-text: #E0E0E0; --dark-button: #FF6347; --dark: #333;}
-        body { font-family: 'Arial', sans-serif; background-color: var(--light-gray); color: #2F4F4F; line-height: 1.6; margin: 0; padding: 0; transition: background-color 0.3s ease, color 0.3s ease; }
-        .header-title { background-color: var(--contrast); color: var(--text); text-align: center; padding: 20px; margin-bottom: 20px; font-size: 28px; text-shadow: 1px 1px 2px #000; transition: background-color 0.3s ease, color 0.3s ease; }
-        .section-content { margin: 20px auto; padding: 20px; background-color: var(--contrast); border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); color: var(--text); max-width: 90%; box-sizing: border-box; transition: background-color 0.3s ease, color 0.3s ease; }
-        .section-heading { color: var(--text); font-size: 24px; margin-bottom: 15px; transition: color 0.3s ease; }
-        .start-button { display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; margin-top: 20px; text-decoration: none; border-radius: 5px; transition: background-color 0.3s ease; }
-        .start-button:hover { background-color: #45a049; }
-        .users { display: flex; justify-content: space-around; align-items: center; margin: 20px auto; max-width: 400px; }
-        .register, .login { margin: 10px; width: 270px; padding: 20px; text-align: center; background-color: var(--contrast); color: var(--text); border-radius: 10px; cursor: pointer; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); transition: background-color 0.3s ease, transform 0.3s ease, color 0.3s ease; }
-        .register:hover, .login:hover { background-color: var(--button); transform: translateY(-3px); }
-        @media (max-width: 600px) { .register, .login { width: 80%; font-size: 14px; padding: 15px; margin-bottom: 15px; } .register h1, .login h1 { font-size: 16px; } .register i, .login i { font-size: 18px; } .users { flex-direction: column; } .year-selection{width: 95%;}}
-        .features { direction: rtl; }
-        .register i, .login i { margin-right: 8px; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 20px; transition: 0.4s; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.4s; }
-        input:checked + .slider { background-color: #4CAF50; }
-        input:checked + .slider:before { transform: translateX(20px); }
-        .year-selection { background-color: var(--contrast); padding: 20px; text-align: center;}
-        .year-selection h1 { color: var(--text); margin-bottom: 20px; }
-        .year-selection button { background-color: var(--button); color: var(--text); border: none; padding: 10px 20px; margin: 10px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; }
-        .year-selection button:hover { background-color: var(--dark-button); }
-        body.dark-mode { background-color: var(--dark-gray); color: var(--dark-text); }
-        .dark-mode .header-title, .dark-mode .section-content, .dark-mode .section-heading, .dark-mode .register, .dark-mode .login { background-color: var(--dark-gray); color: var(--dark-text); }
-        .dark-mode .features-list li { border-left: 5px solid var(--dark-button); }
-        .dark-mode .start-button { background-color: var(--dark-button); color: var(--dark-text); }
-        .dark-mode .start-button:hover { background-color: #FF4500; }
-        .dark-mode .whatsapp-button { background-color: #128C7E; }
-        .dark-mode-switch { position: absolute; right: 150px; top: 25px; display: inline-block; width: 40px; height: 20px; }
-        .dark-mode-switch input { opacity: 0; width: 0; height: 0; }
-        .dark-mode .banner { background-color: var(--dark); }
-        .dark-mode .year-selection { background-color: var(--dark);}
+        :root {
+            --light-gray: #F0F0F0;
+            --dark-gray: #121212;
+            --contrast: #008080;
+            --text: #FFFFE0;
+            --button: #FF8C69;
+            --dark-text: #E0E0E0;
+            --dark-button: #FF6347;
+            --dark: #333;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--light-gray);
+            color: #2F4F4F;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .header-title {
+            background-color: var(--contrast);
+            color: var(--text);
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            font-size: 28px;
+            text-shadow: 1px 1px 2px #000;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .section-content {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--contrast);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            color: var(--text);
+            max-width: 90%;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .section-heading {
+            color: var(--text);
+            font-size: 24px;
+            margin-bottom: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .start-button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin-top: 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .start-button:hover {
+            background-color: #45a049;
+        }
+
+        .users {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px auto;
+            max-width: 400px;
+        }
+
+        .register,
+        .login {
+            margin: 10px;
+            width: 270px;
+            padding: 20px;
+            text-align: center;
+            background-color: var(--contrast);
+            color: var(--text);
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.3s ease, color 0.3s ease;
+        }
+
+        .register:hover,
+        .login:hover {
+            background-color: var(--button);
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 600px) {
+
+            .register,
+            .login {
+                width: 80%;
+                font-size: 14px;
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .register h1,
+            .login h1 {
+                font-size: 16px;
+            }
+
+            .register i,
+            .login i {
+                font-size: 18px;
+            }
+
+            .users {
+                flex-direction: column;
+            }
+
+            .year-selection {
+                width: 95%;
+            }
+        }
+
+        .features {
+            direction: rtl;
+        }
+
+        .register i,
+        .login i {
+            margin-right: 8px;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 20px;
+            transition: 0.4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+
+        input:checked+.slider {
+            background-color: #4CAF50;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+        }
+
+        .year-selection {
+            background-color: var(--contrast);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .year-selection h1 {
+            color: var(--text);
+            margin-bottom: 20px;
+        }
+
+        .year-selection button {
+            background-color: var(--button);
+            color: var(--text);
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .year-selection button:hover {
+            background-color: var(--dark-button);
+        }
+
+        body.dark-mode {
+            background-color: var(--dark-gray);
+            color: var(--dark-text);
+        }
+
+        .dark-mode .header-title,
+        .dark-mode .section-content,
+        .dark-mode .section-heading,
+        .dark-mode .register,
+        .dark-mode .login {
+            background-color: var(--dark-gray);
+            color: var(--dark-text);
+        }
+
+        .dark-mode .features-list li {
+            border-left: 5px solid var(--dark-button);
+        }
+
+        .dark-mode .start-button {
+            background-color: var(--dark-button);
+            color: var(--dark-text);
+        }
+
+        .dark-mode .start-button:hover {
+            background-color: #FF4500;
+        }
+
+        .dark-mode .whatsapp-button {
+            background-color: #128C7E;
+        }
+
+        .dark-mode-switch {
+            position: absolute;
+            right: 150px;
+            top: 25px;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .dark-mode-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .dark-mode .banner {
+            background-color: var(--dark);
+        }
+
+        .dark-mode .year-selection {
+            background-color: var(--dark);
+        }
 
         /* QR Codes Section Styles */
         .qr-section {
@@ -54,7 +267,7 @@
             padding: 20px;
             border-radius: 12px;
             max-width: 90%;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .qr-section h2 {
@@ -77,8 +290,10 @@
         }
 
         .qr-codes-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
             gap: 20px;
             margin-top: 20px;
         }
@@ -90,11 +305,13 @@
             text-align: center;
             border: 2px solid rgba(255, 255, 255, 0.2);
             transition: all 0.3s ease;
+            min-width: 200px;
+            flex: 0 1 auto;
         }
 
         .qr-code-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
             border-color: var(--button);
         }
 
@@ -118,7 +335,7 @@
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
 
-        .qr-code-card[data-subject="statistics"] .qr-subject-icon {
+        .qr-code-card[data-subject="mechanics"] .qr-subject-icon {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
 
@@ -129,18 +346,99 @@
         }
 
         .qr-code-display {
-            width: 150px;
-            height: 150px;
+            width: 200px;
+            height: 200px;
             margin: 0 auto 15px;
             border-radius: 8px;
-            overflow: hidden;
             border: 2px solid rgba(255, 255, 255, 0.3);
             background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
         }
 
-        .qr-code-display canvas {
+        .qr-code-display:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .qr-code-display canvas,
+        .qr-code-display img {
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Modal Styles */
+        .qr-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
             width: 100%;
             height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .qr-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 90%;
+            max-height: 90%;
+            text-align: center;
+            animation: zoomIn 0.3s ease;
+            position: relative;
+        }
+
+        .qr-modal-content h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .qr-modal-close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 40px;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .qr-modal-close:hover {
+            color: #000;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.5);
+            }
+
+            to {
+                transform: scale(1);
+            }
         }
 
         .qr-download-btn {
@@ -255,11 +553,11 @@
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             border-color: #1abc9c;
         }
-        
+
         .dark-mode .phone-label {
             color: #ecf0f1;
         }
-        
+
         .dark-mode .phone-value {
             background-color: #2c3e50;
             color: #1abc9c;
@@ -287,7 +585,7 @@
     <div class="container1">
         <div class="year-selection">
             <h1>Select Your Current Year</h1>
-            
+
             <div class="phone-display-container">
                 <div class="phone-number" id="displayPhone">
                     <div class="phone-label">الرقم المستخدم حالياً هو:</div>
@@ -295,7 +593,7 @@
                         <script>
                             // Get the phone number from localStorage
                             const userPhone = localStorage.getItem('userPhone');
-                            
+
                             // Display the phone number
                             if (userPhone) {
                                 document.write(userPhone);
@@ -334,7 +632,17 @@
         </div>
     </div>
 
-    <script src="../js/database.js"></script>
+    <!-- QR Modal -->
+    <div id="qrModal" class="qr-modal" onclick="closeQRModal(event)">
+        <div class="qr-modal-content" onclick="event.stopPropagation()">
+            <span class="qr-modal-close" onclick="closeQRModal()">&times;</span>
+            <h2 id="modalSubjectName"></h2>
+            <div id="modalQRContainer"
+                style="display: inline-block; background: white; padding: 20px; border-radius: 10px;"></div>
+        </div>
+    </div>
+
+    <script src="../js/database.js?v=20260118"></script>
     <script>
         // Get the dark mode toggle checkbox element
         const darkModeToggle = document.getElementById('darkModeToggleCheckbox');
@@ -357,7 +665,13 @@
         });
 
         // Load student QR codes on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
+            // Verify QR library loaded
+            console.log('📚 QRCode library status:', typeof QRCode !== 'undefined' ? '✅ Loaded' : '❌ Missing');
+            if (typeof QRCode === 'undefined') {
+                console.error('⚠️ QRCode library failed to load from CDN. Check internet connection.');
+            }
+
             // Check if student is logged in
             const isLoggedIn = localStorage.getItem('accessGranted');
             const userPhone = localStorage.getItem('userPhone');
@@ -384,17 +698,19 @@
             container.innerHTML = '<div class="qr-loading"><div class="spinner"></div><p>جاري تحميل رموز QR...</p></div>';
 
             try {
+                console.log('🔍 Loading QR codes for student:', userPhone);
                 // Get student data from MongoDB
                 const studentData = await getStudentData(userPhone);
-
+                console.log('👤 Student data received:', studentData);
                 if (studentData && studentData.subjects && studentData.subjects.length > 0) {
                     displayStudentQRCodes(studentData);
                 } else {
+                    console.warn('⚠️ No subjects found for student');
                     container.innerHTML = '<div class="qr-error">لم يتم العثور على بيانات الطالب أو لا توجد مواد مسجلة</div>';
                 }
             } catch (error) {
-                console.error('Error loading student QR codes:', error);
-                container.innerHTML = '<div class="qr-error">حدث خطأ في تحميل رموز QR. تأكد من إعداد قاعدة البيانات بشكل صحيح.</div>';
+                console.error('❌ Error loading student QR codes:', error);
+                container.innerHTML = `<div class="qr-error">حدث خطأ في تحميل رموز QR: ${error.message}</div>`;
             }
         }
 
@@ -402,57 +718,110 @@
             const container = document.getElementById('qrCodesContainer');
             container.innerHTML = '';
 
+            // Ensure subjects is an array (even if API returns object)
+            let subjects = studentData.subjects || [];
+            if (!Array.isArray(subjects)) {
+                console.log('🔄 Converting subjects object to array');
+                subjects = Object.values(subjects);
+            }
+
+            // Filter subjects based on grade
+            if (studentData.grade && studentData.grade.includes('1')) {
+                subjects = subjects.filter(s => s === 'mathematics');
+                console.log('📉 Filtered for Senior 1: Only math');
+            } else if (studentData.grade && studentData.grade.includes('2')) {
+                subjects = subjects.filter(s => ['mathematics', 'physics', 'mechanics'].includes(s));
+                console.log('📊 Filtered for Senior 2: Math, Physics, Mechanics');
+            }
+
+            console.log('🎨 Displaying QR codes for subjects:', subjects);
+            console.log(`📊 Student has ${subjects.length} subject(s):`, subjects.join(', '));
+
             const subjectNames = {
                 physics: { name: 'الفيزياء', icon: 'fas fa-atom' },
                 mathematics: { name: 'الرياضيات', icon: 'fas fa-calculator' },
-                statistics: { name: 'الإحصاء', icon: 'fas fa-chart-bar' }
+                mechanics: { name: 'الميكانيكا', icon: 'fas fa-cogs' }
             };
 
-            studentData.subjects.forEach(subject => {
+            let generatedCount = 0;
+            subjects.forEach(subject => {
                 const subjectInfo = subjectNames[subject];
-                if (!subjectInfo) return;
+                if (!subjectInfo) {
+                    console.warn(`⚠️ Unknown subject: ${subject} - Skipping QR generation`);
+                    return;
+                }
+                console.log(`✏️ Creating QR for: ${subjectInfo.name} (${subject})`);
+                generatedCount++;
 
-                // Create QR code data
-                const qrData = JSON.stringify({
-                    studentPhone: studentData.phone,
-                    subject: subject,
-                    grade: studentData.grade,
-                    timestamp: Date.now(),
-                    accessToken: generateAccessToken(studentData.phone, subject)
-                });
+                // Get the studentId for this specific subject
+                const studentId = studentData.subjectIds && studentData.subjectIds[subject]
+                    ? studentData.subjectIds[subject]
+                    : null;
 
-                // Create access URL
-                const accessUrl = `${window.location.origin}/senior${studentData.grade === 'senior1' ? '1' : '2'}/${subject}/qr-access/?qr=${encodeURIComponent(qrData)}`;
+                if (!studentId) {
+                    console.error(`❌ No studentId found for ${subject}. Skipping.`);
+                    return;
+                }
 
-                const qrCard = document.createElement('div');
-                qrCard.className = 'qr-code-card';
-                qrCard.setAttribute('data-subject', subject);
+                console.log(`🆔 Using studentId: ${studentId} for ${subject}`);
 
-                qrCard.innerHTML = `
-                    <div class="qr-subject-icon">
-                        <i class="${subjectInfo.icon}"></i>
-                    </div>
-                    <h3>${subjectInfo.name}</h3>
-                    <div class="qr-code-display">
-                        <canvas id="qr-${subject}"></canvas>
-                    </div>
-                    <button class="qr-download-btn" onclick="downloadQR('${subject}', '${subjectInfo.name}')">
-                        <i class="fas fa-download"></i> تحميل
-                    </button>
-                `;
+                try {
+                    // Create access URL - QR code contains ONLY the student ID
+                    const appRoot = window.APP_BASE_URL || '../';
+                    const accessUrl = `${appRoot}senior${studentData.grade.includes('1') ? '1' : (studentData.grade.includes('3') ? '3' : '2')}/${subject}/qr-access/?id=${studentId}`;
 
-                container.appendChild(qrCard);
+                    console.log(`🔗 [${subject}] Simple URL with ID ${studentId}:`, accessUrl);
 
-                // Generate QR code
-                QRCode.toCanvas(document.getElementById(`qr-${subject}`), accessUrl, {
-                    width: 150,
-                    height: 150,
-                    color: {
-                        dark: '#000000',
-                        light: '#FFFFFF'
+                    const qrCard = document.createElement('div');
+                    qrCard.className = 'qr-code-card';
+                    qrCard.setAttribute('data-subject', subject);
+
+                    qrCard.innerHTML = `
+                        <div class="qr-subject-icon">
+                            <i class="${subjectInfo.icon}"></i>
+                        </div>
+                        <h3>${subjectInfo.name}</h3>
+                        <div class="qr-code-display" id="qr-container-${subject}" onclick="showQRModal('${subject}', '${subjectInfo.name}')" title="انقر للتكبير">
+                        </div>
+                        <button class="qr-download-btn" onclick="downloadQR('${subject}', '${subjectInfo.name}')">
+                            <i class="fas fa-download"></i> تحميل
+                        </button>
+                    `;
+
+                    container.appendChild(qrCard);
+
+                    // Generate QR code using QRCodeJS
+                    if (typeof QRCode === 'undefined') {
+                        throw new Error('QR library missing');
                     }
-                });
+
+                    const qrContainer = document.getElementById(`qr-container-${subject}`);
+                    if (!qrContainer) throw new Error(`Container not found`);
+
+                    // Small delay to ensure DOM is ready
+                    setTimeout(() => {
+                        try {
+                            new QRCode(qrContainer, {
+                                text: String(studentId),
+                                width: 180,
+                                height: 180,
+                                colorDark: '#000000',
+                                colorLight: '#ffffff',
+                                correctLevel: QRCode.CorrectLevel.M
+                            });
+                            console.log(`✅ QR Created for ID: ${studentId} [${subject}]`);
+                        } catch (error) {
+                            console.error(`❌ QR Error [${subject}]:`, error);
+                            qrContainer.innerHTML = `<div style="color:red; font-size:12px;">خطأ في الرسم: ${error.message}</div>`;
+                        }
+                    }, 50);
+
+                } catch (err) {
+                    console.error(`❌ Error rendering QR for ${subject}:`, err);
+                }
             });
+
+            console.log(`✅ QR Code Generation Complete: ${generatedCount} code(s) created`);
         }
 
         function generateAccessToken(phone, subject) {
@@ -461,14 +830,88 @@
         }
 
         function downloadQR(subject, subjectName) {
-            const canvas = document.getElementById(`qr-${subject}`);
+            const container = document.getElementById(`qr-container-${subject}`);
+            if (!container) {
+                console.error(`Container not found for ${subject}`);
+                return;
+            }
+
+            // QRCodeJS creates a canvas element inside the container
+            const canvas = container.querySelector('canvas');
             if (canvas) {
-                const link = document.createElement('a');
-                link.download = `QR-${subjectName}.png`;
-                link.href = canvas.toDataURL();
-                link.click();
+                try {
+                    // Convert canvas to blob for better download
+                    canvas.toBlob(function (blob) {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.download = `QR-${subjectName}-${Date.now()}.png`;
+                        link.href = url;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                        console.log(`✅ Downloaded QR for ${subjectName}`);
+                    }, 'image/png', 1.0);
+                } catch (error) {
+                    // Fallback to dataURL method
+                    console.warn('Blob method failed, using dataURL fallback');
+                    const link = document.createElement('a');
+                    link.download = `QR-${subjectName}-${Date.now()}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                }
+            } else {
+                console.error('❌ QR code canvas not found for download');
+                alert('لم يتم العثور على رمز QR للتحميل');
             }
         }
+
+        function showQRModal(subject, subjectName) {
+            const modal = document.getElementById('qrModal');
+            const modalTitle = document.getElementById('modalSubjectName');
+            const modalContainer = document.getElementById('modalQRContainer');
+
+            // Set title
+            modalTitle.textContent = subjectName;
+
+            // Clear previous QR
+            modalContainer.innerHTML = '';
+
+            // Get the original container
+            const originalContainer = document.getElementById(`qr-container-${subject}`);
+            if (originalContainer) {
+                const canvas = originalContainer.querySelector('canvas');
+                if (canvas) {
+                    // Clone the canvas with larger size
+                    const dataURL = canvas.toDataURL();
+                    const img = document.createElement('img');
+                    img.src = dataURL;
+                    img.style.width = '400px';
+                    img.style.height = '400px';
+                    img.style.imageRendering = 'pixelated'; // Keeps QR sharp when enlarged
+                    modalContainer.appendChild(img);
+
+                    // Show modal
+                    modal.classList.add('active');
+                    console.log(`📱 Showing enlarged QR for ${subject}`);
+                }
+            }
+        }
+
+        function closeQRModal(event) {
+            // Close if clicked outside modal content or on close button
+            if (!event || event.target.id === 'qrModal' || event.target.className === 'qr-modal-close') {
+                const modal = document.getElementById('qrModal');
+                modal.classList.remove('active');
+            }
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeQRModal();
+            }
+        });
 
         // Helper function for spinner (you might already have this in CSS)
         // Adding a simple spinner style if not present
@@ -495,4 +938,5 @@
 
     </script>
 </body>
+
 </html>

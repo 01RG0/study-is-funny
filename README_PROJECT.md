@@ -123,8 +123,14 @@ python -m SimpleHTTPServer 8000
 # Using Node.js (if available)
 npx serve . -p 8000
 
-# Using PHP (if available)
+# Using PHP built-in server (if available)
 php -S localhost:8000
+
+# Test PHP installation
+php test_php.php
+
+# Test API endpoints
+php test_api.php
 ```
 
 ## 🌐 Access URLs
@@ -140,6 +146,37 @@ Once running, access these URLs:
 - **Senior 2**: http://localhost:8000/senior2/index.html
 - **Test QR**: http://localhost:8000/tests/test-grade-qr.html
 - **Test MongoDB**: http://localhost:8000/tests/test-mongodb.html
+
+## 🐘 PHP Testing & API Endpoints
+
+### Installing PHP on Windows
+```bash
+# Run the installation helper
+install_php.bat
+# or
+powershell .\install_php.ps1
+```
+
+### Testing PHP Installation
+```bash
+# Basic PHP test
+php test_php.php
+
+# Test API endpoints
+php test_api.php
+```
+
+### API Endpoints Available
+- `GET  /api/students.php?action=all` - Get all students
+- `GET  /api/students.php?action=get&phone=X` - Get specific student
+- `POST /api/students.php?action=register` - Register new student
+- `POST /api/students.php?action=login` - Student login
+- `PUT  /api/students.php?action=update` - Update student
+
+### PHP Requirements
+- PHP 7.4+ with MongoDB extension
+- MongoDB PHP driver installed
+- Web server (Apache/Nginx) or PHP built-in server
 
 ## ⚙️ MongoDB Configuration
 

@@ -16,6 +16,7 @@ function checkStudentAuth() {
 function logout() {
     localStorage.removeItem('accessGranted');
     localStorage.removeItem('userPhone');
+    localStorage.removeItem('studentPhone');
     window.location.href = '../login';
 }
 
@@ -40,14 +41,18 @@ async function loadStudentData(phone) {
 
         const studentData = await getStudentDataFromMongoDB(phone);
 
-        if (studentData) {
-            displayStudentInfo(studentData);
-            generateStudentQRCodes(studentData);
-            loadRecentActivity(studentData);
-            loadAvailableSessions(studentData);
-        } else {
-            showError('لم يتم العثور على بيانات الطالب');
-        }
+                if (studentData) {
+                    // Store student grade for session access
+                    localStorage.setItem('studentGrade', studentData.grade);
+                    localStorage.setItem('studentId', studentData.studentId || studentData._id);
+
+                    displayStudentInfo(studentData);
+                    generateStudentQRCodes(studentData);
+                    loadRecentActivity(studentData);
+                    loadAvailableSessions(studentData);
+                } else {
+                    showError('لم يتم العثور على بيانات الطالب');
+                }
     } catch (error) {
         console.error('Error loading student data:', error);
         showError('حدث خطأ في تحميل البيانات');
@@ -173,7 +178,7 @@ function generateStudentQRCodes(data) {
         const qrCard = document.createElement('div');
         qrCard.className = 'qr-code-card';
         qrCard.setAttribute('data-subject', subject);
-        qrCard.onclick = () => showQRModal(subject, subjectInfo.name, qrData);
+        qrCard.onclick = () => showQRModal(subject, subjectInfo.name, qrData, data.grade);
 
         qrCard.innerHTML = `
             <div class="qr-subject-icon">
@@ -192,7 +197,6 @@ function generateStudentQRCodes(data) {
         container.appendChild(qrCard);
 
         // Generate QR code with access URL
-        const accessUrl = `${window.location.origin}/senior${data.grade === 'senior1' ? '1' : '2'}/${subject}/qr-access/?qr=${encodeURIComponent(qrData)}`;
         QRCode.toCanvas(document.getElementById(`qr-${subject}`), accessUrl, {
             width: 150,
             height: 150,
@@ -211,7 +215,7 @@ function generateAccessToken(phone, subject) {
 }
 
 // Show QR code modal
-function showQRModal(subject, subjectName, qrData) {
+function showQRModal(subject, subjectName, qrData, grade) {
     const modal = document.getElementById('qrModal');
     const modalContent = document.getElementById('qrModalContent');
 
@@ -232,7 +236,7 @@ function showQRModal(subject, subjectName, qrData) {
     modal.style.display = 'block';
 
     // Generate larger QR code for modal
-    const accessUrl = `${window.location.origin}/senior${data.grade === 'senior1' ? '1' : '2'}/${subject}/qr-access/?qr=${encodeURIComponent(qrData)}`;
+    const accessUrl = `${window.location.origin}/senior${grade === 'senior1' ? '1' : '2'}/${subject}/qr-access/?qr=${encodeURIComponent(qrData)}`;
     QRCode.toCanvas(document.getElementById('qr-modal-canvas'), accessUrl, {
         width: 250,
         height: 250,
@@ -251,6 +255,16 @@ function closeQRModal() {
 // Open QR scanner
 function openQRScanner() {
     window.open('../qr-scanner.html', '_blank');
+}
+
+// Open sessions page
+function openSessionsPage() {
+    const userPhone = localStorage.getItem('userPhone');
+    if (userPhone) {
+        window.location.href = `sessions.html?phone=${encodeURIComponent(userPhone)}`;
+    } else {
+        showError('يرجى تسجيل الدخول أولاً');
+    }
 }
 
 // Open subject sessions directly
@@ -357,3 +371,167 @@ window.onclick = function(event) {
         modal.style.display = 'none';
     }
 };
+
+// Session Access Functions
+async function checkSessionAccess(subject, sessionNumber) {
+    const userPhone = localStorage.getItem('userPhone');
+    const studentId = localStorage.getItem('studentId') || userPhone;
+    const studentGrade = localStorage.getItem('studentGrade') || 'senior1';
+
+    if (!userPhone) {
+        showError('يرجى تسجيل الدخول أولاً');
+        return false;
+    }
+
+    try {
+        // Use the API to check session access
+        const result = await checkStudentSessionAccess(studentId, sessionNumber, subject, studentGrade);
+
+        if (result.success) {
+            if (result.hasAccess) {
+                return true;
+            } else {
+                if (result.isExpired) {
+                    showError('انتهت صلاحية هذه الحصة');
+                } else {
+                    showError('هذه الحصة غير متاحة للوصول عبر الإنترنت');
+                }
+                return false;
+            }
+        } else {
+            showError(result.message || 'لم يتم العثور على هذه الحصة');
+            return false;
+        }
+
+    } catch (error) {
+        console.error('Error checking session access:', error);
+        showError('حدث خطأ في التحقق من صلاحية الوصول');
+        return false;
+    }
+}
+
+async function loadSessionContent(subject, sessionNumber) {
+    try {
+        const hasAccess = await checkSessionAccess(subject, sessionNumber);
+        if (!hasAccess) return;
+
+        // Get session content from API (this should return the session content if access is granted)
+        const userPhone = localStorage.getItem('userPhone');
+        const studentId = localStorage.getItem('studentId') || userPhone;
+        const studentGrade = localStorage.getItem('studentGrade') || 'senior1';
+
+        const result = await checkStudentSessionAccess(studentId, sessionNumber, subject, studentGrade);
+
+        if (result.success && result.hasAccess && result.sessionContent) {
+            displaySessionContent(result.sessionContent, sessionNumber);
+        } else {
+            showError('لم يتم العثور على محتوى الحصة');
+        }
+
+    } catch (error) {
+        console.error('Error loading session content:', error);
+        showError('حدث خطأ في تحميل محتوى الحصة');
+    }
+}
+
+function getCurrentStudentGrade() {
+    // This should be stored when student logs in
+    return localStorage.getItem('studentGrade') || 'senior1';
+}
+
+function displaySessionContent(session, sessionNumber) {
+    // Update session info
+    const sessionInfo = document.querySelector('.session-info');
+    if (sessionInfo) {
+        sessionInfo.innerHTML = `
+            <h2>${session.title} (الحصة ${sessionNumber})</h2>
+            <div class="session-meta">
+                <span>${session.subject}</span>
+                <span>المعلم: ${session.teacher}</span>
+                <span>المدة: ${calculateTotalDuration(session.videos)} دقيقة</span>
+            </div>
+        `;
+    }
+
+    // Load video content
+    loadSessionVideos(session.videos);
+
+    // Load materials
+    loadSessionMaterials(session.pdfFiles);
+
+    // Show session content
+    document.querySelector('.session-content').style.display = 'block';
+}
+
+function calculateTotalDuration(videos) {
+    if (!videos || videos.length === 0) return 0;
+    return videos.reduce((sum, video) => sum + (video.duration || 0), 0);
+}
+
+function loadSessionVideos(videos) {
+    const videoContainer = document.querySelector('.video-player');
+    if (!videoContainer) return;
+
+    videoContainer.innerHTML = '<h3>المحتوى المرئي</h3>';
+
+    if (!videos || videos.length === 0) {
+        videoContainer.innerHTML += '<p>لا يوجد محتوى مرئي لهذه الحصة</p>';
+        return;
+    }
+
+    videos.forEach((video, index) => {
+        const videoItem = document.createElement('div');
+        videoItem.className = 'video-item';
+        videoItem.innerHTML = `
+            <h4>${video.title}</h4>
+            <p>${video.description || 'لا يوجد وصف'}</p>
+            <div class="video-controls">
+                <button class="play-btn" onclick="playVideo('${video.file?.filename || ''}', ${index})">
+                    <i class="fas fa-play"></i> تشغيل الفيديو
+                </button>
+                <span class="duration">${video.duration || 0} دقيقة</span>
+            </div>
+        `;
+        videoContainer.appendChild(videoItem);
+    });
+}
+
+function loadSessionMaterials(pdfFiles) {
+    const materialsContainer = document.querySelector('.session-materials');
+    if (!materialsContainer) return;
+
+    materialsContainer.innerHTML = '<h3>المواد التعليمية</h3>';
+
+    if (!pdfFiles || pdfFiles.length === 0) {
+        materialsContainer.innerHTML += '<p>لا توجد مواد تعليمية إضافية</p>';
+        return;
+    }
+
+    pdfFiles.forEach(pdf => {
+        const materialItem = document.createElement('div');
+        materialItem.className = 'material-item';
+        materialItem.innerHTML = `
+            <i class="fas fa-file-pdf"></i>
+            <span>${pdf.originalName || pdf.filename}</span>
+            <a href="${window.APP_BASE_URL}uploads/sessions/${pdf.filename}" target="_blank" class="download-btn">
+                <i class="fas fa-download"></i> تحميل
+            </a>
+        `;
+        materialsContainer.appendChild(materialItem);
+    });
+}
+
+function playVideo(filename, index) {
+    if (!filename) {
+        showError('ملف الفيديو غير متوفر');
+        return;
+    }
+
+    // Mark video items as inactive
+    const videoItems = document.querySelectorAll('.video-item');
+    videoItems.forEach(item => item.classList.remove('active'));
+    videoItems[index].classList.add('active');
+
+    // In production, this would load the actual video player
+    showMessage('مشغل الفيديو سيفتح هنا: ' + filename, 'info');
+}

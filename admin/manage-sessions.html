@@ -85,8 +85,8 @@
                 </select>
             </div>
 
-            <button class="add-video-btn" onclick="location.href='dashboard.html'">
-                <i class="fas fa-plus"></i> Upload New Session
+            <button class="add-session-btn" onclick="openCreateSessionModal()">
+                <i class="fas fa-plus"></i> Create New Session
             </button>
         </div>
 
@@ -207,6 +207,222 @@
         </div>
     </div>
 
+    <!-- Create Session Modal -->
+    <div id="createSessionModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-plus"></i> Create New Session</h2>
+                <span class="close-modal" onclick="closeCreateSessionModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="createSessionForm" class="session-form">
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="modalSessionTitle">Session Title *</label>
+                                <input type="text" id="modalSessionTitle" name="sessionTitle" required placeholder="e.g., Introduction to Mechanics">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="modalSubject">Subject *</label>
+                                <select id="modalSubject" name="subject" required>
+                                    <option value="">Select Subject</option>
+                                    <option value="physics">Physics</option>
+                                    <option value="mathematics">Mathematics</option>
+                                    <option value="statistics">Statistics</option>
+                                    <option value="mechanics">Mechanics</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="modalGrade">Grade Level *</label>
+                                <select id="modalGrade" name="grade" required>
+                                    <option value="">Select Grade</option>
+                                    <option value="senior1">Senior 1</option>
+                                    <option value="senior2">Senior 2</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="modalTeacher">Teacher *</label>
+                                <select id="modalTeacher" name="teacher" required>
+                                    <option value="">Select Teacher</option>
+                                    <option value="shadyelsharqawy">ENG. Shady Elsharqawy</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="modalDescription">Description</label>
+                            <textarea id="modalDescription" name="description" rows="3" placeholder="Brief description of the session content..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Access Control -->
+                    <div class="form-section">
+                        <h3>Access Control</h3>
+
+                        <div class="form-group">
+                            <label>Allowed Student Types *</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="studentTypes" value="all" checked> All Students
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="studentTypes" value="registered"> Registered Students Only
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="studentTypes" value="senior1"> Senior 1 Students Only
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="studentTypes" value="senior2"> Senior 2 Students Only
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="modalMaxViews">Maximum Views per Student</label>
+                                <input type="number" id="modalMaxViews" name="maxViews" min="1" placeholder="Unlimited">
+                                <small class="file-info">Leave empty for unlimited views</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="modalDownloadable">Allow Downloads</label>
+                                <div class="radio-group">
+                                    <label class="radio-label">
+                                        <input type="radio" name="downloadable" value="yes" checked> Yes
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="downloadable" value="no"> No
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Videos Section -->
+                    <div class="form-section">
+                        <h3>Video Content</h3>
+                        <div id="modalVideosContainer">
+                            <div class="video-item">
+                                <h4>Video 1</h4>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Video Type *</label>
+                                        <select name="videoType[]" required>
+                                            <option value="lecture">Lecture</option>
+                                            <option value="questions">Questions</option>
+                                            <option value="summary">Summary</option>
+                                            <option value="exercise">Exercise</option>
+                                            <option value="homework">Homework</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Video Title *</label>
+                                        <input type="text" name="videoTitle[]" required placeholder="e.g., Part 1 - Introduction">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Video Description</label>
+                                    <textarea name="videoDescription[]" rows="2" placeholder="Brief description of this video..."></textarea>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Duration (minutes)</label>
+                                        <input type="number" name="duration[]" min="1" placeholder="Estimated duration">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <button type="button" class="remove-video-btn" onclick="removeModalVideo(this)" style="display: none;">
+                                            <i class="fas fa-trash"></i> Remove Video
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" id="modalAddVideoBtn" class="add-video-btn">
+                            <i class="fas fa-plus"></i> Add Another Video
+                        </button>
+                    </div>
+
+                    <!-- Additional Settings -->
+                    <div class="form-section">
+                        <h3>Additional Settings</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="modalPublishDate">Publish Date</label>
+                                <input type="datetime-local" id="modalPublishDate" name="publishDate">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="modalExpiryDate">Expiry Date (Optional)</label>
+                                <input type="datetime-local" id="modalExpiryDate" name="expiryDate">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="modalIsPublished">Publish Status</label>
+                                <select id="modalIsPublished" name="isPublished">
+                                    <option value="draft">Save as Draft</option>
+                                    <option value="published">Publish Now</option>
+                                    <option value="scheduled">Schedule for Later</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="modalDifficulty">Difficulty Level</label>
+                                <select id="modalDifficulty" name="difficulty">
+                                    <option value="beginner">Beginner</option>
+                                    <option value="intermediate">Intermediate</option>
+                                    <option value="advanced">Advanced</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="modalTags">Tags/Keywords</label>
+                            <input type="text" id="modalTags" name="tags" placeholder="e.g., mechanics, physics, motion (comma separated)">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="modalFeatured">Featured Session</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="featured" value="yes"> Yes
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="featured" value="no" checked> No
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn" onclick="closeCreateSessionModal()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-save"></i> Create Session
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="js/admin.js"></script>
     <script>
         // Manage sessions functionality
@@ -237,107 +453,77 @@
             });
         });
 
-        function loadSessionsTable() {
+        async function loadSessionsTable() {
             const tableBody = document.getElementById('sessionsTableBody');
-            tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px;">Loading sessions...</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 40px;">Loading sessions...</td></tr>';
 
-            // Simulate loading sessions data
-            setTimeout(() => {
-                const sessions = [
-                    {
-                        id: 1,
-                        title: 'Introduction to Mechanics',
-                        subject: 'Physics',
-                        grade: 'Senior 1',
-                        teacher: 'ENG. Shady Elsharqawy',
-                        status: 'published',
-                        views: 245,
-                        rating: 4.8,
-                        uploadDate: '2024-01-15',
-                        price: 85
-                    },
-                    {
-                        id: 2,
-                        title: 'Algebra Fundamentals',
-                        subject: 'Mathematics',
-                        grade: 'Senior 1',
-                        teacher: 'ENG. Shady Elsharqawy',
-                        status: 'published',
-                        views: 189,
-                        rating: 4.6,
-                        uploadDate: '2024-01-14',
-                        price: 75
-                    },
-                    {
-                        id: 3,
-                        title: 'Statistics Basics',
-                        subject: 'Statistics',
-                        grade: 'Senior 2',
-                        teacher: 'ENG. Shady Elsharqawy',
-                        status: 'draft',
-                        views: 0,
-                        rating: 0,
-                        uploadDate: '2024-01-13',
-                        price: 95
-                    },
-                    {
-                        id: 4,
-                        title: 'Electricity and Magnetism',
-                        subject: 'Physics',
-                        grade: 'Senior 2',
-                        teacher: 'ENG. Shady Elsharqawy',
-                        status: 'scheduled',
-                        views: 0,
-                        rating: 0,
-                        uploadDate: '2024-01-12',
-                        price: 120
-                    },
-                    {
-                        id: 5,
-                        title: 'Calculus Introduction',
-                        subject: 'Mathematics',
-                        grade: 'Senior 2',
-                        teacher: 'ENG. Shady Elsharqawy',
-                        status: 'published',
-                        views: 156,
-                        rating: 4.9,
-                        uploadDate: '2024-01-11',
-                        price: 100
-                    }
-                ];
+            try {
+                // Get filter values
+                const filters = {
+                    subject: document.getElementById('filterSubject')?.value || '',
+                    grade: document.getElementById('filterGrade')?.value || '',
+                    status: document.getElementById('filterStatus')?.value || ''
+                };
 
-                tableBody.innerHTML = '';
+                const result = await getAllSessions(filters);
 
-                sessions.forEach(session => {
-                    const row = document.createElement('tr');
+                if (result.success) {
+                    displaySessions(result.sessions);
+                } else {
+                    tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 40px; color: red;">${result.message}</td></tr>`;
+                }
+            } catch (error) {
+                console.error('Error loading sessions:', error);
+                tableBody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 40px; color: red;">Failed to load sessions</td></tr>';
+            }
+        }
 
-                    row.innerHTML = `
-                        <td><input type="checkbox" class="session-checkbox" value="${session.id}" onchange="updateBulkActions()"></td>
-                        <td>${session.title}</td>
-                        <td>${session.subject}</td>
-                        <td>${session.grade}</td>
-                        <td>${session.teacher}</td>
-                        <td><span class="status-badge status-${session.status}">${session.status}</span></td>
-                        <td>${session.views}</td>
-                        <td><button class="action-btn view-btn" onclick="viewStudents(${session.id})">${session.students || 0}</button></td>
-                        <td>${session.downloads || 0}</td>
-                        <td>${new Date(session.uploadDate).toLocaleDateString()}</td>
-                        <td>
-                            <button class="action-btn edit-btn" onclick="editSession(${session.id}, '${session.title}', '${session.subject}', '${session.grade}', '${session.status}', '${session.maxViews || ''}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="action-btn view-btn" onclick="viewSessionAnalytics(${session.id})">
-                                <i class="fas fa-chart-bar"></i>
-                            </button>
-                            <button class="action-btn delete-btn" onclick="deleteSession(${session.id})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
+        function displaySessions(sessions) {
+            const tableBody = document.getElementById('sessionsTableBody');
+            tableBody.innerHTML = '';
 
-                    tableBody.appendChild(row);
-                });
-            }, 1000);
+            if (sessions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 40px;">No sessions found</td></tr>';
+                return;
+            }
+
+            sessions.forEach(session => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td><input type="checkbox" class="session-checkbox" value="${session.id}" onchange="updateBulkActions()"></td>
+                    <td>${session.title}</td>
+                    <td>${session.subject}</td>
+                    <td>${session.grade}</td>
+                    <td>${session.teacher}</td>
+                    <td><span class="status-badge status-${session.status}">${session.status}</span></td>
+                    <td>${session.views || 0}</td>
+                    <td><button class="action-btn view-btn" onclick="viewStudents('${session.id}')">${session.students || 0}</button></td>
+                    <td>${session.downloads || 0}</td>
+                    <td>${new Date(session.createdAt || session.uploadDate).toLocaleDateString()}</td>
+                    <td>
+                        <button class="action-btn edit-btn" onclick="editSession('${session.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn view-btn" onclick="viewSessionAnalytics('${session.id}')">
+                            <i class="fas fa-chart-bar"></i>
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteSession('${session.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        ${session.status === 'draft' ?
+                            `<button class="action-btn publish-btn" onclick="publishSession('${session.id}')">
+                                <i class="fas fa-globe"></i>
+                            </button>` :
+                            `<button class="action-btn unpublish-btn" onclick="unpublishSession('${session.id}')">
+                                <i class="fas fa-eye-slash"></i>
+                            </button>`
+                        }
+                    </td>
+                `;
+
+                tableBody.appendChild(row);
+            });
         }
 
         function filterSessions(searchTerm) {
@@ -370,68 +556,134 @@
             }
         }
 
-        function editSession(id, title, subject, grade, status, maxViews) {
-            document.getElementById('editTitle').value = title;
-            document.getElementById('editSubject').value = subject;
-            document.getElementById('editGrade').value = grade;
-            document.getElementById('editStatus').value = status;
-            document.getElementById('editMaxViews').value = maxViews;
+        function editSession(sessionId) {
+            // For now, show a simple edit modal
+            const modal = document.getElementById('editSessionModal');
+            modal.style.display = 'block';
 
-            document.getElementById('editSessionModal').style.display = 'block';
+            // Load edit form (simplified for demo)
+            const modalBody = modal.querySelector('.modal-body');
+            modalBody.innerHTML = `
+                <p>Edit functionality for session ${sessionId} will be implemented here.</p>
+                <p>This will include a comprehensive form to edit all session details.</p>
+                <button onclick="document.getElementById('editSessionModal').style.display='none'" class="submit-btn">Close</button>
+            `;
         }
 
-        function saveSessionChanges() {
-            // Simulate saving changes
-            document.getElementById('editSessionModal').style.display = 'none';
-            showMessage('Session updated successfully!', 'success');
-            loadSessionsTable();
-        }
-
-        function deleteSession(sessionId) {
+        async function deleteSession(sessionId) {
             if (confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
-                showMessage('Session deleted successfully!', 'success');
-                loadSessionsTable();
+                const result = await window.deleteSession(sessionId);
+                if (result.success) {
+                    showMessage('Session deleted successfully!', 'success');
+                    loadSessionsTable();
+                } else {
+                    showMessage(result.message || 'Failed to delete session', 'error');
+                }
+            }
+        }
+
+        async function publishSession(sessionId) {
+            if (confirm('Are you sure you want to publish this session?')) {
+                const result = await window.publishSession(sessionId);
+                if (result.success) {
+                    showMessage('Session published successfully!', 'success');
+                    loadSessionsTable();
+                } else {
+                    showMessage(result.message || 'Failed to publish session', 'error');
+                }
+            }
+        }
+
+        async function unpublishSession(sessionId) {
+            if (confirm('Are you sure you want to unpublish this session?')) {
+                const result = await window.unpublishSession(sessionId);
+                if (result.success) {
+                    showMessage('Session unpublished successfully!', 'success');
+                    loadSessionsTable();
+                } else {
+                    showMessage(result.message || 'Failed to unpublish session', 'error');
+                }
             }
         }
 
         // Bulk operations
-        function bulkPublish() {
+        async function bulkPublish() {
             const selectedIds = Array.from(document.querySelectorAll('.session-checkbox:checked')).map(cb => cb.value);
             if (selectedIds.length === 0) return;
 
             if (confirm(`Publish ${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''}?`)) {
-                showMessage(`${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''} published successfully!`, 'success');
-                loadSessionsTable();
+                let successCount = 0;
+                for (const id of selectedIds) {
+                    const result = await window.publishSession(id);
+                    if (result.success) successCount++;
+                }
+
+                if (successCount > 0) {
+                    showMessage(`${successCount} session${successCount > 1 ? 's' : ''} published successfully!`, 'success');
+                    loadSessionsTable();
+                } else {
+                    showMessage('Failed to publish sessions', 'error');
+                }
             }
         }
 
-        function bulkUnpublish() {
+        async function bulkUnpublish() {
             const selectedIds = Array.from(document.querySelectorAll('.session-checkbox:checked')).map(cb => cb.value);
             if (selectedIds.length === 0) return;
 
             if (confirm(`Unpublish ${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''}?`)) {
-                showMessage(`${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''} unpublished successfully!`, 'success');
-                loadSessionsTable();
+                let successCount = 0;
+                for (const id of selectedIds) {
+                    const result = await window.unpublishSession(id);
+                    if (result.success) successCount++;
+                }
+
+                if (successCount > 0) {
+                    showMessage(`${successCount} session${successCount > 1 ? 's' : ''} unpublished successfully!`, 'success');
+                    loadSessionsTable();
+                } else {
+                    showMessage('Failed to unpublish sessions', 'error');
+                }
             }
         }
 
-        function bulkFeature() {
+        async function bulkFeature() {
             const selectedIds = Array.from(document.querySelectorAll('.session-checkbox:checked')).map(cb => cb.value);
             if (selectedIds.length === 0) return;
 
             if (confirm(`Feature ${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''} on homepage?`)) {
-                showMessage(`${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''} featured successfully!`, 'success');
-                loadSessionsTable();
+                let successCount = 0;
+                for (const id of selectedIds) {
+                    const result = await window.updateSession(id, { isFeatured: true });
+                    if (result.success) successCount++;
+                }
+
+                if (successCount > 0) {
+                    showMessage(`${successCount} session${successCount > 1 ? 's' : ''} featured successfully!`, 'success');
+                    loadSessionsTable();
+                } else {
+                    showMessage('Failed to feature sessions', 'error');
+                }
             }
         }
 
-        function bulkDelete() {
+        async function bulkDelete() {
             const selectedIds = Array.from(document.querySelectorAll('.session-checkbox:checked')).map(cb => cb.value);
             if (selectedIds.length === 0) return;
 
             if (confirm(`⚠️ Delete ${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''}? This action cannot be undone!`)) {
-                showMessage(`${selectedIds.length} session${selectedIds.length > 1 ? 's' : ''} deleted successfully!`, 'success');
-                loadSessionsTable();
+                let successCount = 0;
+                for (const id of selectedIds) {
+                    const result = await window.deleteSession(id);
+                    if (result.success) successCount++;
+                }
+
+                if (successCount > 0) {
+                    showMessage(`${successCount} session${successCount > 1 ? 's' : ''} deleted successfully!`, 'success');
+                    loadSessionsTable();
+                } else {
+                    showMessage('Failed to delete sessions', 'error');
+                }
             }
         }
 
@@ -521,6 +773,264 @@
                 modal.style.display = 'none';
             }
         });
+
+        // Modal functions for session creation
+        function openCreateSessionModal() {
+            const modal = document.getElementById('createSessionModal');
+            modal.style.display = 'block';
+
+            // Reset form
+            const form = document.getElementById('createSessionForm');
+            form.reset();
+
+            // Reset video container
+            const videosContainer = document.getElementById('modalVideosContainer');
+            videosContainer.innerHTML = '';
+            videosContainer.appendChild(createModalVideoItem(1));
+
+            // Initialize modal video management
+            initializeModalVideoManagement();
+        }
+
+        function closeCreateSessionModal() {
+            const modal = document.getElementById('createSessionModal');
+            modal.style.display = 'none';
+        }
+
+        function createModalVideoItem(videoNumber) {
+            const videoItem = document.createElement('div');
+            videoItem.className = 'video-item';
+
+            videoItem.innerHTML = `
+                <h4>Video ${videoNumber}</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Video Type *</label>
+                        <select name="videoType[]" required>
+                            <option value="lecture">Lecture</option>
+                            <option value="questions">Questions</option>
+                            <option value="summary">Summary</option>
+                            <option value="exercise">Exercise</option>
+                            <option value="homework">Homework</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Video Title *</label>
+                        <input type="text" name="videoTitle[]" required placeholder="e.g., Part ${videoNumber} - Introduction">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Video Description</label>
+                    <textarea name="videoDescription[]" rows="2" placeholder="Brief description of this video..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Duration (minutes)</label>
+                        <input type="number" name="duration[]" min="1" placeholder="Estimated duration">
+                    </div>
+
+                    <div class="form-group">
+                        <button type="button" class="remove-video-btn" onclick="removeModalVideo(this)" style="display: ${videoNumber === 1 ? 'none' : 'inline-block'};">
+                            <i class="fas fa-trash"></i> Remove Video
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            return videoItem;
+        }
+
+        function initializeModalVideoManagement() {
+            const addVideoBtn = document.getElementById('modalAddVideoBtn');
+            const videosContainer = document.getElementById('modalVideosContainer');
+
+            if (addVideoBtn) {
+                addVideoBtn.onclick = function() {
+                    const videoCount = videosContainer.children.length + 1;
+                    const videoItem = createModalVideoItem(videoCount);
+                    videosContainer.appendChild(videoItem);
+
+                    // Show remove button for first video if more than one video
+                    if (videoCount > 1) {
+                        videosContainer.querySelector('.remove-video-btn').style.display = 'inline-block';
+                    }
+                };
+            }
+        }
+
+        function removeModalVideo(button) {
+            const videoItem = button.closest('.video-item');
+            videoItem.remove();
+
+            // Update video numbers
+            const remainingVideos = document.querySelectorAll('#modalVideosContainer .video-item');
+            remainingVideos.forEach((item, index) => {
+                item.querySelector('h4').textContent = `Video ${index + 1}`;
+            });
+        }
+
+        // Modal form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const createSessionForm = document.getElementById('createSessionForm');
+            if (createSessionForm) {
+                createSessionForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    await submitModalSessionForm(new FormData(this));
+                });
+            }
+        });
+
+        async function submitModalSessionForm(formData) {
+            try {
+                // Create session object first
+                const sessionData = {
+                    title: formData.get('sessionTitle'),
+                    subject: formData.get('subject'),
+                    grade: formData.get('grade'),
+                    teacher: formData.get('teacher'),
+                    description: formData.get('description') || '',
+                    sessionNumber: formData.get('sessionNumber') ? parseInt(formData.get('sessionNumber')) : null,
+                    status: formData.get('isPublished') || 'draft',
+                    isPublished: formData.get('isPublished') === 'published',
+                    isFeatured: formData.get('featured') === 'yes',
+                    publishDate: formData.get('publishDate') || null,
+                    expiryDate: formData.get('expiryDate') || null,
+                    maxViews: formData.get('maxViews') ? parseInt(formData.get('maxViews')) : null,
+                    downloadable: formData.get('downloadable') === 'yes',
+                    allowedStudentTypes: getSelectedStudentTypes(formData),
+                    difficulty: formData.get('difficulty') || 'intermediate',
+                    tags: formData.get('tags') ? formData.get('tags').split(',').map(tag => tag.trim()).filter(tag => tag.length > 0) : [],
+                    videos: [],
+                    pdfFiles: []
+                };
+
+                // Process videos
+                const videoTypes = formData.getAll('videoType[]');
+                const videoTitles = formData.getAll('videoTitle[]');
+                const videoDescriptions = formData.getAll('videoDescription[]');
+                const durations = formData.getAll('duration[]');
+
+                videoTypes.forEach((type, index) => {
+                    if (videoTitles[index]) {
+                        sessionData.videos.push({
+                            type: type,
+                            title: videoTitles[index],
+                            description: videoDescriptions[index] || '',
+                            duration: durations[index] ? parseInt(durations[index]) : null
+                        });
+                    }
+                });
+
+                // Validate session data
+                const validationErrors = validateSessionData(sessionData);
+                if (validationErrors.length > 0) {
+                    showMessage('Validation errors:<br>' + validationErrors.join('<br>'), 'error');
+                    return;
+                }
+
+                // Show loading state
+                const submitBtn = document.querySelector('#createSessionForm .submit-btn');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+                submitBtn.disabled = true;
+
+                // Create session via API
+                const result = await createSession(sessionData);
+
+                if (result.success) {
+                    // Close modal
+                    closeCreateSessionModal();
+
+                    // Show success message
+                    showMessage('Session created successfully!', 'success');
+
+                    // Reload sessions table
+                    loadSessionsTable();
+                } else {
+                    if (result.errors && result.errors.length > 0) {
+                        showMessage('Validation errors:<br>' + result.errors.join('<br>'), 'error');
+                    } else {
+                        showMessage(result.message || 'Failed to create session', 'error');
+                    }
+                }
+
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+
+            } catch (error) {
+                console.error('Error submitting modal session form:', error);
+                showMessage('An error occurred while creating the session', 'error');
+
+                // Reset button
+                const submitBtn = document.querySelector('#createSessionForm .submit-btn');
+                submitBtn.innerHTML = 'Create Session';
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Helper functions
+        function getSelectedStudentTypes(formData) {
+            const studentTypes = [];
+            const allTypes = formData.getAll('studentTypes');
+
+            if (allTypes.includes('all')) {
+                return ['all'];
+            }
+
+            if (allTypes.includes('registered')) studentTypes.push('registered');
+            if (allTypes.includes('senior1')) studentTypes.push('senior1');
+            if (allTypes.includes('senior2')) studentTypes.push('senior2');
+
+            return studentTypes.length > 0 ? studentTypes : ['all'];
+        }
+
+        function validateSessionData(sessionData) {
+            const errors = [];
+
+            // Required field validation
+            if (!sessionData.title || sessionData.title.trim().length < 3) {
+                errors.push('Session title must be at least 3 characters long');
+            }
+
+            if (!sessionData.subject) {
+                errors.push('Subject is required');
+            }
+
+            if (!sessionData.grade) {
+                errors.push('Grade level is required');
+            }
+
+            if (!sessionData.teacher) {
+                errors.push('Teacher is required');
+            }
+
+            if (!sessionData.sessionNumber || sessionData.sessionNumber < 1 || sessionData.sessionNumber > 100) {
+                errors.push('Session number must be between 1-100');
+            }
+
+            // Validate videos
+            if (!sessionData.videos || sessionData.videos.length === 0) {
+                errors.push('At least one video is required');
+            } else {
+                sessionData.videos.forEach((video, index) => {
+                    if (!video.title || video.title.trim().length < 2) {
+                        errors.push(`Video ${index + 1}: Title must be at least 2 characters long`);
+                    }
+                    if (!video.type) {
+                        errors.push(`Video ${index + 1}: Type is required`);
+                    }
+                    if (video.duration && (video.duration < 1 || video.duration > 480)) {
+                        errors.push(`Video ${index + 1}: Duration must be between 1-480 minutes`);
+                    }
+                });
+            }
+
+            return errors;
+        }
     </script>
 </body>
 </html>
