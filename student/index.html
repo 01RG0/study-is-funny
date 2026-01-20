@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
 </head>
+
 <body>
     <div class="student-container">
         <!-- Header -->
@@ -21,6 +23,13 @@
                 </div>
             </div>
             <div class="header-actions">
+                <button class="session-btn" onclick="window.location.href='videos.php'" style="background:#667eea;">
+                    <i class="fas fa-video"></i> مكتبة الفيديوهات
+                </button>
+                <button class="session-btn" onclick="window.location.href='../senior2/mathematics/Homework/'"
+                    style="background:#f5576c;">
+                    <i class="fas fa-tasks"></i> الواجبات
+                </button>
                 <button class="session-btn" onclick="openSessionsPage()">
                     <i class="fas fa-play-circle"></i> الجلسات
                 </button>
@@ -131,4 +140,5 @@
     <script src="../js/database.js"></script>
     <script src="js/student.js"></script>
 </body>
+
 </html>

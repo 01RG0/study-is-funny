@@ -1,5 +1,8 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/../classes/DatabaseMongo.php';
+require_once __DIR__ . '/../classes/Video.php';
+require_once __DIR__ . '/../classes/SessionManager.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
@@ -28,6 +31,7 @@ function handleGet($action) {
             getSession();
             break;
         case 'all':
+        case 'list':  // Added alias for list
             getAllSessions();
             break;
         case 'stats':
@@ -43,14 +47,18 @@ function handleGet($action) {
 }
 
 function handlePost($action) {
+    // For upload action, don't JSON decode (it uses multipart/form-data with files)
+    if ($action === 'upload') {
+        uploadSession($_POST);
+        return;
+    }
+    
+    // For other actions, decode JSON
     $data = json_decode(file_get_contents('php://input'), true);
 
     switch ($action) {
         case 'create':
             createSession($data);
-            break;
-        case 'upload':
-            uploadSession($data);
             break;
         default:
             http_response_code(400);
@@ -286,101 +294,131 @@ function createSession($data) {
 function uploadSession($data) {
     // Handle file uploads for videos, thumbnails, and PDFs
     try {
-        $uploadDir = '../uploads/sessions/';
+        $db = new DatabaseMongo();
+        $videoManager = new Video($db);
+        
+        $uploadDir = __DIR__ . '/../uploads/sessions/';
 
         // Create upload directory if it doesn't exist
         if (!file_exists($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
 
-        $uploadedFiles = [];
+        // Collect session data from POST
+        $sessionData = [
+            'title' => $_POST['sessionTitle'] ?? '',
+            'subject' => $_POST['subject'] ?? '',
+            'grade' => $_POST['grade'] ?? '',
+            'teacher' => $_POST['teacher'] ?? '',
+            'description' => $_POST['description'] ?? '',
+            'accessType' => $_POST['accessType'] ?? 'online_session',
+            'maxViews' => !empty($_POST['maxViews']) ? (int)$_POST['maxViews'] : null,
+            'sessionAccess' => $_POST['sessionAccess'] ?? null,
+            'publishDate' => $_POST['publishDate'] ?? null,
+            'expiryDate' => $_POST['expiryDate'] ?? null,
+            'status' => $_POST['isPublished'] ?? 'draft',
+            'isPublished' => ($_POST['isPublished'] ?? 'draft') === 'published',
+            'videos' => [],
+            'createdBy' => 'admin', // TODO: Get from session
+            'createdAt' => new MongoDB\BSON\UTCDateTime(),
+        ];
+        
+        // Determine year from grade
+        $yearMap = ['senior1' => 1, 'senior2' => 2, 'senior3' => 3];
+        $sessionData['year'] = $yearMap[$sessionData['grade']] ?? null;
 
-        // Handle video files
-        if (isset($_FILES['videos'])) {
-            $videos = $_FILES['videos'];
-            for ($i = 0; $i < count($videos['name']); $i++) {
-                if ($videos['error'][$i] === UPLOAD_ERR_OK) {
-                    $filename = uniqid() . '_' . basename($videos['name'][$i]);
-                    $filepath = $uploadDir . $filename;
+        // Validate required fields
+        $errors = [];
+        if (empty($sessionData['title']) || strlen($sessionData['title']) < 3) {
+            $errors[] = 'Session title must be at least 3 characters long';
+        }
+        if (empty($sessionData['subject'])) {
+            $errors[] = 'Subject is required';
+        }
+        if (empty($sessionData['grade'])) {
+            $errors[] = 'Grade level is required';
+        }
+        if (empty($sessionData['teacher'])) {
+            $errors[] = 'Teacher is required';
+        }
 
-                    if (move_uploaded_file($videos['tmp_name'][$i], $filepath)) {
-                        $uploadedFiles['videos'][] = [
-                            'filename' => $filename,
-                            'originalName' => $videos['name'][$i],
-                            'size' => $videos['size'][$i],
-                            'type' => $videos['type'][$i]
-                        ];
+        if (!empty($errors)) {
+            echo json_encode(['success' => false, 'message' => 'Validation failed', 'errors' => $errors]);
+            return;
+        }
+
+        // Handle video files (videoFile[] format from the form)
+        if (isset($_FILES['videoFile']) && is_array($_FILES['videoFile']['name'])) {
+            $videoTitles = $_POST['videoTitle'] ?? [];
+            $videoTypes = $_POST['videoType'] ?? [];
+            $videoDescriptions = $_POST['videoDescription'] ?? [];
+            $videoDurations = $_POST['duration'] ?? [];
+            $videoSources = $_POST['videoSource'] ?? [];
+            $videoLinks = $_POST['videoLink'] ?? [];
+
+            foreach ($_FILES['videoFile']['name'] as $index => $fileName) {
+                // Check if this is a file upload or link
+                $sourceKey = array_keys($videoSources)[$index] ?? $index;
+                $isUpload = ($videoSources[$sourceKey] ?? 'upload') === 'upload';
+                
+                if ($isUpload && !empty($fileName) && $_FILES['videoFile']['error'][$index] === UPLOAD_ERR_OK) {
+                    // Handle file upload using Video class
+                    $videoFile = [
+                        'name' => $_FILES['videoFile']['name'][$index],
+                        'type' => $_FILES['videoFile']['type'][$index],
+                        'tmp_name' => $_FILES['videoFile']['tmp_name'][$index],
+                        'error' => $_FILES['videoFile']['error'][$index],
+                        'size' => $_FILES['videoFile']['size'][$index]
+                    ];
+
+                    $videoMetadata = [
+                        'title' => $videoTitles[$index] ?? 'Video ' . ($index + 1),
+                        'description' => $videoDescriptions[$index] ?? '',
+                        'video_type' => $videoTypes[$index] ?? 'lecture',
+                        'duration_seconds' => !empty($videoDurations[$index]) ? (int)$videoDurations[$index] * 60 : null,
+                        'subject_id' => $sessionData['subject'],
+                        'uploaded_by' => $sessionData['createdBy']
+                    ];
+
+                    $uploadResult = $videoManager->upload($videoFile, $videoMetadata);
+
+                    if (!$uploadResult['success']) {
+                        echo json_encode(['success' => false, 'message' => 'Video upload failed: ' . $uploadResult['message']]);
+                        return;
                     }
+
+                    $sessionData['videos'][] = [
+                        'video_id' => $uploadResult['video_id'],
+                        'title' => $videoMetadata['title'],
+                        'type' => $videoMetadata['video_type'],
+                        'description' => $videoMetadata['description'],
+                        'duration' => $videoMetadata['duration_seconds'],
+                        'source' => 'upload'
+                    ];
+
+                } elseif (!$isUpload && !empty($videoLinks[$index])) {
+                    // Handle video link
+                    $sessionData['videos'][] = [
+                        'video_id' => null,
+                        'title' => $videoTitles[$index] ?? 'Video ' . ($index + 1),
+                        'type' => $videoTypes[$index] ?? 'lecture',
+                        'description' => $videoDescriptions[$index] ?? '',
+                        'duration' => !empty($videoDurations[$index]) ? (int)$videoDurations[$index] * 60 : null,
+                        'url' => $videoLinks[$index],
+                        'source' => 'link'
+                    ];
                 }
             }
         }
 
-        // Handle thumbnail files
-        if (isset($_FILES['thumbnails'])) {
-            $thumbnails = $_FILES['thumbnails'];
-            for ($i = 0; $i < count($thumbnails['name']); $i++) {
-                if ($thumbnails['error'][$i] === UPLOAD_ERR_OK) {
-                    $filename = uniqid() . '_thumb_' . basename($thumbnails['name'][$i]);
-                    $filepath = $uploadDir . $filename;
-
-                    if (move_uploaded_file($thumbnails['tmp_name'][$i], $filepath)) {
-                        $uploadedFiles['thumbnails'][] = [
-                            'filename' => $filename,
-                            'originalName' => $thumbnails['name'][$i],
-                            'size' => $thumbnails['size'][$i]
-                        ];
-                    }
-                }
-            }
+        // Validate at least one video
+        if (empty($sessionData['videos'])) {
+            echo json_encode(['success' => false, 'message' => 'At least one video is required']);
+            return;
         }
 
-        // Handle PDF files
-        if (isset($_FILES['pdfFiles'])) {
-            $pdfs = $_FILES['pdfFiles'];
-            for ($i = 0; $i < count($pdfs['name']); $i++) {
-                if ($pdfs['error'][$i] === UPLOAD_ERR_OK) {
-                    $filename = uniqid() . '_pdf_' . basename($pdfs['name'][$i]);
-                    $filepath = $uploadDir . $filename;
-
-                    if (move_uploaded_file($pdfs['tmp_name'][$i], $filepath)) {
-                        $uploadedFiles['pdfFiles'][] = [
-                            'filename' => $filename,
-                            'originalName' => $pdfs['name'][$i],
-                            'size' => $pdfs['size'][$i]
-                        ];
-                    }
-                }
-            }
-        }
-
-        // Now create the session with file information
-        $sessionData = json_decode($_POST['sessionData'], true);
-        if ($sessionData) {
-            // Add uploaded files to session data
-            if (isset($uploadedFiles['videos'])) {
-                foreach ($uploadedFiles['videos'] as $index => $video) {
-                    if (isset($sessionData['videos'][$index])) {
-                        $sessionData['videos'][$index]['file'] = $video;
-                    }
-                }
-            }
-
-            if (isset($uploadedFiles['thumbnails'])) {
-                foreach ($uploadedFiles['thumbnails'] as $index => $thumbnail) {
-                    if (isset($sessionData['videos'][$index])) {
-                        $sessionData['videos'][$index]['thumbnail'] = $thumbnail;
-                    }
-                }
-            }
-
-            if (isset($uploadedFiles['pdfFiles'])) {
-                $sessionData['pdfFiles'] = $uploadedFiles['pdfFiles'];
-            }
-
-            createSession($sessionData);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Invalid session data']);
-        }
+        // Create the session using createSession function
+        createSession($sessionData);
 
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'message' => 'File upload error: ' . $e->getMessage()]);
