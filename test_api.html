@@ -1,0 +1,47 @@
+<?php
+require_once 'api/config.php';
+
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Session API</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .result { background: #f5f5f5; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+        pre { background: #fff; padding: 10px; border: 1px solid #ccc; overflow-x: auto; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Session API Test</h1>
+    
+    <div>
+        <h2>API Endpoints</h2>
+        <button onclick="testAPI('../api/sessions.php?action=all')">Get All Sessions (active only)</button>
+        <button onclick="testAPI('../api/sessions.php?action=all&includeInactive=true')">Get All Sessions (including inactive)</button>
+        <button onclick="testAPI('../api/sessions.php?action=all&grade=senior2')">Get Senior 2 Sessions</button>
+    </div>
+    
+    <div id="result" class="result" style="display:none;">
+        <h3>Result:</h3>
+        <pre id="response"></pre>
+    </div>
+    
+    <script>
+        async function testAPI(url) {
+            try {
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('response').textContent = 'Loading...';
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('response').textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

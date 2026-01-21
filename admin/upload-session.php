@@ -93,6 +93,10 @@
                                     <option value="senior2-mathematics">Senior 2 - Mathematics</option>
                                     <option value="senior2-statistics">Senior 2 - Statistics</option>
                                 </optgroup>
+                                <optgroup label="Senior 3">
+                                    <option value="senior3-physics">Senior 3 - Physics</option>
+                                    <option value="senior3-statistics">Senior 3 - Statistics</option>
+                                </optgroup>
                             </select>
                         </div>
                     </div>
@@ -104,6 +108,24 @@
                         <label for="description">Description</label>
                         <textarea id="description" name="description" rows="4"
                             placeholder="Brief description of the session content..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Lecture or Homework Selection -->
+                <div class="form-section">
+                    <h3>Content Type</h3>
+                    <div class="form-group">
+                        <label>Is this a Lecture or Homework? *</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="contentType" value="lecture" checked> 
+                                📚 Lecture (Study Session)
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="contentType" value="homework"> 
+                                📝 Homework (Assignment)
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -147,17 +169,6 @@
                         <div class="video-upload-item">
                             <h4>Video 1</h4>
                             <div class="form-row">
-                                <div class="form-group">
-                                    <label>Video Type *</label>
-                                    <select name="videoType[]" required>
-                                        <option value="lecture">Lecture</option>
-                                        <option value="questions">Questions</option>
-                                        <option value="summary">Summary</option>
-                                        <option value="exercise">Exercise</option>
-                                        <option value="homework">Homework</option>
-                                    </select>
-                                </div>
-
                                 <div class="form-group">
                                     <label>Video Title *</label>
                                     <input type="text" name="videoTitle[]" required
@@ -307,6 +318,8 @@
         document.getElementById('sessionUploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            console.log('=== SESSION UPLOAD STARTED ===');
+            
             const submitBtn = this.querySelector('.submit-btn');
             const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
@@ -315,24 +328,59 @@
             try {
                 const formData = new FormData(this);
                 
+                // Add contentType from selected radio button
+                const contentTypeRadio = document.querySelector('input[name="contentType"]:checked');
+                if (contentTypeRadio) {
+                    formData.append('contentType', contentTypeRadio.value);
+                }
+                
+                // Log form data
+                console.log('Form Data:');
+                for (let [key, value] of formData.entries()) {
+                    if (value instanceof File) {
+                        console.log(`  ${key}: ${value.name} (${value.size} bytes, type: ${value.type})`);
+                    } else {
+                        console.log(`  ${key}: ${value}`);
+                    }
+                }
+                
+                console.log('Sending request to: ../api/sessions.php?action=upload');
                 const response = await fetch('../api/sessions.php?action=upload', {
                     method: 'POST',
                     body: formData
                 });
 
-                const result = await response.json();
+                console.log('Response Status:', response.status, response.statusText);
+                const responseText = await response.text();
+                console.log('Raw Response:', responseText);
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('Failed to parse JSON:', parseError);
+                    console.error('Response was:', responseText);
+                    throw new Error('Server returned invalid JSON');
+                }
+                
+                console.log('Parsed Result:', result);
 
                 if (result.success) {
+                    console.log('✅ Success! Session ID:', result.sessionId);
                     if (typeof showMessage === 'function') {
                         showMessage('Session created successfully!', 'success');
                     } else {
                         alert('✓ Session created successfully!');
                     }
-                    // Redirect to manage sessions page after 1.5 seconds
-                    setTimeout(() => {
-                        window.location.href = 'manage-sessions.html';
-                    }, 1500);
+                    // Reset form after successful upload
+                    document.getElementById('sessionUploadForm').reset();
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
                 } else {
+                    console.error('❌ Failed:', result.message);
+                    if (result.errors) {
+                        console.error('Validation Errors:', result.errors);
+                    }
                     if (typeof showMessage === 'function') {
                         showMessage(result.message || 'Failed to create session', 'error');
                     } else {
@@ -342,7 +390,8 @@
                     submitBtn.disabled = false;
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('❌ Exception occurred:', error);
+                console.error('Error stack:', error.stack);
                 if (typeof showMessage === 'function') {
                     showMessage('An error occurred while uploading the session', 'error');
                 } else {
@@ -351,6 +400,8 @@
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
             }
+            
+            console.log('=== SESSION UPLOAD ENDED ===');
         });
 
         // Add video functionality
@@ -368,17 +419,6 @@
             div.innerHTML = `
                 <h4>Video ${number}</h4>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Video Type *</label>
-                        <select name="videoType[]" required>
-                            <option value="lecture">Lecture</option>
-                            <option value="questions">Questions</option>
-                            <option value="summary">Summary</option>
-                            <option value="exercise">Exercise</option>
-                            <option value="homework">Homework</option>
-                        </select>
-                    </div>
-
                     <div class="form-group">
                         <label>Video Title *</label>
                         <input type="text" name="videoTitle[]" required placeholder="e.g., Part ${number} - Introduction">

@@ -414,13 +414,20 @@
             container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading sessions...</div>';
 
             try {
-                const response = await fetch('../api/sessions.php?action=getAllSessions');
+                console.log('Fetching sessions from: ../api/sessions.php?action=getAllSessions&includeInactive=true');
+                const response = await fetch('../api/sessions.php?action=getAllSessions&includeInactive=true');
+                console.log('Response status:', response.status);
+                
                 const result = await response.json();
+                console.log('API Response:', result);
 
                 if (result.success) {
+                    console.log('Sessions loaded:', result.sessions.length, 'sessions');
                     allSessions = result.sessions || [];
+                    console.log('All sessions:', allSessions);
                     filterAndDisplay();
                 } else {
+                    console.error('API Error:', result.message);
                     container.innerHTML = `<div class="empty-state">
                         <i class="fas fa-exclamation-circle"></i>
                         <p>${result.message || 'Failed to load sessions'}</p>
@@ -436,9 +443,14 @@
         }
 
         function filterAndDisplay() {
+            console.log('🔍 filterAndDisplay called');
+            console.log('👥 Total allSessions:', allSessions.length);
+            
             const searchTerm = document.getElementById('sessionSearch').value.toLowerCase();
             const gradeFilter = document.getElementById('filterGrade').value;
             const accessFilter = document.getElementById('filterAccess').value;
+
+            console.log('⚙️ Active Filters:', { search: searchTerm, grade: gradeFilter, access: accessFilter });
 
             const filtered = allSessions.filter(session => {
                 const titleMatch = session.title.toLowerCase().includes(searchTerm);
@@ -450,19 +462,26 @@
                 return (titleMatch || subjectMatch || teacherMatch) && gradeMatch && accessMatch;
             });
 
+            console.log('📊 Filtered sessions count:', filtered.length);
+            console.log('📋 Filtered data:', filtered);
+            
             displaySessions(filtered);
         }
 
         function displaySessions(sessions) {
+            console.log('🎬 displaySessions called with:', sessions.length, 'sessions');
             const container = document.getElementById('sessionsContainer');
 
             if (sessions.length === 0) {
+                console.log('⚠️ No sessions to display');
                 container.innerHTML = `<div class="empty-state">
                     <i class="fas fa-inbox"></i>
                     <p>No sessions found</p>
                 </div>`;
                 return;
             }
+
+            console.log('✅ Rendering', sessions.length, 'sessions');
 
             const html = sessions.map(session => `
                 <div class="session-card">
@@ -480,10 +499,10 @@
                         </span>
                     </div>
                     <div class="session-actions">
-                        <button class="action-edit" onclick="openEditModal('${session._id}')">
+                        <button class="action-edit" onclick="openEditModal('${session.id}')">
                             <i class="fas fa-edit"></i> Edit
                         </button>
-                        <button class="action-delete" onclick="deleteSession('${session._id}')">
+                        <button class="action-delete" onclick="deleteSession('${session.id}')">
                             <i class="fas fa-trash"></i> Delete
                         </button>
                     </div>
@@ -494,7 +513,7 @@
         }
 
         function openEditModal(sessionId) {
-            const session = allSessions.find(s => s._id === sessionId);
+            const session = allSessions.find(s => s.id === sessionId);
             if (!session) return;
 
             currentEditId = sessionId;
@@ -516,13 +535,23 @@
         async function saveSession(event) {
             event.preventDefault();
 
+            const sessionNumber = document.getElementById('editSessionNumber').value;
+            const maxViews = document.getElementById('editMaxViews').value;
+
+            if (!sessionNumber) {
+                alert('✗ Session Number is required');
+                return;
+            }
+
             const data = {
                 title: document.getElementById('editTitle').value,
-                sessionNumber: parseInt(document.getElementById('editSessionNumber').value),
+                sessionNumber: parseInt(sessionNumber),
                 accessControl: document.getElementById('editAccessControl').value,
                 description: document.getElementById('editDescription').value,
-                maxViews: document.getElementById('editMaxViews').value ? parseInt(document.getElementById('editMaxViews').value) : null
+                maxViews: maxViews ? parseInt(maxViews) : null
             };
+
+            console.log('Saving session:', {id: currentEditId, data: data});
 
             try {
                 const response = await fetch('../api/sessions.php?action=updateSession&id=' + currentEditId, {
@@ -531,7 +560,9 @@
                     body: JSON.stringify(data)
                 });
 
+                console.log('Response status:', response.status);
                 const result = await response.json();
+                console.log('Response:', result);
 
                 if (result.success) {
                     alert('✓ Session updated successfully!');

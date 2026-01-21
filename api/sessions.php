@@ -7,6 +7,73 @@ require_once __DIR__ . '/../classes/SessionManager.php';
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
 
+// Subject name mapping for backwards compatibility
+function normalizeSubject($subjectName) {
+    $subjectMap = [
+        // New names (from upload form)
+        'mathematics' => 'mathematics',
+        'physics' => 'physics',
+        'statistics' => 'statistics',
+        'mechanics' => 'mechanics',
+        // Senior 1 - Mathematics only
+        's1 mathematics' => 'mathematics',
+        's1 math' => 'mathematics',
+        's1 pure math' => 'mathematics',
+        // Senior 2 - All subjects
+        's2 pure math' => 'mathematics',
+        's2 pure mathematics' => 'mathematics',
+        's2 mathematics' => 'mathematics',
+        's2 math' => 'mathematics',
+        's2 physics' => 'physics',
+        's2 mechanics' => 'mechanics',
+        's2 statistics' => 'statistics',
+        // Generic versions
+        'pure math' => 'mathematics',
+        'pure mathematics' => 'mathematics',
+        'math' => 'mathematics',
+    ];
+    
+    $normalized = strtolower(trim($subjectName));
+    return $subjectMap[$normalized] ?? $normalized;
+}
+
+// Normalize phone numbers
+function normalizPhoneNumber($phone) {
+    // Remove all non-digit characters except leading +
+    $phone = preg_replace('/[^\d+]/', '', $phone);
+    
+    // If starts with +20, convert to 01...
+    if (strpos($phone, '+20') === 0) {
+        return '0' . substr($phone, 3);
+    }
+    
+    // If starts with +, remove it
+    if (strpos($phone, '+') === 0) {
+        return substr($phone, 1);
+    }
+    
+    // Ensure it starts with 0 (Egyptian phone format)
+    if (strpos($phone, '0') !== 0 && strpos($phone, '20') === 0) {
+        return '0' . substr($phone, 2);
+    }
+    
+    return $phone;
+}
+
+// Convert phone to +20 format for database lookup
+function convertTo20Format($phone) {
+    // First normalize to 01... format
+    $normalized = normalizPhoneNumber($phone);
+    
+    // If it starts with 0, replace with +20
+    if (strpos($normalized, '0') === 0) {
+        return '+20' . substr($normalized, 1);
+    }
+    
+    // Otherwise, just add +20
+    return '+20' . $normalized;
+}
+
 switch ($method) {
     case 'GET':
         handleGet($action);
@@ -240,12 +307,15 @@ function validateSessionData($data) {
 
 function createSession($data) {
     try {
+        error_log('createSession called with title: ' . ($data['title'] ?? 'NO TITLE'));
+        
         $client = $GLOBALS['mongoClient'];
         $databaseName = $GLOBALS['databaseName'];
 
         // Validate session data
         $validationErrors = validateSessionData($data);
         if (!empty($validationErrors)) {
+            error_log('createSession validation errors: ' . json_encode($validationErrors));
             echo json_encode([
                 'success' => false,
                 'message' => 'Validation failed',
@@ -255,7 +325,9 @@ function createSession($data) {
         }
 
         // Sanitize and prepare session data
+        $sessionId = new MongoDB\BSON\ObjectId();
         $sessionData = [
+            '_id' => $sessionId,
             'title' => trim($data['title']),
             'subject' => $data['subject'],
             'grade' => $data['grade'],
@@ -289,19 +361,22 @@ function createSession($data) {
 
         $bulk = new MongoDB\Driver\BulkWrite();
         $bulk->insert($sessionData);
-        $result = $client->executeBulkWrite("$databaseName.sessions", $bulk);
+        $result = $client->executeBulkWrite("$databaseName.online_sessions", $bulk);
 
         if ($result->getInsertedCount() > 0) {
+            error_log('createSession SUCCESS: Inserted session with ID: ' . (string)$sessionId);
             echo json_encode([
                 'success' => true,
                 'message' => 'Session created successfully!',
-                'sessionId' => (string)$result->getInsertedIds()[0]
+                'sessionId' => (string)$sessionId
             ]);
         } else {
+            error_log('createSession FAILED: getInsertedCount returned 0');
             echo json_encode(['success' => false, 'message' => 'Session creation failed']);
         }
 
     } catch (Exception $e) {
+        error_log('createSession Exception: ' . $e->getMessage());
         echo json_encode(['success' => false, 'message' => 'Session creation error: ' . $e->getMessage()]);
     }
 }
@@ -339,6 +414,7 @@ function uploadSession($data) {
             'expiryDate' => $_POST['expiryDate'] ?? null,
             'status' => $_POST['isPublished'] ?? 'draft',
             'isPublished' => ($_POST['isPublished'] ?? 'draft') === 'published',
+            'allowedStudentTypes' => ['all'],  // Allow all student types (access controlled by sessionNumber)
             'videos' => [],
             'createdBy' => 'admin', // TODO: Get from session
             'createdAt' => new MongoDB\BSON\UTCDateTime(),
@@ -371,10 +447,12 @@ function uploadSession($data) {
             return;
         }
 
+        // Get contentType from form (session-level, not per-video)
+        $contentType = $_POST['contentType'] ?? 'lecture';
+        
         // Handle video files (videoFile[] format from the form)
         if (isset($_FILES['videoFile']) && is_array($_FILES['videoFile']['name'])) {
             $videoTitles = $_POST['videoTitle'] ?? [];
-            $videoTypes = $_POST['videoType'] ?? [];
             $videoDescriptions = $_POST['videoDescription'] ?? [];
             $videoDurations = $_POST['duration'] ?? [];
             $videoSources = $_POST['videoSource'] ?? [];
@@ -398,7 +476,7 @@ function uploadSession($data) {
                     $videoMetadata = [
                         'title' => $videoTitles[$index] ?? 'Video ' . ($index + 1),
                         'description' => $videoDescriptions[$index] ?? '',
-                        'video_type' => $videoTypes[$index] ?? 'lecture',
+                        'video_type' => $contentType,
                         'duration_seconds' => !empty($videoDurations[$index]) ? (int)$videoDurations[$index] * 60 : null,
                         'subject_id' => $sessionData['subject'],
                         'uploaded_by' => $sessionData['createdBy']
@@ -414,7 +492,7 @@ function uploadSession($data) {
                     $sessionData['videos'][] = [
                         'video_id' => $uploadResult['video_id'],
                         'title' => $videoMetadata['title'],
-                        'type' => $videoMetadata['video_type'],
+                        'type' => $contentType,
                         'description' => $videoMetadata['description'],
                         'duration' => $videoMetadata['duration_seconds'],
                         'source' => 'upload'
@@ -425,7 +503,7 @@ function uploadSession($data) {
                     $sessionData['videos'][] = [
                         'video_id' => null,
                         'title' => $videoTitles[$index] ?? 'Video ' . ($index + 1),
-                        'type' => $videoTypes[$index] ?? 'lecture',
+                        'type' => $contentType,
                         'description' => $videoDescriptions[$index] ?? '',
                         'duration' => !empty($videoDurations[$index]) ? (int)$videoDurations[$index] * 60 : null,
                         'url' => $videoLinks[$index],
@@ -442,9 +520,18 @@ function uploadSession($data) {
         }
 
         // Create the session using createSession function
+        error_log('uploadSession: About to call createSession with data: ' . json_encode([
+            'title' => $sessionData['title'],
+            'subject' => $sessionData['subject'],
+            'grade' => $sessionData['grade'],
+            'sessionNumber' => $sessionData['sessionNumber'],
+            'video_count' => count($sessionData['videos'])
+        ]));
+        
         createSession($sessionData);
 
     } catch (Exception $e) {
+        error_log('uploadSession Exception: ' . $e->getMessage());
         echo json_encode(['success' => false, 'message' => 'File upload error: ' . $e->getMessage()]);
     }
 }
@@ -462,7 +549,7 @@ function getSession() {
 
         $filter = ['_id' => new MongoDB\BSON\ObjectId($sessionId), 'isActive' => true];
         $query = new MongoDB\Driver\Query($filter);
-        $cursor = $client->executeQuery("$databaseName.sessions", $query);
+        $cursor = $client->executeQuery("$databaseName.online_sessions", $query);
         $session = current($cursor->toArray());
 
         if ($session) {
@@ -483,10 +570,20 @@ function getAllSessions() {
         $databaseName = $GLOBALS['databaseName'];
 
         // Build filter based on query parameters
-        $filter = ['isActive' => true];
+        // Allow fetching inactive sessions for testing, but default to active only
+        $filter = [];
+        
+        if (!isset($_GET['includeInactive']) || $_GET['includeInactive'] !== 'true') {
+            $filter['isActive'] = true;
+            error_log('getAllSessions: Filtering by isActive=true');
+        } else {
+            error_log('getAllSessions: Including inactive sessions');
+        }
 
         if (isset($_GET['subject']) && $_GET['subject'] !== '') {
-            $filter['subject'] = $_GET['subject'];
+            $normalizedSubject = normalizeSubject($_GET['subject']);
+            $filter['subject'] = $normalizedSubject;
+            error_log('getAllSessions: Filtering by subject=' . $normalizedSubject . ' (original: ' . $_GET['subject'] . ')');
         }
 
         if (isset($_GET['grade']) && $_GET['grade'] !== '') {
@@ -514,14 +611,18 @@ function getAllSessions() {
             $options['skip'] = (int)$_GET['skip'];
         }
 
+        error_log('getAllSessions: Filter = ' . json_encode($filter));
+        
         $query = new MongoDB\Driver\Query($filter, $options);
-        $cursor = $client->executeQuery("$databaseName.sessions", $query);
+        $cursor = $client->executeQuery("$databaseName.online_sessions", $query);
 
         $sessions = [];
         foreach ($cursor as $session) {
             $sessions[] = convertSessionToArray($session);
         }
 
+        error_log('getAllSessions: Found ' . count($sessions) . ' sessions');
+        
         echo json_encode([
             'success' => true,
             'sessions' => $sessions,
@@ -529,6 +630,7 @@ function getAllSessions() {
         ]);
 
     } catch (Exception $e) {
+        error_log('getAllSessions Exception: ' . $e->getMessage());
         echo json_encode(['success' => false, 'message' => 'Error fetching sessions: ' . $e->getMessage()]);
     }
 }
@@ -541,13 +643,13 @@ function getSessionStats() {
         // Get total sessions count
         $filter = ['isActive' => true];
         $query = new MongoDB\Driver\Query($filter);
-        $cursor = $client->executeQuery("$databaseName.sessions", $query);
+        $cursor = $client->executeQuery("$databaseName.online_sessions", $query);
         $totalSessions = count($cursor->toArray());
 
         // Get published sessions count
         $filter['status'] = 'published';
         $query = new MongoDB\Driver\Query($filter);
-        $cursor = $client->executeQuery("$databaseName.sessions", $query);
+        $cursor = $client->executeQuery("$databaseName.online_sessions", $query);
         $publishedSessions = count($cursor->toArray());
 
         // Get total views
@@ -618,7 +720,7 @@ function updateSession($data) {
             ['$set' => $data]
         );
 
-        $result = $client->executeBulkWrite("$databaseName.sessions", $bulk);
+        $result = $client->executeBulkWrite("$databaseName.online_sessions", $bulk);
 
         echo json_encode([
             'success' => true,
@@ -651,7 +753,7 @@ function publishSession($data) {
             ]]
         );
 
-        $result = $client->executeBulkWrite("$databaseName.sessions", $bulk);
+        $result = $client->executeBulkWrite("$databaseName.online_sessions", $bulk);
 
         echo json_encode([
             'success' => true,
@@ -684,7 +786,7 @@ function unpublishSession($data) {
             ]]
         );
 
-        $result = $client->executeBulkWrite("$databaseName.sessions", $bulk);
+        $result = $client->executeBulkWrite("$databaseName.online_sessions", $bulk);
 
         echo json_encode([
             'success' => true,
@@ -725,7 +827,7 @@ function deleteSession($data) {
             ]]
         );
 
-        $result = $client->executeBulkWrite("$databaseName.sessions", $bulk);
+        $result = $client->executeBulkWrite("$databaseName.online_sessions", $bulk);
 
         echo json_encode([
             'success' => true,
@@ -750,15 +852,74 @@ function checkStudentSessionAccess() {
         $subject = $_GET['subject'] ?? '';
         $grade = $_GET['grade'] ?? '';
 
+        error_log('=== checkStudentSessionAccess ===');
+        error_log('Phone: ' . $phone);
+        error_log('Session Number: ' . $sessionNumber);
+
         // Case 1: Check by session_number (e.g., Session 13)
         if ($sessionNumber && $phone) {
-            // Find student by phone
-            $studentFilter = ['phone' => $phone];
-            $query = new MongoDB\Driver\Query($studentFilter);
-            $cursor = $client->executeQuery("$databaseName.students", $query);
-            $student = current($cursor->toArray());
+            // Generate phone number variations for searching
+            // Student input: 01280912038
+            // Database has: +201280912038
+            $phoneVariations = [
+                $phone,  // Original as provided
+                normalizPhoneNumber($phone),  // Normalized to 01... format
+                convertTo20Format($phone),  // Converted to +20... format
+            ];
+            
+            // Remove duplicates and empty values
+            $phoneVariations = array_unique(array_filter($phoneVariations));
+            
+            error_log('=== checkStudentSessionAccess ===');
+            error_log('Phone input: ' . $phone);
+            error_log('Phone variations: ' . implode(' | ', $phoneVariations));
+            error_log('Session Number: ' . $sessionNumber);
+            
+            $student = null;
+            $searchedCollections = [];
+            
+            // Try to find student in all_students_view or subject-specific collections
+            $collectionsToTry = ['all_students_view'];
+            
+            // Add subject-specific collections based on common subjects
+            $subjectCollections = [
+                'senior1_math',
+                'senior2_pure_math',
+                'senior2_physics',
+                'senior2_mechanics',
+                'senior3_math',
+                'senior3_physics',
+                'senior3_statistics'
+            ];
+            
+            $collectionsToTry = array_merge($collectionsToTry, $subjectCollections);
+            
+            // Try each collection and phone variation
+            foreach ($collectionsToTry as $collection) {
+                foreach ($phoneVariations as $phoneVariation) {
+                    $searchedCollections[] = $collection . ':' . $phoneVariation;
+                    error_log('  Trying ' . $collection . ' with phone: ' . $phoneVariation);
+                    
+                    $studentFilter = ['phone' => $phoneVariation];
+                    $query = new MongoDB\Driver\Query($studentFilter);
+                    
+                    try {
+                        $cursor = $client->executeQuery("$databaseName." . $collection, $query);
+                        $student = current($cursor->toArray());
+                        
+                        if ($student) {
+                            error_log('  ✓ Found student in collection: ' . $collection);
+                            break 2;  // Break both loops
+                        }
+                    } catch (Exception $e) {
+                        error_log('  Error querying ' . $collection . ': ' . $e->getMessage());
+                    }
+                }
+            }
 
             if (!$student) {
+                error_log('✗ Student not found in any collection');
+                error_log('Searched: ' . implode(', ', $searchedCollections));
                 echo json_encode([
                     'success' => false, 
                     'hasAccess' => false, 
@@ -767,20 +928,54 @@ function checkStudentSessionAccess() {
                 return;
             }
 
+            error_log('✓ Student found! Checking session access...');
+
             // Check if student has purchased this session number
-            // Look for 'session_<number>' field with online_session = true
+            // Structure: session_13.online_session = true
             $sessionKey = 'session_' . $sessionNumber;
             $hasAccess = false;
 
             if (isset($student->$sessionKey)) {
                 $studentSession = $student->$sessionKey;
-                // Check if it's an object or array
-                if (is_object($studentSession)) {
-                    $hasAccess = isset($studentSession->online_session) && $studentSession->online_session === true;
-                } elseif (is_array($studentSession)) {
-                    $hasAccess = isset($studentSession['online_session']) && $studentSession['online_session'] === true;
+                error_log('  Found session key: ' . $sessionKey);
+                error_log('  Session type: ' . gettype($studentSession));
+                
+                // Session is an object with online_session field
+                if (is_object($studentSession) && isset($studentSession->online_session)) {
+                    $hasAccess = $studentSession->online_session === true;
+                    error_log('  online_session value: ' . ($studentSession->online_session ? 'true' : 'false'));
+                } 
+                // Session might be an array
+                elseif (is_array($studentSession) && isset($studentSession['online_session'])) {
+                    $hasAccess = $studentSession['online_session'] === true;
+                    error_log('  online_session value: ' . ($studentSession['online_session'] ? 'true' : 'false'));
+                }
+                // Session might be boolean directly
+                elseif ($studentSession === true) {
+                    $hasAccess = true;
+                    error_log('  Session value is boolean true');
+                }
+                else {
+                    error_log('  Session exists but online_session not found or is falsy');
+                    if (is_object($studentSession)) {
+                        error_log('  Session object keys: ' . implode(', ', array_keys((array)$studentSession)));
+                    }
+                }
+            } else {
+                error_log('  Session key does not exist: ' . $sessionKey);
+                // Log available session keys for debugging
+                $sessionKeys = [];
+                foreach ((array)$student as $key => $value) {
+                    if (strpos($key, 'session_') === 0) {
+                        $sessionKeys[] = $key;
+                    }
+                }
+                if (!empty($sessionKeys)) {
+                    error_log('  Available session keys: ' . implode(', ', $sessionKeys));
                 }
             }
+
+            error_log('Access result: ' . ($hasAccess ? '✓ GRANTED' : '✗ DENIED'));
 
             echo json_encode([
                 'success' => true,
@@ -808,7 +1003,7 @@ function checkStudentSessionAccess() {
             // Get the session by ID
             $sessionFilter = ['_id' => new MongoDB\BSON\ObjectId($sessionId)];
             $sessionQuery = new MongoDB\Driver\Query($sessionFilter);
-            $sessionCursor = $client->executeQuery("$databaseName.sessions", $sessionQuery);
+            $sessionCursor = $client->executeQuery("$databaseName.online_sessions", $sessionQuery);
             $session = current($sessionCursor->toArray());
 
             if (!$session) {
@@ -895,7 +1090,7 @@ function checkStudentSessionAccess() {
                 'isPublished' => true
             ];
             $sessionQuery = new MongoDB\Driver\Query($sessionFilter);
-            $sessionCursor = $client->executeQuery("$databaseName.sessions", $sessionQuery);
+            $sessionCursor = $client->executeQuery("$databaseName.online_sessions", $sessionQuery);
             $session = current($sessionCursor->toArray());
 
             if ($session) {
@@ -922,23 +1117,33 @@ function checkStudentSessionAccess() {
 }
 
 function convertSessionToArray($session) {
+    // Convert videos array to ensure proper JSON serialization
+    $videos = [];
+    if (isset($session->videos) && is_array($session->videos)) {
+        foreach ($session->videos as $video) {
+            $videos[] = convertVideoToArray($video);
+        }
+    }
+    
     return [
         'id' => (string)$session->_id,
+        '_id' => (string)$session->_id,
         'title' => $session->title ?? '',
         'subject' => $session->subject ?? '',
         'grade' => $session->grade ?? '',
         'teacher' => $session->teacher ?? '',
         'description' => $session->description ?? '',
         'sessionNumber' => $session->sessionNumber ?? null,
-        'videos' => $session->videos ?? [],
+        'accessControl' => $session->accessControl ?? 'free',
+        'videos' => $videos,
         'pdfFiles' => $session->pdfFiles ?? [],
         'tags' => $session->tags ?? [],
         'difficulty' => $session->difficulty ?? 'intermediate',
         'status' => $session->status ?? 'draft',
         'isPublished' => $session->isPublished ?? false,
         'isFeatured' => $session->isFeatured ?? false,
-        'publishDate' => $session->publishDate ? $session->publishDate->toDateTime()->format('c') : null,
-        'expiryDate' => $session->expiryDate ? $session->expiryDate->toDateTime()->format('c') : null,
+        'publishDate' => isset($session->publishDate) ? formatMongoDate($session->publishDate) : null,
+        'expiryDate' => isset($session->expiryDate) ? formatMongoDate($session->expiryDate) : null,
         'maxViews' => $session->maxViews ?? null,
         'downloadable' => $session->downloadable ?? true,
         'allowedStudentTypes' => $session->allowedStudentTypes ?? ['all'],
@@ -946,10 +1151,41 @@ function convertSessionToArray($session) {
         'downloads' => $session->downloads ?? 0,
         'rating' => $session->rating ?? 0,
         'ratingCount' => $session->ratingCount ?? 0,
-        'createdAt' => $session->createdAt ? $session->createdAt->toDateTime()->format('c') : null,
-        'updatedAt' => $session->updatedAt ? $session->updatedAt->toDateTime()->format('c') : null,
+        'createdAt' => isset($session->createdAt) ? formatMongoDate($session->createdAt) : null,
+        'updatedAt' => isset($session->updatedAt) ? formatMongoDate($session->updatedAt) : null,
         'createdBy' => $session->createdBy ?? '',
         'isActive' => $session->isActive ?? true
     ];
+}
+
+function convertVideoToArray($video) {
+    if (is_array($video)) {
+        return $video;
+    }
+    
+    return [
+        'video_id' => $video->video_id ?? null,
+        'title' => $video->title ?? '',
+        'type' => $video->type ?? 'lecture',
+        'description' => $video->description ?? '',
+        'duration' => $video->duration ?? null,
+        'url' => $video->url ?? null,
+        'source' => $video->source ?? 'upload'
+    ];
+}
+
+function formatMongoDate($mongoDate) {
+    try {
+        if ($mongoDate instanceof MongoDB\BSON\UTCDateTime) {
+            return $mongoDate->toDateTime()->format('c');
+        } elseif ($mongoDate instanceof DateTime) {
+            return $mongoDate->format('c');
+        } else {
+            return (string)$mongoDate;
+        }
+    } catch (Exception $e) {
+        error_log('Error formatting date: ' . $e->getMessage());
+        return null;
+    }
 }
 ?>

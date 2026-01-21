@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senior 3</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Font Awesome -->
+    <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
+    <style>
+        :root {
+            --primary-color: #008080;
+            --secondary-color: #FFFFE0;
+            --accent-color: #FF8C69;
+            --hover-color: #FF6347;
+            --background-color: #f4f4f4;
+            --dark-background: #121212;
+            --dark-header-bg: #333;
+            --dark-secondary-bg: #1D1D1D;
+            --slider-bg: #ccc;
+            --slider-active-bg: #4CAF50;
+            --white: #FFFFFF;
+            --text-color: #333;
+            --dark-text-color: #E0E0E0;
+            --button-bg: #128C7E;
+            --coral: coral;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-dark: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .banner {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .banner h1 {
+            font-size: 2rem;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li {
+            display: inline;
+        }
+
+        nav ul li a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        nav ul li a i {
+            color: var(--accent-color);
+        }
+
+        nav ul li a:hover {
+            color: var(--hover-color);
+        }
+
+        .user-info {
+            font-size: 1rem;
+            color: var(--secondary-color);
+        }
+
+        #userPhoneDisplay {
+            font-weight: bold;
+        }
+
+        #subjects {
+            padding: 30px;
+            background-color: var(--background-color);
+            width: 100%;
+            margin: auto;
+        }
+
+        #subjects h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 40px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .teachers-header {
+            display: flex;
+            color: var(--coral);
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: -25px;
+            align-items: start;
+        }
+
+        .subject-section {
+            margin-bottom: 40px;
+            background-color: var(--secondary-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow-light);
+            padding: 10px;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            max-width: 80%;
+            margin: auto;
+        }
+
+        .subject-section:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px var(--shadow-light);
+        }
+
+        .subject-title {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding: 10px;
+            justify-content: center;
+            width: 90%;
+            margin: 20px;
+        }
+
+        .swipe-message {
+            font-size: 1.5rem;
+            color: var(--hover-color);
+            text-align: center;
+            font-weight: bold;
+            margin-top: 20px;
+            animation: bounce 2s infinite;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        footer h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        footer p {
+            margin: 5px 0;
+        }
+
+        footer p i {
+            color: var(--accent-color);
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                text-align: center;
+            }
+
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .banner {
+                flex-direction: column;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 10px;
+                justify-content: center;
+                align-items: center;
+            }
+
+            #subjects h2 {
+                font-size: 1.8rem;
+            }
+
+            .slider {
+                overflow-x: scroll;
+                justify-content: center;
+            }
+
+            footer {
+                text-align: center;
+            }
+        }
+
+        body.dark-mode {
+            font-family: Arial, sans-serif;
+            color: var(--dark-text-color);
+            margin: 0;
+            padding: 0;
+            background-color: var(--dark-background);
+        }
+
+        .dark-mode header {
+            background-color: var(--dark-header-bg);
+            color: var(--secondary-color);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dark-mode .banner {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background-color: var(--dark-header-bg);
+        }
+
+        .dark-mode .banner h1 {
+            font-size: 2rem;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dark-mode .whatsapp-button {
+            background-color: var(--button-bg);
+        }
+
+        .dark-mode nav ul {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .dark-mode nav ul li {
+            display: inline;
+        }
+
+        .dark-mode nav ul li a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dark-mode nav ul li a i {
+            color: var(--accent-color);
+        }
+
+        .dark-mode nav ul li a:hover {
+            color: var(--hover-color);
+        }
+
+        .dark-mode .user-info {
+            font-size: 1rem;
+            color: var(--secondary-color);
+        }
+
+        .dark-mode #userPhoneDisplay {
+            font-weight: bold;
+        }
+
+        .dark-mode #subjects {
+            padding: 30px;
+            background-color: var(--dark-background);
+            width: 100%;
+            margin: auto;
+        }
+
+        .dark-mode #subjects h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            margin-bottom: 40px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .dark-mode .teachers-header {
+            display: flex;
+            color: var(--accent-color);
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: -25px;
+            align-items: start;
+        }
+
+        .dark-mode .subject-section {
+            margin-bottom: 40px;
+            background-color: var(--dark-secondary-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow-light);
+            padding: 10px;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            max-width: 80%;
+            margin: auto;
+        }
+
+        .dark-mode .subject-section:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px var(--shadow-light);
+        }
+
+        .dark-mode .subject-title {
+            font-size: 1.8rem;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dark-mode .slider {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding: 10px;
+            justify-content: center;
+            width: 90%;
+            margin: 20px;
+        }
+
+        .dark-mode .swipe-message {
+            font-size: 1.5rem;
+            color: var(--hover-color);
+            text-align: center;
+            font-weight: bold;
+            margin-top: 20px;
+            animation: bounce 2s infinite;
+            margin-bottom: 10px;
+        }
+
+        .dark-mode footer {
+            background-color: var(--dark-header-bg);
+            color: var(--secondary-color);
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        .dark-mode footer h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .dark-mode footer p {
+            margin: 5px 0;
+        }
+
+        .dark-mode footer p i {
+            color: var(--accent-color);
+            margin-right: 8px;
+        }
+
+        .dark-mode-switch {
+            position: absolute;
+            right: 150px;
+            top: 25px;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .dark-mode-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider1 {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--slider-bg);
+            border-radius: 20px;
+            transition: 0.4s;
+        }
+
+        .slider1:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--white);
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+
+        input:checked+.slider1 {
+            background-color: var(--slider-active-bg);
+        }
+
+        input:checked+.slider1:before {
+            transform: translateX(20px);
+        }
+
+        .lesson-card {
+            background-color: var(--primary-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px var(--shadow-light);
+            width: 250px;
+            height: 300px;
+            perspective: 1000px;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .lesson-card:hover {
+            transform: scale(1.05);
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+
+        .lesson-card:hover .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card-front {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+
+        .card-front img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+
+        .card-front h3 {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .card-back {
+            background-color: var(--accent-color);
+            color: var(--secondary-color);
+            transform: rotateY(180deg);
+        }
+
+        .card-back h3 {
+            font-size: 1.1rem;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="banner">
+            <img src="../images/logo.webp" alt="Website Logo" class="logo">
+            <h1>Studyisfunny <i class="fas fa-graduation-cap"></i></h1>
+        </div>
+        <!-- Dark Mode Toggle Switch -->
+        <label class="dark-mode-switch">
+            <input type="checkbox" id="darkModeToggle">
+            <span class="slider1"></span>
+        </label>
+    </header>
+
+    <section id="subjects">
+        <h2>Senior 3 Subjects</h2>
+        <!-- Funny Swipe Message -->
+        <div class="swipe-message">
+            <p>👉 Swipe down for more content! 😄</p>
+        </div>
+
+        <!-- Physics Section -->
+        <div class="subject-section">
+            <h3 class="subject-title"><i class="fas fa-atom"></i> Physics</h3>
+            <h4 class="teachers-header">Teachers</h4>
+            <div class="slider">
+                <div class="lesson-card" onclick="location.href = 'physics/sessions'">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <img src="../images/shady.jpeg" alt="Teacher">
+                            <h3>ENG. Shady Elsharqawy</h3>
+                        </div>
+                        <div class="card-back">
+                            <h3>اضغط هنا للدخول الى المحتويات</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="subject-section">
+            <h3 class="subject-title"><i class="fas fa-chart-bar"></i> Statistics</h3>
+            <h4 class="teachers-header">Teachers</h4>
+            <div class="slider">
+                <div class="lesson-card" onclick="location.href = 'statistics/sessions'">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <img src="../images/shady.jpeg" alt="Teacher">
+                            <h3>ENG. Shady Elsharqawy</h3>
+                        </div>
+                        <div class="card-back">
+                            <h3>اضغط هنا للدخول الى المحتويات</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <h2>Contact Us <i class="fas fa-envelope"></i></h2>
+        <p><i class="fas fa-envelope"></i> Email: support@studyisfunny.com</p>
+        <p><i class="fas fa-phone-alt"></i> Phone: 01558145450</p>
+        <a href="https://wa.me/201558145450?text=Hello" target="_blank" class="whatsapp-button" style="display: inline-block; background: #25D366; color: white; padding: 12px 25px; border-radius: 30px; text-decoration: none; margin-top: 15px; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);">
+            <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+        </a>
+    </footer>
+
+    <script>
+        // Dark Mode Toggle Script
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+
+        // Check localStorage for dark mode preference
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            body.classList.add('dark-mode');
+            darkModeToggle.checked = true;
+        }
+
+        // Add event listener to toggle switch
+        darkModeToggle.addEventListener('change', () => {
+            if (darkModeToggle.checked) {
+                body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+    </script>
+</body>
+
+</html>

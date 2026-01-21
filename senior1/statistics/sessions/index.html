@@ -40,11 +40,161 @@
         <div class="spinner"></div>
     </div>
 
+    <!-- Error Message -->
+    <div id="errorMessage" class="error"
+        style="display:none; text-align: center; padding: 20px; color: #ef5350; background: #ffebee; border-radius: 8px; margin: 20px;">
+    </div>
+
     <!-- Main Container -->
     <div class="main-container">
         <!-- Sessions Cards -->
-        <section class="sessions-container">
-            <h2>Senior 1 Statistics - ENG. Shady Elsharqawy</h2>
+        <section class="sessions-container" id="sessionsContainer" style="display:none;">
+            <h2 id="pageTitle">Senior 1 Statistics - ENG. Shady Elsharqawy</h2>
+            <div id="sessionsList" style="display: contents;"></div>
+        </section>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state"
+            style="display:none; text-align: center; padding: 60px 20px; color: #666;">
+            <h2 style="font-size: 1.8rem; margin-bottom: 10px; color: #999;">📭 No Sessions Available</h2>
+            <p>There are no sessions available at the moment.</p>
+            <p>Check back later or contact your instructor.</p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation" style="display:none;" id="navigation">
+            <button class="nav-btn" onclick="location.href='../..'">← Back to Subjects</button>
+            <button class="nav-btn" onclick="location.href='../Homework'">📚 Homework</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <h2>Contact Us</h2>
+        <p><i class="fas fa-envelope"></i> Email: support@studyisfunny.com</p>
+        <p><i class="fas fa-phone-alt"></i> Phone: 01558145450</p>
+    </footer>
+
+    <script>
+        const subject = 'statistics';
+        const grade = 'senior1';
+        const subjectDisplay = 'Statistics';
+
+        async function loadSessions() {
+            try {
+                const url = `/api/sessions.php?action=list&subject=${encodeURIComponent(subject)}&grade=${grade}`;
+                console.log('Fetching sessions from:', url);
+                const response = await fetch(url);
+                const data = await response.json();
+
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('pageTitle').textContent = `Senior 1 ${subjectDisplay} - ENG. Shady Elsharqawy`;
+
+                if (!data.success) {
+                    showError(data.message || 'Failed to load sessions');
+                    return;
+                }
+
+                if (!data.sessions || data.sessions.length === 0) {
+                    document.getElementById('emptyState').style.display = 'block';
+                    document.getElementById('navigation').style.display = 'flex';
+                    return;
+                }
+
+                displaySessions(data.sessions);
+                document.getElementById('navigation').style.display = 'flex';
+            } catch (error) {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                showError('Failed to connect to server: ' + error.message);
+            }
+        }
+
+        function displaySessions(sessions) {
+            const container = document.getElementById('sessionsContainer');
+            const sessionsList = document.getElementById('sessionsList');
+
+            container.style.display = 'block';
+            sessionsList.innerHTML = '';
+
+            sessions.forEach((session, index) => {
+                const card = createSessionCard(session, index);
+                sessionsList.appendChild(card);
+            });
+        }
+
+        function createSessionCard(session, index) {
+            const card = document.createElement('div');
+            card.className = 'session-card';
+            card.setAttribute('data-session-id', session.id);
+
+            const startTime = session.publishDate ? new Date(session.publishDate) : new Date(session.createdAt);
+            const formattedDate = startTime.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            card.innerHTML = `
+                <h3>${escapeHtml(session.title || session.subject)}</h3>
+                <p class="sessionname">${escapeHtml(session.description || '')}</p>
+                <p class="session-date"><i class="fas fa-calendar-alt"></i> Date: ${formattedDate}</p>
+                <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: ${session.sessionNumber || index + 1}</p>
+                <a href="#" class="view-details" id="view-details-${session.id}">View Details</a>
+            `;
+
+            card.querySelector(`#view-details-${session.id}`).addEventListener('click', (e) => {
+                e.preventDefault();
+                openSession(session.id, session.sessionNumber);
+            });
+
+            return card;
+        }
+
+        function openSession(sessionId, sessionNumber) {
+            window.location.href = `session-detail.php?id=${sessionId}`;
+        }
+
+        function closePopup() {
+            document.querySelector('.overlay').style.display = 'none';
+            document.querySelector('.popup').style.display = 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('navigation').style.display = 'flex';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Load sessions when page loads
+        window.addEventListener('DOMContentLoaded', loadSessions);
+
+        // Dark mode toggle
+        document.getElementById('darkModeToggle').addEventListener('change', function() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', this.checked);
+        });
+
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.getElementById('darkModeToggle').checked = true;
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+</body>
+
+</html>
 
             <div class="session-card" data-session="1">
                 <h3>Introduction to Statistics</h3>
