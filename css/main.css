@@ -54,12 +54,9 @@ header {
     background-color: #1DA853; /* Darker green on hover */
 }
 .banner {
-    height: 80px;
     display: flex;
-    background-color: var(--contrast);
-    padding: 0px 16px;
     align-items: center;
-    position: relative;
+    gap: 20px;
 }
 
 .logo-container {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -35,6 +35,40 @@
             margin: 0;
             padding: 0;
             transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        header {
+            background-color: #333;
+            color: var(--text);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .banner {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background-color: transparent;
+            height: auto;
+            padding: 0;
+        }
+
+        .banner h1 {
+            font-size: 2rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
         }
 
         .header-title {
@@ -571,15 +605,15 @@
         <div class="banner">
             <img src="../images/logo.webp" alt="Website Logo" class="logo">
             <h1>Studyisfunny <i class="fas fa-graduation-cap"></i></h1>
-            <!-- Updated Dark Mode Toggle Switch -->
-            <label class="dark-mode-switch">
-                <input type="checkbox" id="darkModeToggleCheckbox">
-                <span class="slider"></span>
-            </label>
-            <a href="https://wa.me/201558145450?text=Hello" target="_blank" class="whatsapp-button">
-                <i class="fab fa-whatsapp"></i> WhatsApp
-            </a>
         </div>
+        <!-- Dark Mode Toggle Switch -->
+        <label class="dark-mode-switch">
+            <input type="checkbox" id="darkModeToggleCheckbox">
+            <span class="slider"></span>
+        </label>
+        <a href="https://wa.me/201558145450?text=Hello" target="_blank" class="whatsapp-button">
+            <i class="fab fa-whatsapp"></i> WhatsApp
+        </a>
     </header>
 
     <div class="container1">
