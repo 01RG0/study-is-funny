@@ -1,8 +1,7 @@
 node_modules/
 .env
-.DS_Store
 *.log
 .vscode/
 .idea/
-/study-is-funny-525801ebb49487b38469ddce77f634a5fc021278
+
 /uploads/videos
