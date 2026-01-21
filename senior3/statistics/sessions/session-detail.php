@@ -279,6 +279,12 @@ if ($currentVideo && isset($currentVideo['url'])) {
 <body>
     <h1><?= htmlspecialchars($title) ?></h1>
     
+    <?php if ($currentVideo && isset($currentVideo['title'])): ?>
+    <div class="video-info">
+        <strong>Video <?= $currentVideoIndex + 1 ?> of <?= count($videos) ?>:</strong> <?= htmlspecialchars($currentVideo['title']) ?>
+    </div>
+    <?php endif; ?>
+    
     <div class="video-container">
         <?php if ($videoUrl): ?>
             <?php 
@@ -306,6 +312,21 @@ if ($currentVideo && isset($currentVideo['url'])) {
         <?php endif; ?>
     </div>
     
+    <?php if (count($videos) > 1): ?>
+    <div class="video-nav-buttons">
+        <a href="?id=<?= urlencode($sessionId) ?>&video=<?= $currentVideoIndex - 1 ?>" 
+           class="nav-button" 
+           <?php if ($currentVideoIndex == 0): ?>style="opacity: 0.5; pointer-events: none;"<?php endif; ?>>
+            ← Previous Video
+        </a>
+        <a href="?id=<?= urlencode($sessionId) ?>&video=<?= $currentVideoIndex + 1 ?>" 
+           class="nav-button"
+           <?php if ($currentVideoIndex == count($videos) - 1): ?>style="opacity: 0.5; pointer-events: none;"<?php endif; ?>>
+            Next Video →
+        </a>
+    </div>
+    <?php endif; ?>
+
     <?php if ($videoUrl): ?>
     <div class="controls">
         <button onclick="toggleFullscreen()">📺 Fullscreen</button>
@@ -315,9 +336,16 @@ if ($currentVideo && isset($currentVideo['url'])) {
     </div>
     <?php endif; ?>
 
+    <?php if ($currentVideo && isset($currentVideo['description']) && $currentVideo['description']): ?>
+    <div class="description-box">
+        <strong><?= htmlspecialchars($currentVideo['title']) ?>:</strong><br>
+        <?= htmlspecialchars($currentVideo['description']) ?>
+    </div>
+    <?php endif; ?>
+
     <?php if ($description): ?>
     <div class="description-box">
-        <strong>Description:</strong><br>
+        <strong>Session Description:</strong><br>
         <?= htmlspecialchars($description) ?>
     </div>
     <?php endif; ?>

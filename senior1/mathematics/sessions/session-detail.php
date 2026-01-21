@@ -18,7 +18,7 @@ try {
     
     // Fetch session data
     $filter = ['_id' => DatabaseMongo::createObjectId($sessionId)];
-    $session = $db->findOne('sessions', $filter);
+    $session = $db->findOne('online_sessions', $filter);
     
     if (!$session) {
         http_response_code(404);
@@ -39,34 +39,56 @@ $sessionNumber = $session->sessionNumber ?? $session->session_number ?? null;
 $accessControl = $session->accessControl ?? 'free'; // 'restricted' or 'free'
 $requiredGrade = $session->grade ?? 'senior1';
 
-// Check if videos array exists and get first video URL
-if (!$videoUrl && isset($session->videos) && is_array($session->videos) && count($session->videos) > 0) {
-    $firstVideo = $session->videos[0];
-    $videoId = null;
-    $videoSource = null;
-    
-    if (is_object($firstVideo)) {
-        $videoId = $firstVideo->video_id ?? null;
-        $videoSource = $firstVideo->source ?? null;
-        $videoUrl = $firstVideo->url ?? null;
-    } elseif (is_array($firstVideo)) {
-        $videoId = $firstVideo['video_id'] ?? null;
-        $videoSource = $firstVideo['source'] ?? null;
-        $videoUrl = $firstVideo['url'] ?? null;
-    }
-    
-    // If source is "upload" and we have a video_id, fetch the actual file path
-    if ($videoSource === 'upload' && $videoId && !$videoUrl) {
-        try {
-            $videoRecord = $videoManager->getById($videoId);
-            if ($videoRecord && isset($videoRecord->video_file_path)) {
-                // Construct the full URL to the video file
-                $videoUrl = '/uploads/videos/' . ltrim($videoRecord->video_file_path, '/');
-            }
-        } catch (Exception $e) {
-            error_log("Error fetching video record: " . $e->getMessage());
+// Process videos array for multi-video support
+$videos = [];
+if (isset($session->videos) && is_array($session->videos) && count($session->videos) > 0) {
+    foreach ($session->videos as $video) {
+        $videoData = [];
+        $videoId = null;
+        $videoSource = null;
+        $videoUrl = null;
+        
+        if (is_object($video)) {
+            $videoId = $video->video_id ?? null;
+            $videoSource = $video->source ?? null;
+            $videoUrl = $video->url ?? null;
+            $videoData['title'] = $video->title ?? 'Video';
+            $videoData['description'] = $video->description ?? '';
+        } elseif (is_array($video)) {
+            $videoId = $video['video_id'] ?? null;
+            $videoSource = $video['source'] ?? null;
+            $videoUrl = $video['url'] ?? null;
+            $videoData['title'] = $video['title'] ?? 'Video';
+            $videoData['description'] = $video['description'] ?? '';
         }
+        
+        // If source is "upload" and we have a video_id, fetch the actual file path
+        if ($videoSource === 'upload' && $videoId && !$videoUrl) {
+            try {
+                $videoRecord = $videoManager->getById($videoId);
+                if ($videoRecord && isset($videoRecord->video_file_path)) {
+                    $videoUrl = '/uploads/videos/' . ltrim($videoRecord->video_file_path, '/');
+                }
+            } catch (Exception $e) {
+                error_log("Error fetching video record: " . $e->getMessage());
+            }
+        }
+        
+        $videoData['url'] = $videoUrl;
+        $videoData['source'] = $videoSource;
+        $videoData['video_id'] = $videoId;
+        $videos[] = $videoData;
     }
+}
+
+// Get current video index from URL parameter
+$currentVideoIndex = isset($_GET['video']) ? (int)$_GET['video'] : 0;
+$currentVideoIndex = max(0, min($currentVideoIndex, count($videos) - 1));
+$currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
+
+// Set video URL from current video
+if ($currentVideo && isset($currentVideo['url'])) {
+    $videoUrl = $currentVideo['url'];
 }
 ?>
 <!DOCTYPE html>
@@ -156,6 +178,44 @@ if (!$videoUrl && isset($session->videos) && is_array($session->videos) && count
             transform: scale(1.05);
         }
 
+        .video-info {
+            max-width: 800px;
+            margin: 15px auto;
+            padding: 10px 15px;
+            background-color: #f0f0f0;
+            border-left: 4px solid #008080;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .video-nav-buttons {
+            max-width: 800px;
+            margin: 10px auto;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .nav-button {
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #008080;
+            color: #FFFFE0;
+            transition: background-color 0.3s;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background-color: #006666;
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .question-box {
             max-width: 800px;
             margin: 20px auto;
@@ -219,6 +279,12 @@ if (!$videoUrl && isset($session->videos) && is_array($session->videos) && count
 <body>
     <h1><?= htmlspecialchars($title) ?></h1>
     
+    <?php if ($currentVideo && isset($currentVideo['title'])): ?>
+    <div class="video-info">
+        <strong>Video <?= $currentVideoIndex + 1 ?> of <?= count($videos) ?>:</strong> <?= htmlspecialchars($currentVideo['title']) ?>
+    </div>
+    <?php endif; ?>
+    
     <div class="video-container">
         <?php if ($videoUrl): ?>
             <?php 
@@ -246,6 +312,21 @@ if (!$videoUrl && isset($session->videos) && is_array($session->videos) && count
         <?php endif; ?>
     </div>
     
+    <?php if (count($videos) > 1): ?>
+    <div class="video-nav-buttons">
+        <a href="?id=<?= urlencode($sessionId) ?>&video=<?= $currentVideoIndex - 1 ?>" 
+           class="nav-button" 
+           <?php if ($currentVideoIndex == 0): ?>style="opacity: 0.5; pointer-events: none;"<?php endif; ?>>
+            ← Previous Video
+        </a>
+        <a href="?id=<?= urlencode($sessionId) ?>&video=<?= $currentVideoIndex + 1 ?>" 
+           class="nav-button"
+           <?php if ($currentVideoIndex == count($videos) - 1): ?>style="opacity: 0.5; pointer-events: none;"<?php endif; ?>>
+            Next Video →
+        </a>
+    </div>
+    <?php endif; ?>
+
     <?php if ($videoUrl): ?>
     <div class="controls">
         <button onclick="toggleFullscreen()">📺 Fullscreen</button>
@@ -255,9 +336,16 @@ if (!$videoUrl && isset($session->videos) && is_array($session->videos) && count
     </div>
     <?php endif; ?>
 
+    <?php if ($currentVideo && isset($currentVideo['description']) && $currentVideo['description']): ?>
+    <div class="description-box">
+        <strong><?= htmlspecialchars($currentVideo['title']) ?>:</strong><br>
+        <?= htmlspecialchars($currentVideo['description']) ?>
+    </div>
+    <?php endif; ?>
+
     <?php if ($description): ?>
     <div class="description-box">
-        <strong>Description:</strong><br>
+        <strong>Session Description:</strong><br>
         <?= htmlspecialchars($description) ?>
     </div>
     <?php endif; ?>
