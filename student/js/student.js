@@ -21,7 +21,7 @@ function logout() {
 }
 
 // Initialize student dashboard
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     if (!checkStudentAuth()) return;
 
     const userPhone = localStorage.getItem('userPhone');
@@ -41,18 +41,18 @@ async function loadStudentData(phone) {
 
         const studentData = await getStudentDataFromMongoDB(phone);
 
-                if (studentData) {
-                    // Store student grade for session access
-                    localStorage.setItem('studentGrade', studentData.grade);
-                    localStorage.setItem('studentId', studentData.studentId || studentData._id);
+        if (studentData) {
+            // Store student grade for session access
+            localStorage.setItem('studentGrade', studentData.grade);
+            localStorage.setItem('studentId', studentData.studentId || studentData._id);
 
-                    displayStudentInfo(studentData);
-                    generateStudentQRCodes(studentData);
-                    loadRecentActivity(studentData);
-                    loadAvailableSessions(studentData);
-                } else {
-                    showError('لم يتم العثور على بيانات الطالب');
-                }
+            displayStudentInfo(studentData);
+            generateStudentQRCodes(studentData);
+            loadRecentActivity(studentData);
+            loadAvailableSessions(studentData);
+        } else {
+            showError('لم يتم العثور على بيانات الطالب');
+        }
     } catch (error) {
         console.error('Error loading student data:', error);
         showError('حدث خطأ في تحميل البيانات');
@@ -365,7 +365,7 @@ function showError(message) {
 }
 
 // Handle modal close when clicking outside
-window.onclick = function(event) {
+window.onclick = function (event) {
     const modal = document.getElementById('qrModal');
     if (event.target === modal) {
         modal.style.display = 'none';

@@ -68,15 +68,20 @@ class Video {
         // Get file size in MB
         $fileSizeMB = round(filesize($filepath) / (1024 * 1024), 2);
         
+        // Check if string is a valid MongoDB ObjectId (24 char hex)
+        $isValidObjectId = function($id) {
+            return is_string($id) && preg_match('/^[a-f\d]{24}$/i', $id);
+        };
+
         // Create database record
         $videoData = [
             'video_title' => $metadata['title'] ?? 'Untitled Video',
             'video_description' => $metadata['description'] ?? '',
             'video_file_path' => str_replace($this->uploadDir, '', $filepath),
             'file_size_mb' => $fileSizeMB,
-            'uploaded_by' => isset($metadata['uploaded_by']) 
+            'uploaded_by' => (isset($metadata['uploaded_by']) && $isValidObjectId($metadata['uploaded_by']))
                 ? DatabaseMongo::createObjectId($metadata['uploaded_by']) 
-                : null,
+                : ($metadata['uploaded_by'] ?? null),
             'status' => 'completed',
             'view_count' => 0,
             'createdAt' => DatabaseMongo::createUTCDateTime(),
@@ -85,11 +90,15 @@ class Video {
         
         // Add subject and lesson references if provided
         if (isset($metadata['subject_id'])) {
-            $videoData['subject_id'] = DatabaseMongo::createObjectId($metadata['subject_id']);
+            $videoData['subject_id'] = $isValidObjectId($metadata['subject_id'])
+                ? DatabaseMongo::createObjectId($metadata['subject_id'])
+                : $metadata['subject_id'];
         }
         
         if (isset($metadata['lesson_id'])) {
-            $videoData['lesson_id'] = DatabaseMongo::createObjectId($metadata['lesson_id']);
+            $videoData['lesson_id'] = $isValidObjectId($metadata['lesson_id'])
+                ? DatabaseMongo::createObjectId($metadata['lesson_id'])
+                : $metadata['lesson_id'];
         }
         
         // Add thumbnail if provided
@@ -145,14 +154,22 @@ class Video {
         }
         
         // Check MIME type
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mimeType = finfo_file($finfo, $fileData['tmp_name']);
-        finfo_close($finfo);
+        $mimeType = '';
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $fileData['tmp_name']);
+            finfo_close($finfo);
+        } elseif (function_exists('mime_content_type')) {
+            $mimeType = mime_content_type($fileData['tmp_name']);
+        } else {
+            // Last fallback: use the type provided by the browser (less secure but prevents crash)
+            $mimeType = $fileData['type'];
+        }
         
         if (!in_array($mimeType, $this->allowedTypes)) {
             return [
                 'success' => false,
-                'message' => 'Invalid file type. Only video files are allowed'
+                'message' => 'Invalid file type. Only video files are allowed. (Detected: ' . $mimeType . ')'
             ];
         }
         

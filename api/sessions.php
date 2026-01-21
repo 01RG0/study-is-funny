@@ -31,7 +31,8 @@ function handleGet($action) {
             getSession();
             break;
         case 'all':
-        case 'list':  // Added alias for list
+        case 'list':
+        case 'getAllSessions':  // Added alias for manage-sessions page
             getAllSessions();
             break;
         case 'stats':
@@ -56,9 +57,22 @@ function handlePost($action) {
     // For other actions, decode JSON
     $data = json_decode(file_get_contents('php://input'), true);
 
+    // Add id from query parameter if present
+    if (isset($_GET['id'])) {
+        $data['id'] = $_GET['id'];
+    }
+
     switch ($action) {
         case 'create':
             createSession($data);
+            break;
+        case 'updateSession':
+        case 'update':
+            updateSession($data);
+            break;
+        case 'deleteSession':
+        case 'delete':
+            deleteSession($data);
             break;
         default:
             http_response_code(400);
@@ -248,6 +262,7 @@ function createSession($data) {
             'teacher' => $data['teacher'],
             'description' => isset($data['description']) ? trim($data['description']) : '',
             'sessionNumber' => isset($data['sessionNumber']) ? (int)$data['sessionNumber'] : null,
+            'accessControl' => $data['accessControl'] ?? 'free',
             'videos' => $data['videos'] ?? [],
             'pdfFiles' => $data['pdfFiles'] ?? [],
             'tags' => $data['tags'] ?? [],
@@ -304,16 +319,22 @@ function uploadSession($data) {
             mkdir($uploadDir, 0755, true);
         }
 
+        // Parse gradeSubject field (e.g., "senior2-mathematics" -> grade="senior2", subject="mathematics")
+        $gradeSubject = $_POST['gradeSubject'] ?? '';
+        $gradeParts = explode('-', $gradeSubject);
+        $grade = $gradeParts[0] ?? '';
+        $subject = $gradeParts[1] ?? '';
+
         // Collect session data from POST
         $sessionData = [
             'title' => $_POST['sessionTitle'] ?? '',
-            'subject' => $_POST['subject'] ?? '',
-            'grade' => $_POST['grade'] ?? '',
+            'subject' => $subject,
+            'grade' => $grade,
             'teacher' => $_POST['teacher'] ?? '',
             'description' => $_POST['description'] ?? '',
-            'accessType' => $_POST['accessType'] ?? 'online_session',
+            'sessionNumber' => !empty($_POST['sessionNumber']) ? (int)$_POST['sessionNumber'] : null,
+            'accessControl' => $_POST['accessControl'] ?? 'free',
             'maxViews' => !empty($_POST['maxViews']) ? (int)$_POST['maxViews'] : null,
-            'sessionAccess' => $_POST['sessionAccess'] ?? null,
             'publishDate' => $_POST['publishDate'] ?? null,
             'expiryDate' => $_POST['expiryDate'] ?? null,
             'status' => $_POST['isPublished'] ?? 'draft',
@@ -333,13 +354,16 @@ function uploadSession($data) {
             $errors[] = 'Session title must be at least 3 characters long';
         }
         if (empty($sessionData['subject'])) {
-            $errors[] = 'Subject is required';
+            $errors[] = 'Grade & Subject is required';
         }
         if (empty($sessionData['grade'])) {
-            $errors[] = 'Grade level is required';
+            $errors[] = 'Grade & Subject is required';
         }
         if (empty($sessionData['teacher'])) {
             $errors[] = 'Teacher is required';
+        }
+        if ($sessionData['sessionNumber'] === null) {
+            $errors[] = 'Session Number is required';
         }
 
         if (!empty($errors)) {
@@ -561,12 +585,19 @@ function updateSession($data) {
         $client = $GLOBALS['mongoClient'];
         $databaseName = $GLOBALS['databaseName'];
 
-        if (!isset($data['id'])) {
-            echo json_encode(['success' => false, 'message' => 'Session ID required']);
+        if (!isset($data['id']) || empty($data['id'])) {
+            echo json_encode(['success' => false, 'message' => 'Session ID is required']);
             return;
         }
 
         $sessionId = $data['id'];
+        
+        // Validate ObjectId format
+        if (!preg_match('/^[a-f0-9]{24}$/i', $sessionId)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid session ID format']);
+            return;
+        }
+        
         unset($data['id']);
 
         // Add updated timestamp
@@ -671,15 +702,23 @@ function deleteSession($data) {
         $client = $GLOBALS['mongoClient'];
         $databaseName = $GLOBALS['databaseName'];
 
-        if (!isset($data['id'])) {
-            echo json_encode(['success' => false, 'message' => 'Session ID required']);
+        if (!isset($data['id']) || empty($data['id'])) {
+            echo json_encode(['success' => false, 'message' => 'Session ID is required']);
+            return;
+        }
+
+        $id = $data['id'];
+        
+        // Validate ObjectId format
+        if (!preg_match('/^[a-f0-9]{24}$/i', $id)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid session ID format']);
             return;
         }
 
         // Soft delete - mark as inactive
         $bulk = new MongoDB\Driver\BulkWrite();
         $bulk->update(
-            ['_id' => new MongoDB\BSON\ObjectId($data['id'])],
+            ['_id' => new MongoDB\BSON\ObjectId($id)],
             ['$set' => [
                 'isActive' => false,
                 'updatedAt' => new MongoDB\BSON\UTCDateTime()
@@ -704,17 +743,108 @@ function checkStudentSessionAccess() {
         $client = $GLOBALS['mongoClient'];
         $databaseName = $GLOBALS['databaseName'];
 
-        $studentId = $_GET['studentId'] ?? '';
-        $sessionNumber = (int)($_GET['sessionNumber'] ?? 0);
+        // Support multiple parameter types
+        $phone = $_GET['phone'] ?? '';
+        $sessionNumber = (int)($_GET['sessionNumber'] ?? $_GET['session_number'] ?? 0);
+        $sessionId = $_GET['sessionId'] ?? $_GET['session_id'] ?? '';
         $subject = $_GET['subject'] ?? '';
         $grade = $_GET['grade'] ?? '';
 
-        if (!$studentId || !$sessionNumber || !$subject || !$grade) {
-            echo json_encode(['success' => false, 'message' => 'Missing required parameters: studentId, sessionNumber, subject, grade']);
+        // Case 1: Check by session_number (e.g., Session 13)
+        if ($sessionNumber && $phone) {
+            // Find student by phone
+            $studentFilter = ['phone' => $phone];
+            $query = new MongoDB\Driver\Query($studentFilter);
+            $cursor = $client->executeQuery("$databaseName.students", $query);
+            $student = current($cursor->toArray());
+
+            if (!$student) {
+                echo json_encode([
+                    'success' => false, 
+                    'hasAccess' => false, 
+                    'message' => 'Student not found'
+                ]);
+                return;
+            }
+
+            // Check if student has purchased this session number
+            // Look for 'session_<number>' field with online_session = true
+            $sessionKey = 'session_' . $sessionNumber;
+            $hasAccess = false;
+
+            if (isset($student->$sessionKey)) {
+                $studentSession = $student->$sessionKey;
+                // Check if it's an object or array
+                if (is_object($studentSession)) {
+                    $hasAccess = isset($studentSession->online_session) && $studentSession->online_session === true;
+                } elseif (is_array($studentSession)) {
+                    $hasAccess = isset($studentSession['online_session']) && $studentSession['online_session'] === true;
+                }
+            }
+
+            echo json_encode([
+                'success' => true,
+                'hasAccess' => $hasAccess,
+                'message' => $hasAccess ? 'Access granted' : 'No subscription for this session',
+                'sessionNumber' => $sessionNumber,
+                'phone' => $phone
+            ]);
             return;
         }
 
-        // Check if student exists and has access to this session
+        // Case 2: Check by session_id
+        if ($sessionId && $phone) {
+            // Find student by phone
+            $studentFilter = ['phone' => $phone];
+            $query = new MongoDB\Driver\Query($studentFilter);
+            $cursor = $client->executeQuery("$databaseName.students", $query);
+            $student = current($cursor->toArray());
+
+            if (!$student) {
+                echo json_encode(['success' => false, 'hasAccess' => false, 'message' => 'Student not found']);
+                return;
+            }
+
+            // Get the session by ID
+            $sessionFilter = ['_id' => new MongoDB\BSON\ObjectId($sessionId)];
+            $sessionQuery = new MongoDB\Driver\Query($sessionFilter);
+            $sessionCursor = $client->executeQuery("$databaseName.sessions", $sessionQuery);
+            $session = current($sessionCursor->toArray());
+
+            if (!$session) {
+                echo json_encode(['success' => false, 'hasAccess' => false, 'message' => 'Session not found']);
+                return;
+            }
+
+            $hasAccess = false;
+            
+            // Check by session number if available
+            if (isset($session->sessionNumber)) {
+                $sessionKey = 'session_' . $session->sessionNumber;
+                if (isset($student->$sessionKey)) {
+                    $studentSession = $student->$sessionKey;
+                    if (is_object($studentSession)) {
+                        $hasAccess = isset($studentSession->online_session) && $studentSession->online_session === true;
+                    } elseif (is_array($studentSession)) {
+                        $hasAccess = isset($studentSession['online_session']) && $studentSession['online_session'] === true;
+                    }
+                }
+            }
+
+            echo json_encode([
+                'success' => true,
+                'hasAccess' => $hasAccess,
+                'sessionId' => $sessionId,
+                'phone' => $phone
+            ]);
+            return;
+        }
+
+        // Original logic for backward compatibility
+        if (!$phone && !$sessionNumber && !$subject && !$grade) {
+            echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
+            return;
+        }
         // Try both studentId and phone number
         $studentFilter = [
             '$or' => [

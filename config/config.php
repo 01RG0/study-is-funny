@@ -33,10 +33,13 @@ define('PASSWORD_MIN_LENGTH', 6);
 define('BCRYPT_COST', 10);
 
 // Session Configuration
-ini_set('session.cookie_httponly', 1);
-ini_set('session.cookie_secure', 0); // Set to 1 for HTTPS
-ini_set('session.cookie_samesite', 'Strict');
-ini_set('session.gc_maxlifetime', SESSION_TIMEOUT);
+// Only set session ini settings if session hasn't been started yet
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.cookie_httponly', 1);
+    ini_set('session.cookie_secure', 0); // Set to 1 for HTTPS
+    ini_set('session.cookie_samesite', 'Strict');
+    ini_set('session.gc_maxlifetime', SESSION_TIMEOUT);
+}
 
 // Error Reporting (Development)
 error_reporting(E_ALL);

@@ -1,4 +1,5 @@
 // Admin Dashboard JavaScript
+window.APP_BASE_URL = window.APP_BASE_URL || '../';
 
 // Check if admin is logged in
 function checkAdminAuth() {
@@ -33,7 +34,7 @@ function showSection(sectionId) {
 }
 
 // Initialize dashboard
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     checkAdminAuth();
 
     // Load dashboard data
@@ -125,7 +126,7 @@ function initializeSessionUploadForm() {
     let videoCount = 1;
 
     // Add video functionality
-    addVideoBtn.addEventListener('click', function() {
+    addVideoBtn.addEventListener('click', function () {
         videoCount++;
         const videoItem = createVideoUploadItem(videoCount);
         videosContainer.appendChild(videoItem);
@@ -137,7 +138,7 @@ function initializeSessionUploadForm() {
     });
 
     // Form submission
-    form.addEventListener('submit', async function(e) {
+    form.addEventListener('submit', async function (e) {
         e.preventDefault();
         await submitSessionForm(new FormData(form));
     });
@@ -324,7 +325,7 @@ function deleteSession(sessionId) {
 }
 
 // Close modal
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     const modal = document.getElementById('editSessionModal');
     if (e.target.classList.contains('close-modal') || e.target === modal) {
         modal.style.display = 'none';
@@ -631,13 +632,13 @@ function displaySessions(sessions) {
                     <i class="fas fa-trash"></i> Delete
                 </button>
                 ${session.status === 'draft' ?
-                    `<button class="action-btn publish-btn" onclick="publishSession('${session.id}')">
+                `<button class="action-btn publish-btn" onclick="publishSession('${session.id}')">
                         <i class="fas fa-globe"></i> Publish
                     </button>` :
-                    `<button class="action-btn unpublish-btn" onclick="unpublishSession('${session.id}')">
+                `<button class="action-btn unpublish-btn" onclick="unpublishSession('${session.id}')">
                         <i class="fas fa-eye-slash"></i> Unpublish
                     </button>`
-                }
+            }
             </td>
         `;
 
@@ -756,7 +757,7 @@ function initializeModalVideoManagement() {
     const videosContainer = document.getElementById('modalVideosContainer');
 
     if (addVideoBtn) {
-        addVideoBtn.onclick = function() {
+        addVideoBtn.onclick = function () {
             const videoCount = videosContainer.children.length + 1;
             const videoItem = createModalVideoItem(videoCount);
             videosContainer.appendChild(videoItem);
@@ -781,10 +782,10 @@ function removeModalVideo(button) {
 }
 
 // Modal form submission
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const createSessionForm = document.getElementById('createSessionForm');
     if (createSessionForm) {
-        createSessionForm.addEventListener('submit', async function(e) {
+        createSessionForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             await submitModalSessionForm(new FormData(this));
         });
@@ -893,14 +894,6 @@ function validateSessionData(sessionData) {
 
     if (!sessionData.subject) {
         errors.push('Subject is required');
-    }
-
-    if (!sessionData.grade) {
-        errors.push('Grade level is required');
-    }
-
-    if (!sessionData.teacher) {
-        errors.push('Teacher is required');
     }
 
     // Validate videos
@@ -1055,7 +1048,7 @@ function validateFileUpload(input, maxSizeMB = 500) {
 }
 
 // Add file validation to video inputs
-document.addEventListener('change', function(e) {
+document.addEventListener('change', function (e) {
     if (e.target.name === 'videoFile[]') {
         validateFileUpload(e.target, 500); // 500MB limit
     } else if (e.target.name === 'thumbnail[]') {

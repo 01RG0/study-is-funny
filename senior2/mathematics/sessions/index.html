@@ -9,107 +9,6 @@
     <link rel="stylesheet" href="../../../css/sessions.css">
     <link rel="stylesheet" href="../../../css/main.css">
     <link rel="icon" class="circular-icon" type="image/png" href="../../../images/logo.png">
-    <style>
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 1.2rem;
-            color: #666;
-        }
-
-        .error {
-            text-align: center;
-            padding: 40px;
-            font-size: 1.2rem;
-            color: #ef5350;
-            background: #ffebee;
-            border-radius: 8px;
-            margin: 20px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
-
-        .empty-state h2 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            color: #999;
-        }
-
-        .sessions-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .session-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .session-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .session-card h3 {
-            margin: 0 0 10px 0;
-            color: #2c3e50;
-            font-size: 1.3rem;
-        }
-
-        .session-meta {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-top: 12px;
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-scheduled {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-
-        .status-in_progress {
-            background: #fff3e0;
-            color: #f57c00;
-        }
-
-        .status-completed {
-            background: #e8f5e9;
-            color: #388e3c;
-        }
-
-        .status-cancelled {
-            background: #ffebee;
-            color: #d32f2f;
-        }
-    </style>
 </head>
 
 <body>
@@ -129,26 +28,38 @@
         </div>
     </header>
 
+    <!-- Popup Element -->
+    <div class="overlay" onclick="closePopup()"></div>
+    <div class="popup">
+        <div class="popup-header">Subscription Details</div>
+        <div class="popup-content">
+            <!-- Dynamic content will be injected here -->
+        </div>
+        <button class="popup-close" onclick="closePopup()">Close</button>
+    </div>
+
     <!-- Loading Spinner -->
-    <div class="loading" id="loadingSpinner">
-        <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
-        <p>Loading sessions...</p>
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
     </div>
 
     <!-- Error Message -->
-    <div id="errorMessage" class="error" style="display:none;"></div>
+    <div id="errorMessage" class="error"
+        style="display:none; text-align: center; padding: 20px; color: #ef5350; background: #ffebee; border-radius: 8px; margin: 20px;">
+    </div>
 
     <!-- Main Container -->
     <div class="main-container">
         <!-- Sessions Cards -->
         <section class="sessions-container" id="sessionsContainer" style="display:none;">
-            <h2>Senior 2 Mathematics - Sessions</h2>
-            <div id="sessionsList"></div>
+            <h2>Senior 2 Mathematics - ENG. Shady Elsharqawy</h2>
+            <div id="sessionsList" style="display: contents;"></div>
         </section>
 
         <!-- Empty State -->
-        <div id="emptyState" class="empty-state" style="display:none;">
-            <h2>📭 No Sessions Available</h2>
+        <div id="emptyState" class="empty-state"
+            style="display:none; text-align: center; padding: 60px 20px; color: #666;">
+            <h2 style="font-size: 1.8rem; margin-bottom: 10px; color: #999;">📭 No Sessions Available</h2>
             <p>There are no sessions available at the moment.</p>
             <p>Check back later or contact your instructor.</p>
         </div>
@@ -169,12 +80,14 @@
 
     <script>
         // Get subject from URL or use default
-        const subject = 'S2 Math'; // Can be dynamic
+        const subject = 'S2 Pure Math'; // Matches admin upload subject name
 
         // Load sessions from MongoDB API
         async function loadSessions() {
             try {
-                const response = await fetch(`/api/sessions.php?action=list&subject=${encodeURIComponent(subject)}`);
+                const url = `/api/sessions.php?action=list&subject=${encodeURIComponent(subject)}`;
+                console.log('Fetching sessions from:', url);
+                const response = await fetch(url);
                 const data = await response.json();
 
                 document.getElementById('loadingSpinner').style.display = 'none';
@@ -185,11 +98,15 @@
                 }
 
                 if (!data.sessions || data.sessions.length === 0) {
-                    document.getElementById('emptyState').style.display = 'block';
+                    const emptyState = document.getElementById('emptyState');
+                    emptyState.querySelector('p').textContent = `No sessions found for subject: "${subject}"`;
+                    emptyState.style.display = 'block';
                     document.getElementById('navigation').style.display = 'flex';
+                    console.log('No sessions found in database for this subject.');
                     return;
                 }
 
+                console.log(`Successfully loaded ${data.sessions.length} sessions.`);
                 displaySessions(data.sessions);
                 document.getElementById('navigation').style.display = 'flex';
             } catch (error) {
@@ -216,42 +133,24 @@
             card.className = 'session-card';
             card.setAttribute('data-session-id', session.id);
 
-            const startTime = new Date(session.start_time);
+            const startTime = session.publishDate ? new Date(session.publishDate) : new Date(session.createdAt);
             const formattedDate = startTime.toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
             });
-            const formattedTime = startTime.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
 
             card.innerHTML = `
-                <h3>${escapeHtml(session.session_title || session.subject)}</h3>
-                <p class="sessionname">${escapeHtml(session.session_description || '')}</p>
-                <div class="session-meta">
-                    <div class="meta-item">
-                        <i class="fas fa-calendar-alt"></i>
-                        Date: ${formattedDate}
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-clock"></i>
-                        Time: ${formattedTime}
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-play-circle"></i>
-                        Type: ${session.session_type || 'general_study'}
-                    </div>
-                    <div class="meta-item">
-                        <span class="status-badge status-${session.session_status || 'scheduled'}">
-                            ${session.session_status || 'scheduled'}
-                        </span>
-                    </div>
-                </div>
+                <h3>${escapeHtml(session.title || session.subject)}</h3>
+                <p class="sessionname">${escapeHtml(session.description || '')}</p>
+                <p class="session-date"><i class="fas fa-calendar-alt"></i> Date: ${formattedDate}</p>
+                <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: ${session.sessionNumber || index + 1}</p>
+                <a href="#" class="view-details" id="view-details-${session.id}">View Details</a>
             `;
 
-            card.onclick = () => {
+            const viewBtn = card.querySelector(`#view-details-${session.id}`);
+            viewBtn.onclick = (e) => {
+                e.preventDefault();
                 handleSessionClick(session);
             };
 
@@ -277,6 +176,11 @@
                 // Navigate to session detail page
                 window.location.href = `session-detail.php?id=${session.id}`;
             }
+        }
+
+        function closePopup() {
+            document.querySelector(".overlay").style.display = "none";
+            document.querySelector(".popup").style.display = "none";
         }
 
         function escapeHtml(text) {

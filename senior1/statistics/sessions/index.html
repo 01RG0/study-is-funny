@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senior 1 Statistics Sessions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../../../css/sessions.css">
+    <link rel="stylesheet" href="../../../css/main.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="../../../images/logo.png">
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="banner">
+            <img src="../../../images/logo.webp" alt="Website Logo" class="logo">
+            <h1>Studyisfunny <i class="fas fa-graduation-cap"></i></h1>
+            <a href="https://wa.me/201558145450?text=Hello" target="_blank" class="whatsapp-button">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+            </a>
+            <label class="dark-mode-switch">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider1"></span>
+            </label>
+        </div>
+    </header>
+
+    <!-- Popup Element -->
+    <div class="overlay" onclick="closePopup()"></div>
+    <div class="popup">
+        <div class="popup-header">Subscription Details</div>
+        <div class="popup-content"></div>
+        <button class="popup-close" onclick="closePopup()">Close</button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sessions Cards -->
+        <section class="sessions-container">
+            <h2>Senior 1 Statistics - ENG. Shady Elsharqawy</h2>
+
+            <div class="session-card" data-session="1">
+                <h3>Introduction to Statistics</h3>
+                <p class="sessionname">(Lesson 1 Statistics)</p>
+                <p class="session-date"><i class="fas fa-calendar-alt"></i> Date: September 6, 2025</p>
+                <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 1</p>
+                <a href="#" class="view-details" onclick="handleSessionDetails(1);">View Details</a>
+            </div>
+
+            <div class="session-card" data-session="2">
+                <h3>Data Collection and Representation</h3>
+                <p class="sessionname">(Lesson 2 Statistics)</p>
+                <p class="session-date"><i class="fas fa-calendar-alt"></i> Date: September 13, 2025</p>
+                <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 2</p>
+                <a href="#" class="view-details" onclick="handleSessionDetails(2);">View Details</a>
+            </div>
+
+            <div class="session-card" data-session="3">
+                <h3>Measures of Central Tendency</h3>
+                <p class="sessionname">(Lesson 3 Statistics)</p>
+                <p class="session-date"><i class="fas fa-calendar-alt"></i> Date: September 20, 2025</p>
+                <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 3</p>
+                <a href="#" class="view-details" onclick="handleSessionDetails(3);">View Details</a>
+            </div>
+
+            <div class="session-card" data-session="4">
+                <h3>Probability Fundamentals</h3>
+                <p class="sessionname">(Lesson 4 Statistics)</p>
+                <p class="session-date"><i class="fas fa-calendar-alt"></i> Date: September 27, 2025</p>
+                <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 4</p>
+                <a href="#" class="view-details" onclick="handleSessionDetails(4);">View Details</a>
+            </div>
+
+            <div class="session-card" data-session="5">
+                <h3>Statistical Analysis</h3>
+                <p class="session-date"><i class="fas fa-calendar-alt"></i> Date: October 4, 2025</p>
+                <p class="lecture-sequence"><i class="fas fa-play-circle"></i> Lecture: 5</p>
+                <a href="#" class="view-details" onclick="handleSessionDetails(5);">View Details</a>
+            </div>
+        </section>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn" onclick="location.href='../..'">← Back to Subjects</button>
+            <button class="nav-btn" onclick="location.href='../Homework'">📚 Homework</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <h2>Contact Us</h2>
+        <p><i class="fas fa-envelope"></i> Email: support@studyisfunny.com</p>
+        <p><i class="fas fa-phone-alt"></i> Phone: 01558145450</p>
+    </footer>
+
+    <script>
+        // Define the mapping of session numbers to their specific Google Script URLs
+        const googleScriptUrls = {
+            1: "https://script.google.com/macros/s/AKfycbwXF7b3mGj7BsZH_5ct-9Y8hdXtPoL2gfY6dqm02XqnwAjEbsNrvZGrtQV8zoHKc46taQ/exec",
+            2: "https://script.google.com/macros/s/AKfycbye79vC9YmZUgchRdHJl1SDyKRPGvYIkW0wfmYKoyeCCfUQalv5MLZUTq8_xl_QMcBX9Q/exec",
+            3: "https://script.google.com/macros/s/AKfycbwcYBRaCbLZsY2jiOjyTpRu1mQE1HL9rTdIMolRX5I-S9wsSywPLkNMdYFA-JoFnIdq3w/exec",
+            4: "https://script.google.com/macros/s/AKfycbyLtqbVkuHzqa-a2OdPnWc1WTcKq-qNjaDdAujJb-4CO1tJjnxJRoPLxK8TBvjVoz6wcw/exec",
+            5: "https://script.google.com/macros/s/AKfycbyiL6iqyee59BYEraFYKP055Rfq1ZjHW5cAGqv1VrssRad7c0ZvKY2Sog4RRq9wgDeHFw/exec",
+        };
+
+        // Handle Session Details
+        function handleSessionDetails(sessionNumber) {
+            const userPhone = localStorage.getItem("userPhone");
+            if (!userPhone) {
+                alert("Phone number is not found in localStorage!");
+                return;
+            }
+
+            const sessionUrl = googleScriptUrls[sessionNumber];
+            if (!sessionUrl) {
+                alert(`No URL found for session ${sessionNumber}`);
+                return;
+            }
+            document.getElementById('loadingSpinner').style.display = 'flex';
+
+            fetch(`${sessionUrl}?code=${userPhone}&session=${sessionNumber}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(`Response for session ${sessionNumber}:`, data);
+                    const contentContainer = document.querySelector(".popup-content");
+                    document.querySelector(".overlay").style.display = "block";
+                    document.querySelector(".popup").style.display = "block";
+
+                    if (data.error) {
+                        contentContainer.innerHTML = `
+    <div class="first" style="text-align: center; font-family: Arial, sans-serif;  border: 2px solid #008080; border-radius: 10px; background-color: #FFFFE0; max-width: 90%; margin: 0 auto;">
+        <h2 class="no" style="color: #2F4F4F;">Subscription Required</h2>
+        <p class="no" style="color: #2F4F4F; font-size: 16px;">
+            You are not subscribed to this Lecture. Please subscribe to gain access to the materials.
+        </p>
+        <div class="second" style="text-align: center; font-family: Arial, sans-serif; ">
+            <h2 style="color: #2F4F4F;">Let's Subscribe and Buy the Session!</h2>
+            <p style="color: #2F4F4F; font-size: 16px; margin-bottom: 20px;">
+                You can subscribe and buy the session from here. Click one of the options below to proceed.
+            </p>
+            <button
+                onclick="buysession(${sessionNumber})"
+                style="padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #008080; color: #FFFFE0; border: none; border-radius: 5px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 10px; width: 80%; max-width: 250px;">
+                I Have a Code
+            </button>
+            <br>
+            <button
+                onclick="window.open('https://wa.me/201000733148', '_blank')"
+                style="padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #25D366; color: white; border: none; border-radius: 5px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); width: 80%; max-width: 250px;">
+                Don't Have a Code? Contact Us
+            </button>
+        </div>
+    </div>
+        `;
+                        document.getElementById('loadingSpinner').style.display = 'none';
+                    } else {
+                        gosession(sessionNumber);
+                        document.getElementById('loadingSpinner').style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('loadingSpinner').style.display = 'none';
+                    console.error(`Error fetching session ${sessionNumber}:`, error);
+                    alert("An error occurred while processing your request.");
+                });
+        }
+
+        function closePopup() {
+            document.querySelector(".overlay").style.display = "none";
+            document.querySelector(".popup").style.display = "none";
+        }
+
+        // Example usage for multiple sessions
+        for (let i = 1; i <= 10; i++) {
+            const userPhone = localStorage.getItem("userPhone");
+            if (userPhone) {
+                const sessionUrl = googleScriptUrls[i];
+                if (sessionUrl) {
+                    fetch(`${sessionUrl}?code=${userPhone}&session=${i}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(`Session ${i} preload data:`, data);
+                            localStorage.setItem(`lecture_${i}`, data.error ? "Unsubscribed" : "Subscribed");
+                        });
+                }
+            }
+        }
+
+        function buysession(sessionNumber) {
+            location.href = `../buySession${sessionNumber}.html`;
+        }
+        function gosession(sessionNumber) {
+            location.href = `../videos/Session${sessionNumber}.html`;
+        }
+
+        // Dark Mode Toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.checked = true;
+        }
+        darkModeToggle.addEventListener('change', () => {
+            if (darkModeToggle.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+    </script>
+</body>
+
+</html>

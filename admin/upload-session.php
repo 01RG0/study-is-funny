@@ -80,34 +80,25 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="subject">Subject *</label>
-                            <select id="subject" name="subject" required>
-                                <option value="">Select Subject</option>
-                                <option value="physics">Physics</option>
-                                <option value="mathematics">Mathematics</option>
-                                <option value="statistics">Statistics</option>
+                            <label for="gradeSubject">Grade & Subject *</label>
+                            <select id="gradeSubject" name="gradeSubject" required>
+                                <option value="">Select Grade & Subject</option>
+                                <optgroup label="Senior 1">
+                                    <option value="senior1-physics">Senior 1 - Physics</option>
+                                    <option value="senior1-mathematics">Senior 1 - Mathematics</option>
+                                    <option value="senior1-statistics">Senior 1 - Statistics</option>
+                                </optgroup>
+                                <optgroup label="Senior 2">
+                                    <option value="senior2-physics">Senior 2 - Physics</option>
+                                    <option value="senior2-mathematics">Senior 2 - Mathematics</option>
+                                    <option value="senior2-statistics">Senior 2 - Statistics</option>
+                                </optgroup>
                             </select>
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="grade">Grade Level *</label>
-                            <select id="grade" name="grade" required>
-                                <option value="">Select Grade</option>
-                                <option value="senior1">Senior 1</option>
-                                <option value="senior2">Senior 2</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="teacher">Teacher *</label>
-                            <select id="teacher" name="teacher" required>
-                                <option value="">Select Teacher</option>
-                                <option value="shadyelsharqawy">ENG. Shady Elsharqawy</option>
-                            </select>
-                        </div>
-                    </div>
+                    <!-- Teacher auto-set to only available teacher -->
+                    <input type="hidden" id="teacher" name="teacher" value="shadyelsharqawy">
 
                     <div class="form-group">
                         <label for="description">Description</label>
@@ -121,42 +112,31 @@
                     <h3>Access Control</h3>
 
                     <div class="form-group">
-                        <label>Access Type *</label>
+                        <label for="sessionNumber">Session Number *</label>
+                        <input type="number" id="sessionNumber" name="sessionNumber" required min="1" max="999"
+                            placeholder="e.g., 1">
+                        <small class="file-info" id="sessionNumberHelp">This number is used for subscription restrictions (e.g., online_session = true for session_13)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Access Control *</label>
                         <div class="radio-group">
                             <label class="radio-label">
-                                <input type="radio" name="accessType" value="online_session" checked> 
-                                Specific Session (Only for students with online_session = true, year auto-determined from grade)
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="accessType" value="free_for_all"> 
+                                <input type="radio" name="accessControl" value="free" checked> 
                                 Free for All (Available to everyone)
                             </label>
+                            <label class="radio-label">
+                                <input type="radio" name="accessControl" value="restricted"> 
+                                Restricted (Only students with session_{number} = online_session: true)
+                            </label>
                         </div>
+                        <small class="file-info" id="accessControlHelp">For restricted: Use the Session Number above (e.g., if Session Number = 13, only students with session_13.online_session = true can access)</small>
                     </div>
 
                     <div class="form-group">
                         <label for="maxViews">Maximum Views per Student</label>
                         <input type="number" id="maxViews" name="maxViews" min="1" placeholder="Unlimited">
                         <small class="file-info">Leave empty for unlimited views</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="sessionAccess">Restrict to Specific Session</label>
-                        <select id="sessionAccess" name="sessionAccess">
-                            <option value="">No restriction - Available to all</option>
-                            <option value="session-1">Session 1</option>
-                            <option value="session-2">Session 2</option>
-                            <option value="session-3">Session 3</option>
-                            <option value="session-4">Session 4</option>
-                            <option value="session-5">Session 5</option>
-                            <option value="session-6">Session 6</option>
-                            <option value="session-7">Session 7</option>
-                            <option value="session-8">Session 8</option>
-                            <option value="session-9">Session 9</option>
-                            <option value="session-10">Session 10</option>
-                        </select>
-                        <small class="file-info">Optionally restrict this content to students who have accessed a
-                            specific session</small>
                     </div>
                 </div>
 
@@ -222,11 +202,6 @@
                                     placeholder="Brief description of this video..."></textarea>
                             </div>
 
-                            <div class="form-group">
-                                <label>Duration (minutes)</label>
-                                <input type="number" name="duration[]" min="1" placeholder="Estimated duration">
-                            </div>
-
                             <button type="button" class="remove-video-btn" style="display: none;">
                                 <i class="fas fa-trash"></i> Remove Video
                             </button>
@@ -285,6 +260,20 @@
     </script>
     <script src="js/admin.js"></script>
     <script>
+        // Update help text based on session number input
+        document.getElementById('sessionNumber').addEventListener('input', function() {
+            const sessionNum = this.value || '13';
+            const sessionNumberHelp = document.getElementById('sessionNumberHelp');
+            const accessControlHelp = document.getElementById('accessControlHelp');
+            
+            if (sessionNumberHelp) {
+                sessionNumberHelp.textContent = `This number is used for subscription restrictions (e.g., online_session = true for session_${sessionNum})`;
+            }
+            if (accessControlHelp) {
+                accessControlHelp.textContent = `For restricted: Students with session_${sessionNum}.online_session = true can access this content`;
+            }
+        });
+
         // Toggle between video upload and link input
         function toggleVideoInput(radio) {
             const container = radio.closest('.video-upload-item');
@@ -427,11 +416,6 @@
                 <div class="form-group">
                     <label>Video Description</label>
                     <textarea name="videoDescription[]" rows="2" placeholder="Brief description of this video..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Duration (minutes)</label>
-                    <input type="number" name="duration[]" min="1" placeholder="Estimated duration">
                 </div>
 
                 <button type="button" class="remove-video-btn" onclick="removeVideo(this)">
