@@ -21,10 +21,12 @@ body {
 }
 
 header {
+    background-color: #25D366; /* WhatsApp green */
     text-align: center;
     color: var(--text);
     position: relative;
     width: 100%;
+    padding: 15px 0;
 }
 
 .whatsapp-button {
@@ -69,7 +71,7 @@ header {
     background-position: center 5%; /* Moves the image down by 20% */
     background-repeat: no-repeat; /* Prevent image repetition */
     background-attachment: fixed; /* Optional: Keeps the background fixed while scrolling */
-    height: 300px;
+    height: auto;
     width: 100%;
 }
 
