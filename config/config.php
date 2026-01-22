@@ -41,24 +41,17 @@ if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.gc_maxlifetime', SESSION_TIMEOUT);
 }
 
-// Error Reporting (Development)
-// For production, change these settings:
+// Error Reporting (Production)
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
-ini_set('display_errors', 0);  // Hide errors from users
+ini_set('display_errors', 0);  // Hide errors from users - log them instead
 ini_set('log_errors', 1);
 ini_set('error_log', BASE_PATH . '/logs/error.log');
-
-// For local development, uncomment:
-// error_reporting(E_ALL);
-// ini_set('display_errors', 1);
-// error_reporting(0);
-// ini_set('display_errors', 0);
 
 // Timezone
 date_default_timezone_set('Africa/Cairo'); // Egypt timezone
 
-// CORS Headers (for API endpoints)
-if (php_sapi_name() !== 'cli') {
+// CORS Headers (for API endpoints) - but don't send if headers already sent
+if (php_sapi_name() !== 'cli' && !headers_sent()) {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
     header('Access-Control-Allow-Headers: Content-Type, Authorization');
@@ -77,6 +70,30 @@ spl_autoload_register(function ($class) {
         require_once $classFile;
     }
 });
+
+// Initialize MongoDB Connection
+$GLOBALS['mongoClient'] = null;
+$GLOBALS['databaseName'] = null;
+
+try {
+    // Check if MongoDB extension is available
+    if (extension_loaded('mongodb') && class_exists('MongoDB\\Driver\\Manager')) {
+        $GLOBALS['mongoClient'] = new MongoDB\Driver\Manager(MONGO_URI);
+        $GLOBALS['databaseName'] = DB_NAME;
+        
+        // Test the connection
+        $command = new MongoDB\Driver\Command(['ping' => 1]);
+        $GLOBALS['mongoClient']->executeCommand('admin', $command);
+        
+        error_log('✅ MongoDB connection established successfully');
+    } else {
+        error_log('⚠️  MongoDB extension not available');
+    }
+} catch (Exception $e) {
+    error_log('❌ MongoDB Connection Error: ' . $e->getMessage());
+    $GLOBALS['mongoClient'] = null;
+    $GLOBALS['databaseName'] = null;
+}
 
 // Create upload directories if they don't exist
 $directories = [

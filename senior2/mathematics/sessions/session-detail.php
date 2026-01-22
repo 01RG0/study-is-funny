@@ -216,6 +216,7 @@ if (!$videoUrl && isset($session->videos) && is_array($session->videos) && count
             }
         }
     </style>
+    <script src="../../../js/api-config.js"></script>
 </head>
 <body>
     <h1><?= htmlspecialchars($title) ?></h1>
@@ -298,7 +299,7 @@ if (!$videoUrl && isset($session->videos) && is_array($session->videos) && count
                 
                 try {
                     // Call API to check subscription
-                    const response = await fetch(`/api/sessions.php?action=check-access&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}`);
+                    const response = await fetch(`${window.API_BASE_URL}sessions.php?action=check-access&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}`);
                     const data = await response.json();
                     
                     console.log('Access check response:', data);

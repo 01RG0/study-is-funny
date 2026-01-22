@@ -155,6 +155,28 @@
       border-left-color: #26c6da;
     }
   </style>
+  <script>
+    // API Configuration - Handles correct API path for both local and hosted environments
+    function getApiBaseUrl() {
+        const protocol = window.location.protocol;
+        const host = window.location.host;
+        const pathname = window.location.pathname;
+        
+        // Check if we're in a hosted subdirectory (contains 'study-is-funny')
+        if (pathname.includes('study-is-funny')) {
+            const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);
+            const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
+            return `${protocol}//${host}${basePath}/api/`;
+        }
+        
+        // Local development or root path
+        return `${protocol}//${host}/api/`;
+    }
+    
+    window.API_BASE_URL = getApiBaseUrl();
+    console.log('✓ API Base URL:', window.API_BASE_URL);
+    console.log('✓ Current Location:', window.location.href);
+  </script>
 </head>
 
 <body>
@@ -184,23 +206,44 @@
     // Load homework from API
     async function loadHomework() {
       try {
-        const response = await fetch('/api/homework.php?action=list&status=active');
+        // Debug logging
+        console.log('========== HOMEWORK PAGE DEBUG ==========');
+        console.log('Page URL:', window.location.href);
+        console.log('API_BASE_URL:', window.API_BASE_URL);
+        
+        const url = `${window.API_BASE_URL}homework.php?action=list&status=active`;
+        console.log('Final API URL:', url);
+        console.log('Subject:', subject);
+        
+        console.log('Fetching homework...');
+        const response = await fetch(url);
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers content-type:', response.headers.get('content-type'));
+        
         const data = await response.json();
+        console.log('Response data:', data);
 
         document.getElementById('loading').style.display = 'none';
 
         if (!data.success) {
+          console.error('API returned success=false:', data.message);
           showError(data.message || 'Failed to load homework');
           return;
         }
 
         if (!data.homework || data.homework.length === 0) {
+          console.log('No homework found');
           document.getElementById('empty-state').style.display = 'block';
           return;
         }
 
+        console.log(`Successfully loaded ${data.homework.length} homework items.`);
         displayHomework(data.homework);
       } catch (error) {
+        console.error('❌ ERROR FETCHING HOMEWORK:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
         document.getElementById('loading').style.display = 'none';
         showError('Failed to connect to server: ' + error.message);
       }

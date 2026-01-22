@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Homework Math Senior 1</title>
+  <title>Homework - Math Senior 1</title>
   <style>
     body {
       background: linear-gradient(135deg, #e3f2fd, #ffffff);
@@ -21,6 +21,32 @@
       font-weight: 700;
     }
 
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 1.2rem;
+      color: #666;
+    }
+
+    .error {
+      text-align: center;
+      padding: 40px;
+      font-size: 1.2rem;
+      color: #ef5350;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+
+    .empty-state h2 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      color: #999;
+    }
+
     .container {
       max-width: 1000px;
       margin: 0 auto;
@@ -30,112 +56,271 @@
       gap: 25px;
     }
 
-    .link-box {
+    .homework-card {
       background: #fff;
       padding: 25px;
       border-radius: 16px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
       cursor: pointer;
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
-      border-left: 8px solid transparent;
+      border-left: 8px solid #42a5f5;
     }
 
-    /* Hover effect */
-    .link-box:hover {
+    .homework-card:hover {
       transform: translateY(-6px);
-      box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
     }
 
-    .link-title {
+    .homework-card.overdue {
+      border-left-color: #ef5350;
+    }
+
+    .homework-card.upcoming {
+      border-left-color: #66bb6a;
+    }
+
+    .homework-title {
       font-size: 1.3rem;
       font-weight: 600;
       margin-bottom: 8px;
+      color: #2c3e50;
     }
 
-    .link-sub {
-      font-size: 1rem;
+    .homework-description {
+      font-size: 0.95rem;
       color: #555;
+      margin-bottom: 12px;
+      line-height: 1.5;
     }
 
-    /* Different accent colors per lecture */
-    .lecture1 { border-left-color: #42a5f5; } /* Blue */
-    .lecture2 { border-left-color: #66bb6a; } /* Green */
-    .lecture3 { border-left-color: #ffa726; } /* Orange */
-    .lecture4 { border-left-color: #ab47bc; } /* Purple */
-    .lecture5 { border-left-color: #ef5350; } /* Red */
-    .lecture6 { border-left-color: pink; } /* Pink */
-    .lecture7 { border-left-color: #42a5f5; } /* Blue */
-    .lecture8 { border-left-color:  #66bb6a; } /* Green */
-    .lecture9 { border-left-color: #ffa726; } /* Orange */
-    .lecture10 { border-left-color:  #ab47bc; } /* Purple */
-    .lecture11 { border-left-color:  #ef5350; } /* Red */
-    .lecture12 { border-left-color:  pink; } /* Red */
-    .lecture13 { border-left-color:   #42a5f5; } /* Blue */
-    .lecture14 { border-left-color:    #66bb6a; } /* Green */
-    .lecture15 { border-left-color:   #ffa726; } /* Orange */
-    .lecture16 { border-left-color:   #ab47bc; } /* Orange */
+    .homework-meta {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      font-size: 0.85rem;
+      color: #777;
+      margin-top: 12px;
+    }
 
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-active {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .status-closed {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    /* Color variations */
+    .homework-card:nth-child(6n+1) {
+      border-left-color: #42a5f5;
+    }
+
+    .homework-card:nth-child(6n+2) {
+      border-left-color: #66bb6a;
+    }
+
+    .homework-card:nth-child(6n+3) {
+      border-left-color: #ffa726;
+    }
+
+    .homework-card:nth-child(6n+4) {
+      border-left-color: #ab47bc;
+    }
+
+    .homework-card:nth-child(6n+5) {
+      border-left-color: #ef5350;
+    }
+
+    .homework-card:nth-child(6n+6) {
+      border-left-color: #26c6da;
+    }
   </style>
+  <script>
+    // API Configuration - Handles correct API path for both local and hosted environments
+    function getApiBaseUrl() {
+        const protocol = window.location.protocol;
+        const host = window.location.host;
+        const pathname = window.location.pathname;
+        
+        // Check if we're in a hosted subdirectory (contains 'study-is-funny')
+        if (pathname.includes('study-is-funny')) {
+            const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);            const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
+            return `${protocol}//${host}${basePath}/api/`;
+        }
+        
+        // Local development or root path
+        return `${protocol}//${host}/api/`;
+    }
+    
+    window.API_BASE_URL = getApiBaseUrl();
+    console.log('✓ API Base URL:', window.API_BASE_URL);
+    console.log('✓ Current Location:', window.location.href);
+  </script>
 </head>
 <body>
 
-  <h1>Homework Page</h1>
+  <h1>📚 Homework Assignments</h1>
 
-  <div class="container">
-    <div class="link-box lecture1" onclick="location.href='t1/HW1.html'">
-      <div class="link-title">Lecture 1</div>
-      <div class="link-sub">Introduction to Complex Numbers (Part 1)</div>
-    </div>
+  <div id="loading" class="loading">
+    Loading homework assignments...
+  </div>
 
-    <div class="link-box lecture2" onclick="location.href='t1/HW2.html'">
-      <div class="link-title">Lecture 2</div>
-      <div class="link-sub">Introduction to complex numbers (pt.2) &  Directed angles (PT.1)</div>
-    </div>
+  <div id="error" class="error" style="display:none;">
+  </div>
 
-    <div class="link-box lecture3" onclick="location.href='t1/HW3.html'">
-      <div class="link-title">Lecture 3</div>
-      <div class="link-sub">Directed angles (pt.2)  & Similarity of polygons (pt.1)</div>
-    </div>
+  <div id="homework-container" class="container" style="display:none;">
+  </div>
 
-    <div class="link-box lecture4" onclick="location.href='t1/HW4.html'">
-      <div class="link-title">Lecture 4</div>
-      <div class="link-sub">Similarity of polygons (pt.2) & System of measuring the angle (pt.1)</div>
-    </div>
+  <div id="empty-state" class="empty-state" style="display:none;">
+    <h2>📭 No Homework Assignments</h2>
+    <p>There are no homework assignments available at the moment.</p>
+    <p>Check back later or contact your instructor.</p>
+  </div>
 
-    <div class="link-box lecture5" onclick="location.href='t1/HW5.html'">
-      <div class="link-title">Lecture 5</div>
-      <div class="link-sub"> System of measuring the angle (pt.2) & determining the types of roots of a quadratic equation </div>
-    </div>
-    <div class="link-box lecture6" onclick="location.href='t1/HW6.html'">
-      <div class="link-title">Lecture 6</div>
-      <div class="link-sub"> determining the types of roots of a quadratic equation & Similarity in triangle</div>
-    </div>
-     <div class="link-box lecture7" onclick="location.href='t1/HW7.html'">
-      <div class="link-title">Lecture 7</div>
-      <div class="link-sub">Trigonometric functions & Similarity in triangle</div>
-    </div>
+  <script>
+    // Get subject from URL path or default
+    const subject = 'mathematics';
+    const grade = 'senior1';
 
-    <div class="link-box lecture8" onclick="location.href='t1/HW8.html'">
-      <div class="link-title">Lecture 8</div>
-      <div class="link-sub">Relation between the two roots of the second-degree equation and the coefficients of its terms</div>
-    </div>
-        <div class="link-box lecture9" onclick="location.href='t1/HW9.html'">
-      <div class="link-title">Lecture 9</div>
-      <div class="link-sub">Similarity of triangles</div>
-    </div>
-        <div class="link-box lecture10" onclick="location.href='t1/HW10.html'">
-      <div class="link-title">Lecture 10</div>
-      <div class="link-sub">Similarity of polygons </div>
-    </div>
-        <div class="link-box lecture11" onclick="location.href='t1/HW11.html'">
-      <div class="link-title">Lecture 11</div>
-      <div class="link-sub">Related Angles </div>
-    </div>
-        <div class="link-box lecture12" onclick="location.href='t1/HW12.html'">
-      <div class="link-title">Lecture 12</div>
-      <div class="link-sub">Forming the quadratic equation whose two roots are known & Graphing Trignometric Functions</div>
+    // Load homework from API
+    async function loadHomework() {
+      try {
+        console.log('========== HOMEWORK PAGE DEBUG ==========');
+        console.log('Page URL:', window.location.href);
+        console.log('API_BASE_URL:', window.API_BASE_URL);
+        
+        const url = `${window.API_BASE_URL}homework.php?action=list&subject=${encodeURIComponent(subject)}&grade=${grade}`;
+        console.log('Final API URL:', url);
+        
+        console.log('Fetching homework...');
+        const response = await fetch(url);
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers content-type:', response.headers.get('content-type'));
+        
+        const data = await response.json();
+        console.log('Response data:', data);
+
+        document.getElementById('loading').style.display = 'none';
+
+        if (!data.success) {
+          console.error('API returned success=false:', data.message);
+          showError(data.message || 'Failed to load homework');
+          return;
+        }
+
+        if (!data.homework || data.homework.length === 0) {
+          console.log('No homework found');
+          document.getElementById('empty-state').style.display = 'block';
+          return;
+        }
+
+        console.log(`Successfully loaded ${data.homework.length} homework items.`);
+        displayHomework(data.homework);
+      } catch (error) {
+        console.error('❌ ERROR FETCHING HOMEWORK:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        document.getElementById('loading').style.display = 'none';
+        showError('Failed to connect to server: ' + error.message);
+      }
+    }
+
+    function displayHomework(homeworks) {
+      const container = document.getElementById('homework-container');
+      container.style.display = 'grid';
+      container.innerHTML = '';
+
+      homeworks.forEach((hw, index) => {
+        const card = createHomeworkCard(hw, index);
+        container.appendChild(card);
+      });
+    }
+
+    function createHomeworkCard(hw, index) {
+      const card = document.createElement('div');
+      card.className = 'homework-card';
+
+      // Check if overdue
+      const dueDate = new Date(hw.due_date);
+      const now = new Date();
+      if (dueDate < now && hw.status === 'active') {
+        card.classList.add('overdue');
+      } else if (hw.status === 'active') {
+        card.classList.add('upcoming');
+      }
+
+      card.innerHTML = `
+        <div class="homework-title">${escapeHtml(hw.title)}</div>
+        <div class="homework-description">${escapeHtml(hw.description || 'No description provided')}</div>
+        <div class="homework-meta">
+          <div class="meta-item">
+            📅 Due: ${formatDate(hw.due_date)}
+          </div>
+          <div class="meta-item">
+            🎯 Max Score: ${hw.max_score || 100}
+          </div>
+          <div class="meta-item">
+            <span class="status-badge status-${hw.status}">${hw.status}</span>
+          </div>
+        </div>
+      `;
+
+      card.onclick = () => {
+        // Navigate to homework detail page or submission page
+        window.location.href = `homework-detail.php?id=${hw.id}`;
+      };
+
+      return card;
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return 'No due date';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showError(message) {
+      const errorEl = document.getElementById('error');
+      errorEl.textContent = '❌ ' + message;
+      errorEl.style.display = 'block';
+    }
+
+    // Load homework on page load
+    loadHomework();
+  </script>
+</body>
     </div>
         <div class="link-box lecture13" onclick="location.href='t1/HW13.html'">
       <div class="link-title">Lecture 13</div>

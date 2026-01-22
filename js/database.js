@@ -17,13 +17,13 @@ const COLLECTION_USERS = 'users';
 const COLLECTION_CONTENT = 'content';
 const COLLECTION_PROGRESS = 'progress';
 
-// Check if MongoDB Atlas API is configured
+// MongoDB Cloud REST API check
 const USE_MONGODB_API = typeof MONGODB_API_URL !== 'undefined' &&
     typeof MONGODB_API_KEY !== 'undefined' &&
     typeof MONGODB_DATA_SOURCE !== 'undefined';
 
-// Use demo mode if MongoDB API is not configured
-const USE_DEMO_MODE = !USE_MONGODB_API;
+// FORCE REAL DATABASE MODE: Never use demo mode
+const USE_DEMO_MODE = false;
 
 // Initialization state
 let dbInitialized = false;
@@ -33,33 +33,12 @@ async function initDatabase() {
     if (dbInitializationPromise) return dbInitializationPromise;
 
     dbInitializationPromise = new Promise(async (resolve) => {
-        console.log('🔧 Initializing Database System...', { USE_DEMO_MODE, USE_FIREBASE: typeof firebase !== 'undefined' });
-
-        if (USE_DEMO_MODE) {
-            try {
-                const response = await fetch(`${BASE_URL}js/demo-database.js`);
-                const scriptText = await response.text();
-                const scriptElement = document.createElement('script');
-                scriptElement.textContent = scriptText;
-                document.head.appendChild(scriptElement);
-
-                // Wait for script to be processed
-                let attempts = 0;
-                const checkDemo = setInterval(() => {
-                    if (typeof DemoDatabase !== 'undefined' || attempts > 20) {
-                        clearInterval(checkDemo);
-                        console.log('✅ Demo Database Loaded');
-                        resolve();
-                    }
-                    attempts++;
-                }, 50);
-            } catch (e) {
-                console.error('Failed to load demo database:', e);
-                resolve();
-            }
-        } else {
-            resolve();
-        }
+        console.log('🔧 Initializing Real Database System...', {
+            usingPhpApi: true,
+            usingCloudApi: USE_MONGODB_API,
+            demoEnabled: false
+        });
+        resolve();
     });
 
     return dbInitializationPromise;
@@ -177,30 +156,14 @@ window.getStudentData = async function (phone) {
         console.error('❌ PHP API Fetch failed with error:', error);
     }
 
-    // 2. Try Demo Database (Fallback only)
-    console.log('⚠️ Falling back to Demo Database');
-    if (typeof DemoDatabase !== 'undefined') {
-        try {
-            const demoData = await DemoDatabase.getStudentData(phone);
-            if (demoData) {
-                console.log('✅ Found student in Demo Database (Fallback):', demoData);
-                return demoData;
-            } else {
-                console.log('❌ No student found in Demo Database');
-            }
-        } catch (e) {
-            console.warn('Demo database error:', e);
-        }
-    } else {
-        console.log('❌ DemoDatabase not available');
-    }
+    // Demo Database Fallback Disabled (Forced Real Mongo)
 
     console.error('❌ Student not found in any source');
     return null;
 };
 
 // Session Management Functions
-window.createSession = async function(sessionData) {
+window.createSession = async function (sessionData) {
     try {
         const response = await fetch(`${API_BASE_URL}sessions.php?action=create`, {
             method: 'POST',
@@ -218,7 +181,7 @@ window.createSession = async function(sessionData) {
     }
 };
 
-window.getSession = async function(sessionId) {
+window.getSession = async function (sessionId) {
     try {
         const response = await fetch(`${API_BASE_URL}sessions.php?action=get&id=${sessionId}`);
         const result = await response.json();
@@ -229,7 +192,7 @@ window.getSession = async function(sessionId) {
     }
 };
 
-window.getAllSessions = async function(filters = {}) {
+window.getAllSessions = async function (filters = {}) {
     try {
         const queryParams = new URLSearchParams(filters);
         const response = await fetch(`${API_BASE_URL}sessions.php?action=all&${queryParams}`);
@@ -241,7 +204,7 @@ window.getAllSessions = async function(filters = {}) {
     }
 };
 
-window.updateSession = async function(sessionId, updates) {
+window.updateSession = async function (sessionId, updates) {
     try {
         const response = await fetch(`${API_BASE_URL}sessions.php?action=update`, {
             method: 'PUT',
@@ -259,7 +222,7 @@ window.updateSession = async function(sessionId, updates) {
     }
 };
 
-window.deleteSession = async function(sessionId) {
+window.deleteSession = async function (sessionId) {
     try {
         const response = await fetch(`${API_BASE_URL}sessions.php?action=delete`, {
             method: 'DELETE',
@@ -277,7 +240,7 @@ window.deleteSession = async function(sessionId) {
     }
 };
 
-window.publishSession = async function(sessionId) {
+window.publishSession = async function (sessionId) {
     try {
         const response = await fetch(`${API_BASE_URL}sessions.php?action=publish`, {
             method: 'PUT',
@@ -295,7 +258,7 @@ window.publishSession = async function(sessionId) {
     }
 };
 
-window.unpublishSession = async function(sessionId) {
+window.unpublishSession = async function (sessionId) {
     try {
         const response = await fetch(`${API_BASE_URL}sessions.php?action=unpublish`, {
             method: 'PUT',
@@ -313,7 +276,7 @@ window.unpublishSession = async function(sessionId) {
     }
 };
 
-window.getSessionStats = async function() {
+window.getSessionStats = async function () {
     try {
         const response = await fetch(`${API_BASE_URL}sessions.php?action=stats`);
         const result = await response.json();
@@ -324,7 +287,7 @@ window.getSessionStats = async function() {
     }
 };
 
-window.checkStudentSessionAccess = async function(studentId, sessionNumber, subject, grade) {
+window.checkStudentSessionAccess = async function (studentId, sessionNumber, subject, grade) {
     try {
         const response = await fetch(`${API_BASE_URL}sessions.php?action=check-access&studentId=${studentId}&sessionNumber=${sessionNumber}&subject=${subject}&grade=${grade}`);
         const result = await response.json();

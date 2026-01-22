@@ -5,8 +5,8 @@
  */
 
 header('Content-Type: application/json');
-require_once '../includes/session_check.php';
-require_once '../config/config.php';
+require_once dirname(__DIR__) . '/includes/session_check.php';
+require_once dirname(__DIR__) . '/config/config.php';
 
 $db = new DatabaseMongo();
 $videoManager = new Video($db);

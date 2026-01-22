@@ -1,8 +1,36 @@
 <?php
-require_once 'config.php';
+// Prevent HTML errors from being output - output JSON only
+@ini_set('display_errors', '0');
+@ini_set('log_errors', '1');
+
+header('Content-Type: application/json');
+
+// Catch any fatal errors
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Server error: ' . $errstr,
+        'file' => basename($errfile),
+        'line' => $errline
+    ]);
+    exit;
+});
+
+require_once dirname(__DIR__) . '/config/config.php';
 require_once __DIR__ . '/../classes/DatabaseMongo.php';
 require_once __DIR__ . '/../classes/Video.php';
 require_once __DIR__ . '/../classes/SessionManager.php';
+
+// Check if MongoDB is available
+if (!$GLOBALS['mongoClient']) {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Database connection error: MongoDB not available'
+    ]);
+    exit;
+}
 
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';

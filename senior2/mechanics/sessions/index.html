@@ -9,6 +9,27 @@
     <link rel="stylesheet" href="../../../css/sessions.css">
     <link rel="stylesheet" href="../../../css/main.css">
     <link rel="icon" class="circular-icon" type="image/png" href="../../../images/logo.png">
+    <script>
+        // API Configuration - Handles correct API path for both local and hosted environments
+        function getApiBaseUrl() {
+            const protocol = window.location.protocol;
+            const host = window.location.host;
+            const pathname = window.location.pathname;
+            
+            // Check if we're in a hosted subdirectory (contains 'study-is-funny')
+            if (pathname.includes('study-is-funny')) {
+                const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);                const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
+                return `${protocol}//${host}${basePath}/api/`;
+            }
+            
+            // Local development or root path
+            return `${protocol}//${host}/api/`;
+        }
+        
+        window.API_BASE_URL = getApiBaseUrl();
+        console.log('✓ API Base URL:', window.API_BASE_URL);
+        console.log('✓ Current Location:', window.location.href);
+    </script>
 </head>
 
 <body>
@@ -82,7 +103,7 @@
 
         async function loadSessions() {
             try {
-                const url = `/api/sessions.php?action=list&subject=${encodeURIComponent(subject)}&grade=${grade}`;
+                const url = `${window.API_BASE_URL}sessions.php?action=list&subject=${encodeURIComponent(subject)}&grade=${grade}`;
                 console.log('Fetching sessions from:', url);
                 const response = await fetch(url);
                 const data = await response.json();

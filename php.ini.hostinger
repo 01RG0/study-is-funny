@@ -1,0 +1,18 @@
+[PHP]
+; Hostinger PHP Configuration
+; DO NOT specify extension_dir - let server use defaults
+; MongoDB extension is already enabled via Hostinger panel
+
+; Increase upload limits for video uploads
+post_max_size = 512M
+upload_max_filesize = 500M
+max_execution_time = 300
+memory_limit = 256M
+
+; Session settings
+session.gc_maxlifetime = 3600
+
+; Error reporting (production)
+display_errors = Off
+log_errors = On
+error_log = logs/php_errors.log

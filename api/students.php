@@ -1,5 +1,52 @@
 <?php
-require_once 'config.php';
+// Prevent HTML errors from being output - output JSON only
+@ini_set('display_errors', '0');
+@ini_set('log_errors', '1');
+
+header('Content-Type: application/json');
+
+// Catch any fatal errors
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Server error: ' . $errstr,
+        'file' => basename($errfile),
+        'line' => $errline
+    ]);
+    exit;
+});
+
+require_once dirname(__DIR__) . '/config/config.php';
+
+// Initialize MongoDB directly if not available from config
+if (!$GLOBALS['mongoClient']) {
+    try {
+        if (class_exists('MongoDB\\Driver\\Manager')) {
+            $mongoUri = defined('MONGO_URI') ? MONGO_URI : 'mongodb+srv://root:root@cluster0.vkskqhg.mongodb.net/attendance_system?appName=Cluster0';
+            $dbName = defined('DB_NAME') ? DB_NAME : 'attendance_system';
+            
+            $GLOBALS['mongoClient'] = new MongoDB\Driver\Manager($mongoUri);
+            $GLOBALS['databaseName'] = $dbName;
+            
+            // Test connection
+            $command = new MongoDB\Driver\Command(['ping' => 1]);
+            $GLOBALS['mongoClient']->executeCommand('admin', $command);
+        }
+    } catch (Exception $e) {
+        // Still not available
+    }
+}
+
+// Final check
+if (!$GLOBALS['mongoClient']) {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Database connection error: MongoDB extension not available. Please enable MongoDB in hosting control panel.'
+    ]);
+    exit;
+}
 
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';

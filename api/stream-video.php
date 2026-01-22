@@ -4,7 +4,7 @@
  * Streams video with range support for seeking
  */
 
-require_once '../includes/session_check.php';
+require_once dirname(__DIR__) . '/includes/session_check.php';
 requireLogin();
 
 $videoId = $_GET['id'] ?? '';
@@ -13,7 +13,7 @@ if (!$videoId) {
     die('Video ID required');
 }
 
-require_once '../config/config.php';
+require_once dirname(__DIR__) . '/config/config.php';
 $db = new DatabaseMongo();
 $videoManager = new Video($db);
 

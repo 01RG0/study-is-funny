@@ -21,25 +21,17 @@ function Start-ProjectServer {
     Write-Host "========================================" -ForegroundColor Cyan
     Write-Host ""
 
-    # Detect OS and use appropriate Python server
-    $isPython3 = $false
-    $pythonCmd = ""
+    # Detect OS and use appropriate PHP server
+    $phpCmd = ""
     
-    # Try python3 first, then python
     try {
-        $pythonCmd = (Get-Command python3 -ErrorAction Stop).Source
-        $isPython3 = $true
+        $phpCmd = (Get-Command php -ErrorAction Stop).Source
     }
     catch {
-        try {
-            $pythonCmd = (Get-Command python -ErrorAction Stop).Source
-        }
-        catch {
-            Write-Host "ERROR: Python is not installed!" -ForegroundColor Red
-            Write-Host "Please install Python 3 from https://www.python.org" -ForegroundColor Yellow
-            Read-Host "Press Enter to exit"
-            exit 1
-        }
+        Write-Host "ERROR: PHP is not installed!" -ForegroundColor Red
+        Write-Host "Please install PHP from https://windows.php.net/download/" -ForegroundColor Yellow
+        Read-Host "Press Enter to exit"
+        exit 1
     }
 
     # Check if port is already in use
@@ -58,10 +50,19 @@ function Start-ProjectServer {
         exit 1
     }
 
+    # Check MongoDB extension
+    $mongoCheck = & php -r "echo class_exists('MongoDB\Driver\Manager') ? 'yes' : 'no';" 2>$null
+    
     Write-Host "Server Configuration:" -ForegroundColor Green
-    Write-Host "  Python: $pythonCmd" -ForegroundColor White
+    Write-Host "  PHP: $phpCmd" -ForegroundColor White
     Write-Host "  Port: $Port" -ForegroundColor White
     Write-Host "  Directory: $(Get-Location)" -ForegroundColor White
+    
+    if ($mongoCheck -eq 'yes') {
+        Write-Host "  MongoDB: ✅ Enabled" -ForegroundColor Green
+    } else {
+        Write-Host "  MongoDB: ⚠️  Not found (some features may not work)" -ForegroundColor Yellow
+    }
     
     if ($UrlPath) {
         Write-Host "  Opening: $UrlPath" -ForegroundColor White
@@ -105,15 +106,32 @@ function Start-ProjectServer {
     }
 
     Write-Host ""
-
-    # Start Python server
-    $env:PYTHONUNBUFFERED = 1
     
-    if ($isPython3) {
-        & python3 -m http.server $Port
+    # Stop any existing PHP servers on this port
+    Write-Host "Stopping any existing PHP servers..." -ForegroundColor Yellow
+    Get-Process | Where-Object {$_.Name -eq "php"} | ForEach-Object {
+        try {
+            Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue
+        } catch {}
     }
-    else {
-        & python -m http.server $Port
+    Start-Sleep -Milliseconds 500
+    
+    Write-Host "Starting PHP development server..." -ForegroundColor Green
+    Write-Host ""
+
+    # Start PHP server with router (using custom php.ini for upload limits)
+    & php -c "$PSScriptRoot/php.ini" -S localhost:$Port router.php 2>&1 | ForEach-Object {
+        if ($_ -match "started") {
+            Write-Host $_ -ForegroundColor Green
+        } elseif ($_ -match "Accepted|Closing") {
+            # Suppress connection noise
+        } elseif ($_ -match "404") {
+            Write-Host $_ -ForegroundColor Yellow
+        } elseif ($_ -match "error|fatal|warning") {
+            Write-Host $_ -ForegroundColor Red
+        } else {
+            Write-Host $_
+        }
     }
 }
 

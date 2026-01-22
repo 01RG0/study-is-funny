@@ -270,6 +270,7 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
             }
         }
     </style>
+    <script src="../../../js/api-config.js"></script>
 </head>
 <body>
     <h1><?= htmlspecialchars($title) ?></h1>
@@ -383,7 +384,7 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
                 
                 try {
                     // Call API to check subscription
-                    const response = await fetch(`/api/sessions.php?action=check-access&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}`);
+                    const response = await fetch(`${window.API_BASE_URL}sessions.php?action=check-access&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}`);
                     const data = await response.json();
                     
                     console.log('Access check response:', data);
