@@ -821,6 +821,7 @@
                         <h3>${subjectInfo.name}</h3>
                         <div class="qr-code-display" id="qr-container-${subject}" onclick="showQRModal('${subject}', '${subjectInfo.name}')" title="انقر للتكبير">
                         </div>
+                        <div class="qr-code-value" style="color: var(--text); font-size: 18px; font-weight: bold; margin-top: 12px;">${studentId}</div>
                         <button class="qr-download-btn" onclick="downloadQR('${subject}', '${subjectInfo.name}')">
                             <i class="fas fa-download"></i> تحميل
                         </button>

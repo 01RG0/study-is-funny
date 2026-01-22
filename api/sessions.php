@@ -733,6 +733,11 @@ function updateSession($data) {
         // Add updated timestamp
         $data['updatedAt'] = new MongoDB\BSON\UTCDateTime();
 
+        // Handle boolean fields
+        if (isset($data['isPublished'])) {
+            $data['isPublished'] = (bool) $data['isPublished'];
+        }
+
         // Convert date strings to UTCDateTime if present
         if (isset($data['publishDate'])) {
             $data['publishDate'] = new MongoDB\BSON\UTCDateTime(strtotime($data['publishDate']) * 1000);

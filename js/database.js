@@ -1,5 +1,17 @@
 // Helper to get the base path of the application
 function getBasePath() {
+    // First try Hostinger subdirectory detection
+    const protocol = window.location.protocol;
+    const host = window.location.host;
+    const pathname = window.location.pathname;
+    
+    if (pathname.includes('study-is-funny')) {
+        const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);
+        const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
+        return `${protocol}//${host}${basePath}/`;
+    }
+    
+    // Fallback to original method
     const scripts = document.getElementsByTagName('script');
     for (let script of scripts) {
         if (script.src.includes('js/database.js')) {

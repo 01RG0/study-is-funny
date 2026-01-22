@@ -7,6 +7,26 @@
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
+    <script>
+        // API Configuration for Hostinger subdirectory support
+        function getApiBaseUrl() {
+            const protocol = window.location.protocol;
+            const host = window.location.host;
+            const pathname = window.location.pathname;
+            
+            if (pathname.includes('study-is-funny')) {
+                const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);
+                const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
+                return `${protocol}//${host}${basePath}/api/`;
+            }
+            
+            return `${protocol}//${host}/api/`;
+        }
+        
+        window.API_BASE = getApiBaseUrl();
+        console.log('✓ Admin API Base URL:', window.API_BASE);
+        console.log('✓ Admin Login Location:', window.location.href);
+    </script>
 </head>
 <body>
     <div class="login-container">

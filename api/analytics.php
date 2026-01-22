@@ -262,7 +262,7 @@ function getPerformanceAnalytics() {
                 'completionRate' => [
                     '$cond' => [
                         ['$gt' => ['$views', 0]],
-                        ['$multiply' => [['$divide' => ['$views', ['$ifNull' => ['$maxViews', 100]]]], 100],
+                        ['$multiply' => [['$divide' => ['$views', ['$ifNull' => ['$maxViews', 100]]]], 100]],
                         0
                     ]
                 ]

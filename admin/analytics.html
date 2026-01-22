@@ -7,6 +7,26 @@
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
+    <script>
+        // API Configuration for Hostinger subdirectory support
+        function getApiBaseUrl() {
+            const protocol = window.location.protocol;
+            const host = window.location.host;
+            const pathname = window.location.pathname;
+            
+            if (pathname.includes('study-is-funny')) {
+                const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);  
+                const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
+                return `${protocol}//${host}${basePath}/api/`;
+            }
+            
+            return `${protocol}//${host}/api/`;
+        }
+        
+        window.APP_BASE_URL = getApiBaseUrl().replace('/api/', '/');
+        console.log('✓ Admin API Base URL:', getApiBaseUrl());
+        console.log('✓ Analytics Location:', window.location.href);
+    </script>
 </head>
 <body>
     <!-- Sidebar -->
@@ -22,9 +42,6 @@
             </a>
             <a href="upload-session.php" class="nav-item">
                 <i class="fas fa-upload"></i> Upload Session
-            </a>
-            <a href="manage-homework.php" class="nav-item">
-                <i class="fas fa-tasks"></i> Manage Homework
             </a>
             <a href="manage-sessions.html" class="nav-item">
                 <i class="fas fa-list"></i> Manage Sessions
@@ -60,7 +77,7 @@
                     <i class="fas fa-eye"></i>
                 </div>
                 <div class="stat-info">
-                    <h3 id="totalViews">45,230</h3>
+                    <h3 id="totalViews">0</h3>
                     <p>Total Views (All Time)</p>
                 </div>
             </div>
@@ -70,7 +87,7 @@
                     <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-info">
-                    <h3 id="avgWatchTime">24.5m</h3>
+                    <h3 id="avgWatchTime">0m</h3>
                     <p>Average Watch Time</p>
                 </div>
             </div>
@@ -80,7 +97,7 @@
                     <i class="fas fa-calendar-week"></i>
                 </div>
                 <div class="stat-info">
-                    <h3 id="weeklyViews">2,340</h3>
+                    <h3 id="weeklyViews">0</h3>
                     <p>Views This Week</p>
                 </div>
             </div>
@@ -90,7 +107,7 @@
                     <i class="fas fa-chart-line"></i>
                 </div>
                 <div class="stat-info">
-                    <h3 id="growthRate">+12.5%</h3>
+                    <h3 id="growthRate">0%</h3>
                     <p>Weekly Growth</p>
                 </div>
             </div>
@@ -117,19 +134,19 @@
                 <div style="space-y: 15px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
                         <span><i class="fas fa-atom" style="color: #e74c3c; margin-right: 10px;"></i> Physics</span>
-                        <span style="font-weight: bold;">8,450 views</span>
+                        <span style="font-weight: bold;">0 views</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
                         <span><i class="fas fa-calculator" style="color: #3498db; margin-right: 10px;"></i> Mathematics</span>
-                        <span style="font-weight: bold;">6,230 views</span>
+                        <span style="font-weight: bold;">0 views</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
                         <span><i class="fas fa-chart-bar" style="color: #27ae60; margin-right: 10px;"></i> Statistics</span>
-                        <span style="font-weight: bold;">4,180 views</span>
+                        <span style="font-weight: bold;">0 views</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
                         <span><i class="fas fa-globe" style="color: #f39c12; margin-right: 10px;"></i> Geography</span>
-                        <span style="font-weight: bold;">2,890 views</span>
+                        <span style="font-weight: bold;">0 views</span>
                     </div>
                 </div>
             </div>

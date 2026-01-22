@@ -8,6 +8,26 @@
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
+    <script>
+        // API Configuration for Hostinger subdirectory support
+        function getApiBaseUrl() {
+            const protocol = window.location.protocol;
+            const host = window.location.host;
+            const pathname = window.location.pathname;
+            
+            if (pathname.includes('study-is-funny')) {
+                const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);
+                const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
+                return `${protocol}//${host}${basePath}/api/`;
+            }
+            
+            return `${protocol}//${host}/api/`;
+        }
+        
+        window.API_BASE_URL = getApiBaseUrl();
+        console.log('✓ Upload API Base URL:', window.API_BASE_URL);
+        console.log('✓ Upload Session Location:', window.location.href);
+    </script>
 </head>
 
 <body>
@@ -245,7 +265,7 @@
                             <label for="isPublished">Publish Status</label>
                             <select id="isPublished" name="isPublished">
                                 <option value="draft">Save as Draft</option>
-                                <option value="published">Publish Now</option>
+                                <option value="published" selected>Publish Now</option>
                                 <option value="scheduled">Schedule for Later</option>
                             </select>
                         </div>
@@ -266,8 +286,24 @@
     </div>
 
     <script>
-        // Configuration
-        window.APP_BASE_URL = window.location.origin + '/';
+        // API Configuration for Hostinger subdirectory support
+        function getApiBaseUrl() {
+            const protocol = window.location.protocol;
+            const host = window.location.host;
+            const pathname = window.location.pathname;
+            
+            if (pathname.includes('study-is-funny')) {
+                const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);
+                const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
+                return `${protocol}//${host}${basePath}/api/`;
+            }
+            
+            return `${protocol}//${host}/api/`;
+        }
+        
+        window.API_BASE_URL = getApiBaseUrl();
+        console.log('✓ Upload Session API Base URL:', window.API_BASE_URL);
+        console.log('✓ Upload Session Location:', window.location.href);
     </script>
     <script src="js/admin.js"></script>
     <script>
@@ -344,8 +380,8 @@
                     }
                 }
                 
-                console.log('Sending request to: ../api/sessions.php?action=upload');
-                const response = await fetch('../api/sessions.php?action=upload', {
+                console.log('Sending request to: ' + window.API_BASE_URL + 'sessions.php?action=upload');
+                const response = await fetch(window.API_BASE_URL + 'sessions.php?action=upload', {
                     method: 'POST',
                     body: formData
                 });
