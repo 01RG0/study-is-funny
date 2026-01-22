@@ -2,11 +2,16 @@
 // Prevent HTML errors from being output - output JSON only
 @ini_set('display_errors', '0');
 @ini_set('log_errors', '1');
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_WARNING);
 
 header('Content-Type: application/json');
 
 // Catch any fatal errors
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    // Ignore deprecated warnings
+    if ($errno === E_DEPRECATED || $errno === E_USER_DEPRECATED) {
+        return true;
+    }
     http_response_code(500);
     echo json_encode([
         'success' => false,
@@ -70,6 +75,9 @@ function handleGet($action) {
     switch ($action) {
         case 'get':
             getStudent();
+            break;
+        case 'getByParentPhone':
+            getStudentByParentPhone();
             break;
         case 'all':
             getAllStudents();
@@ -246,17 +254,16 @@ function getStudent() {
         $allMatches = $viewCursor->toArray();
 
         if (!empty($allMatches)) {
-            // Initialize merged student data from first match
+            // Use the first match as the base student
+            $base = (array)$allMatches[0];
             $merged = [
-                'name' => $allMatches[0]->studentName ?? $allMatches[0]->name ?? 'Student',
+                'name' => $base['studentName'] ?? $base['name'] ?? 'Student',
                 'phone' => $phone,
                 'subjects' => [],
-                'subjectIds' => [], // Map of subject => studentId
+                'subjectIds' => [],
                 'grade' => 'senior1',
                 'isActive' => true
             ];
-
-            // Advanced Subject Mapping
             $subjectMapping = [
                 'math' => 'mathematics',
                 'pure math' => 'mathematics',
@@ -264,48 +271,47 @@ function getStudent() {
                 'mechanics' => 'mechanics',
                 'stat' => 'mathematics'
             ];
-
             foreach ($allMatches as $match) {
                 $rawSubject = strtolower($match->subject ?? '');
-                
-                // Determine grade from subject field
                 if (isset($match->subject)) {
                     if (strpos($match->subject, 'S1') !== false) $merged['grade'] = 'senior1';
                     elseif (strpos($match->subject, 'S2') !== false) $merged['grade'] = 'senior2';
                     elseif (strpos($match->subject, 'S3') !== false) $merged['grade'] = 'senior3';
                 }
-
-                // Map subject names and store studentId for each subject
                 foreach ($subjectMapping as $key => $slug) {
                     if (strpos($rawSubject, $key) !== false) {
                         if (!in_array($slug, $merged['subjects'])) {
                             $merged['subjects'][] = $slug;
-                            // Store the studentId for this specific subject
                             $merged['subjectIds'][$slug] = $match->studentId ?? null;
                         }
                     }
                 }
             }
-
-            // Fallback subjects
             if (empty($merged['subjects'])) {
                 $merged['subjects'] = ($merged['grade'] === 'senior1') ? ['mathematics'] : ['physics', 'mathematics', 'mechanics'];
             }
-
-            $studentArray = [
+            // Merge all session fields from allMatches
+            $sessionFields = [];
+            foreach ($allMatches as $match) {
+                foreach ((array)$match as $k => $v) {
+                    if (strpos($k, 'session_') === 0) {
+                        $sessionFields[$k] = $v;
+                    }
+                }
+            }
+            $studentArray = array_merge([
                 'name' => $merged['name'],
                 'phone' => $phone,
                 'grade' => $merged['grade'],
                 'subjects' => array_values($merged['subjects']),
-                'subjectIds' => $merged['subjectIds'], // Include subject-to-ID mapping
+                'subjectIds' => $merged['subjectIds'],
                 'isActive' => true,
                 'totalSessionsViewed' => 0,
                 'totalWatchTime' => 0,
                 'totalSessions' => count($merged['subjects']) * 5,
                 'watchedSessions' => 0,
                 'totalWatchTimeFormatted' => '0h 0m'
-            ];
-
+            ], $sessionFields);
             echo json_encode(['success' => true, 'student' => $studentArray]);
             return;
         }
@@ -335,6 +341,121 @@ function getStudent() {
         }
 
         echo json_encode(['success' => false, 'message' => "Student not found with phone: " . implode(', ', $phonesToTry)]);
+
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+    }
+}
+
+function getStudentByParentPhone() {
+    try {
+        $client = $GLOBALS['mongoClient'];
+        $databaseName = $GLOBALS['databaseName'];
+
+        $parentPhone = $_GET['parentPhone'] ?? '';
+        if (!$parentPhone) {
+            echo json_encode(['success' => false, 'message' => 'Parent phone number required']);
+            return;
+        }
+
+        // Normalize phone formats
+        $phonesToTry = [$parentPhone];
+        $cleanPhone = preg_replace('/[^0-9]/', '', $parentPhone);
+        
+        // Handle different phone formats
+        if (strlen($cleanPhone) === 12 && substr($cleanPhone, 0, 2) === '20') {
+            // 201060416120 -> 01060416120
+            $phonesToTry[] = '0' . substr($cleanPhone, 2);
+            $phonesToTry[] = '+' . $cleanPhone;
+            $phonesToTry[] = $cleanPhone;
+        } elseif (strlen($cleanPhone) === 11 && substr($cleanPhone, 0, 1) === '0') {
+            // 01060416120 -> 201060416120
+            $phonesToTry[] = '+2' . $cleanPhone;
+            $phonesToTry[] = '2' . $cleanPhone;
+            $phonesToTry[] = $cleanPhone;
+        } elseif (strlen($cleanPhone) === 10) {
+            // 1060416120 -> 01060416120 and 201060416120
+            $phonesToTry[] = '0' . $cleanPhone;
+            $phonesToTry[] = '+20' . $cleanPhone;
+            $phonesToTry[] = '20' . $cleanPhone;
+        }
+
+        // Search in all_students_view for parentPhone
+        $viewQuery = new MongoDB\Driver\Query(['parentPhone' => ['$in' => $phonesToTry]]);
+        $viewCursor = $client->executeQuery("$databaseName.all_students_view", $viewQuery);
+        $matches = $viewCursor->toArray();
+
+        if (!empty($matches)) {
+            $students = [];
+            
+            foreach ($matches as $studentData) {
+                $studentPhone = $studentData->phone ?? $studentData->studentPhone ?? null;
+                
+                if ($studentPhone) {
+                    // Fetch complete student data
+                    $studentQuery = new MongoDB\Driver\Query(['phone' => $studentPhone]);
+                    $studentCursor = $client->executeQuery("$databaseName.all_students_view", $studentQuery);
+                    $studentMatches = $studentCursor->toArray();
+                    
+                    if (!empty($studentMatches)) {
+                        $student = $studentMatches[0];
+                        
+                        // Get the actual subject value from database
+                        $subjectValue = '';
+                        if (isset($student->subject)) {
+                            $subjectValue = $student->subject;
+                        }
+                        
+                        $students[] = [
+                            'name' => $student->studentName ?? $student->name ?? 'Student',
+                            'phone' => $studentPhone,
+                            'parentPhone' => $parentPhone,
+                            'grade' => $student->grade ?? 'senior1',
+                            'subject' => $subjectValue,
+                            'subjects' => isset($student->subjects) ? (array)$student->subjects : ['mathematics'],
+                            'isActive' => true
+                        ];
+                    }
+                }
+            }
+            
+            if (!empty($students)) {
+                echo json_encode(['success' => true, 'students' => $students, 'count' => count($students)]);
+                return;
+            }
+        }
+
+        // Fallback: Search in users collection
+        $filter = ['parentPhone' => ['$in' => $phonesToTry]];
+        $query = new MongoDB\Driver\Query($filter);
+        $cursor = $client->executeQuery("$databaseName.users", $query);
+        $studentsArray = $cursor->toArray();
+
+        if (!empty($studentsArray)) {
+            $students = [];
+            foreach ($studentsArray as $student) {
+                // Get the actual subject value from database
+                $subjectValue = '';
+                if (isset($student->subject)) {
+                    $subjectValue = $student->subject;
+                }
+                
+                $students[] = [
+                    'name' => $student->name ?? 'Student',
+                    'phone' => $student->phone ?? '',
+                    'parentPhone' => $parentPhone,
+                    'grade' => $student->grade ?? 'senior1',
+                    'subject' => $subjectValue,
+                    'subjects' => isset($student->subjects) ? array_values((array)$student->subjects) : ['mathematics'],
+                    'isActive' => $student->isActive ?? true
+                ];
+            }
+
+            echo json_encode(['success' => true, 'students' => $students, 'count' => count($students)]);
+            return;
+        }
+
+        echo json_encode(['success' => false, 'message' => 'No student found with parent phone: ' . $parentPhone]);
 
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);

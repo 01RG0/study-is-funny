@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل الطالب</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="images/logo.png">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #F0F0F0;
+            margin: 0;
+            padding: 0;
+            color: #222;
+        }
+        .details-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            color: #008080;
+            text-align: center;
+        }
+        .student-info {
+            margin: 30px 0;
+        }
+        .student-info p {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            color: #222;
+        }
+        .back-btn {
+            display: block;
+            margin: 30px auto 0 auto;
+            background: #008080;
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .back-btn:hover {
+            background: #005f5f;
+        }
+        table {
+            color: #222;
+        }
+        th, td {
+            color: #222;
+        }
+    </style>
+</head>
+<body>
+    <div class="details-container">
+        <h1>لوحة الطالب</h1>
+        <div class="student-info" id="studentInfo">
+            <p>جاري تحميل البيانات...</p>
+        </div>
+        <div id="tablesContainer"></div>
+        <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-right"></i> العودة</button>
+    </div>
+    <script src="js/database.js"></script>
+    <script>
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+        function goBack() {
+            window.history.back();
+        }
+        // Helper to format attendance status
+        function formatAttendance(status) {
+            if (status === 'Present') return '<span style="color:green;font-weight:bold">✔️ حاضر</span>';
+            if (status === 'Absent') return '<span style="color:red;font-weight:bold">❌ غائب</span>';
+            if (status === 'Late') return '<span style="color:orange;font-weight:bold">⏰ متأخر</span>';
+            if (status === 'Excused') return '<span style="color:blue;font-weight:bold">📄 بعذر</span>';
+            return '-';
+        }
+        (async function() {
+            const phone = getQueryParam('phone');
+            const infoDiv = document.getElementById('studentInfo');
+            const tablesContainer = document.getElementById('tablesContainer');
+            try {
+                const res = await fetch(`api/students.php?action=get&phone=${encodeURIComponent(phone)}`);
+                const data = await res.json();
+                if (data.success && data.student) {
+                    const studentObj = data.student;
+                            infoDiv.innerHTML = `
+                                <p><strong>الاسم:</strong> ${studentObj.studentName || studentObj.name || '-'}</p>
+                                <p><strong>الهاتف:</strong> ${studentObj.phone || '-'}</p>
+                                <p><strong>هاتف ولي الأمر:</strong> ${studentObj.parentPhone || '-'}</p>
+                                <p><strong>الصف:</strong> ${studentObj.grade || '-'}</p>
+                                <p><strong>المادة:</strong> ${studentObj.subject || (studentObj.subjects ? studentObj.subjects.join('، ') : '-')}</p>
+                                <p><strong>الحالة:</strong> ${(studentObj.isActive === false) ? 'غير نشط' : 'نشط'}</p>
+                    `;
+                    // Find all session keys and determine max session number
+                    const sessionKeys = Object.keys(studentObj).filter(k => k.startsWith('session_'));
+                    const sessionNumbers = sessionKeys.map(k => parseInt(k.split('_')[1])).filter(n => !isNaN(n));
+                    const maxSession = sessionNumbers.length > 0 ? Math.max(...sessionNumbers) : 0;
+                    let tableHtml = '';
+                    if (maxSession > 0) {
+                        tableHtml += `<h2 style="text-align:center">جدول الجلسات</h2>`;
+                        tableHtml += `<table style="width:100%;border-collapse:collapse;margin:20px 0;">
+                            <thead>
+                                <tr style="background:#f0f0f0">
+                                    <th>رقم الجلسة</th>
+                                    <th>التاريخ</th>
+                                    <th>الحضور</th>
+                                    <th>حضر؟</th>
+                                    <th>الواجب</th>
+                                    <th>الدرجة</th>
+                                    <th>ملاحظات</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                        for (let i = 1; i <= maxSession; i++) {
+                            const key = `session_${i}`;
+                            const s = studentObj[key] || {};
+                            let attended = (s.attendanceStatus === 'Present') ? 'نعم' : 'لا';
+                            tableHtml += `<tr>
+                                <td>${i}</td>
+                                <td>${s.date || '-'}</td>
+                                <td>${formatAttendance(s.attendanceStatus)}</td>
+                                <td>${attended}</td>
+                                <td>${s.homeworkStatus || '-'}</td>
+                                <td>${s.examMark != null ? s.examMark : '-'}</td>
+                                <td>${s.comment || '-'}</td>
+                            </tr>`;
+                        }
+                        tableHtml += '</tbody></table>';
+                    } else {
+                        tableHtml = '<p>لا توجد بيانات جلسات متاحة لهذا الطالب.</p>';
+                    }
+                    tablesContainer.innerHTML = tableHtml;
+                } else {
+                    infoDiv.innerHTML = '<p>تعذر العثور على بيانات الطالب.</p>';
+                }
+            } catch (e) {
+                infoDiv.innerHTML = '<p>حدث خطأ أثناء تحميل بيانات الطالب.</p>';
+            }
+        })();
+    </script>
+</body>
+</html>

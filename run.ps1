@@ -22,14 +22,11 @@ function Start-ProjectServer {
     Write-Host ""
 
     # Detect OS and use appropriate PHP server
-    $phpCmd = ""
+    $phpCmd = "C:\Users\messi\PHP\php.exe"
     
-    try {
-        $phpCmd = (Get-Command php -ErrorAction Stop).Source
-    }
-    catch {
-        Write-Host "ERROR: PHP is not installed!" -ForegroundColor Red
-        Write-Host "Please install PHP from https://windows.php.net/download/" -ForegroundColor Yellow
+    if (-not (Test-Path $phpCmd)) {
+        Write-Host "ERROR: PHP is not found at $phpCmd!" -ForegroundColor Red
+        Write-Host "Please install PHP or update the path in run.ps1" -ForegroundColor Yellow
         Read-Host "Press Enter to exit"
         exit 1
     }

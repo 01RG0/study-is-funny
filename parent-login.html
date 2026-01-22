@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ولي أمر</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="images/logo.png">
+    <style>
+        h2 { text-align: center; color: #333; }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #FF8C69; box-sizing: border-box; }
+        form { background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); width: 300px; margin: auto; margin-top: 50px; }
+        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; width: 250px; }
+        button:hover { background-color: #45a049; }
+        .form-header { display: flex; flex-direction: column; align-items: center; margin-top: 50px; direction: rtl; }
+        .logo { max-width: 150px; border-radius: 50%; }
+        /* Dark Mode Styles */
+        body.dark-mode { background-color: #121212; color: #e0e0e0; }
+        .dark-mode .form-header form { background-color: #1f1f1f; }
+        .dark-mode .form-header h2{color: wheat;}
+        .dark-mode .phone { background-color: #2a2a2a; border: 1px solid #4CAF50; color: #e0e0e0; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="banner">
+            <img src="images/logo.webp" alt="Website Logo" class="logo">
+            <h1>Studyisfunny <i class="fas fa-graduation-cap"></i></h1>
+            <a href="https://wa.me/201558145450?text=Hello" target="_blank" class="whatsapp-button">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+            </a>
+            <!-- Dark Mode Toggle Switch -->
+            <label class="dark-mode-switch">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </header>
+    <div class="form-header">
+        <h2>ولي أمر</h2>
+        <form id="parentForm">
+            <input type="text" id="phone" class="phone" placeholder="الهاتف" required><br>
+            <button type="submit" id="submitButton">متابعة</button>
+        </form>
+    </div>
+    <script src="js/database.js"></script>
+    <script>
+        // Dark Mode Toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.checked = true;
+        }
+        darkModeToggle.addEventListener('change', () => {
+            if (darkModeToggle.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+
+        // Handle Parent Login Form Submission
+        document.getElementById('parentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const phone = document.getElementById('phone').value.trim();
+            const submitButton = document.getElementById('submitButton');
+            const formHeader = document.querySelector('.form-header');
+
+            // Remove any existing error messages
+            const existingError = document.getElementById('dynamicError');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            // Validate phone number
+            if (!phone) {
+                const errorMessage = document.createElement('p');
+                errorMessage.id = 'dynamicError';
+                errorMessage.textContent = 'يرجى إدخال رقم الهاتف.';
+                errorMessage.style.color = 'red';
+                errorMessage.style.fontWeight = 'bold';
+                errorMessage.style.textAlign = 'center';
+                formHeader.appendChild(errorMessage);
+                return;
+            }
+
+            // Disable the submit button
+            submitButton.disabled = true;
+            submitButton.textContent = 'جاري التحقق...';
+
+            try {
+                // Search for student by parentPhone in the database
+                const response = await fetch(`api/students.php?action=getByParentPhone&parentPhone=${encodeURIComponent(phone)}`);
+                const result = await response.json();
+
+                if (result.success && result.students && result.students.length > 0) {
+                    // Store parent phone and students data
+                    localStorage.setItem('parentPhone', phone);
+                    localStorage.setItem('studentsData', JSON.stringify(result.students));
+                    localStorage.setItem('parentAccessGranted', 'true');
+                    
+                    // Redirect to parent dashboard
+                    window.location.href = 'parent-dashboard';
+                } else {
+                    // Show error message
+                    const errorMessage = document.createElement('p');
+                    errorMessage.id = 'dynamicError';
+                    errorMessage.textContent = result.message || 'رقم الهاتف غير مسجل كولي أمر';
+                    errorMessage.style.color = 'red';
+                    errorMessage.style.fontWeight = 'bold';
+                    errorMessage.style.textAlign = 'center';
+                    formHeader.appendChild(errorMessage);
+                    
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'متابعة';
+                }
+            } catch (error) {
+                console.error('Error during parent login:', error);
+                const errorMessage = document.createElement('p');
+                errorMessage.id = 'dynamicError';
+                errorMessage.textContent = 'حدث خطأ في الاتصال. يرجى المحاولة لاحقاً.';
+                errorMessage.style.color = 'red';
+                errorMessage.style.fontWeight = 'bold';
+                errorMessage.style.textAlign = 'center';
+                formHeader.appendChild(errorMessage);
+                
+                submitButton.disabled = false;
+                submitButton.textContent = 'متابعة';
+            }
+        });
+    </script>
+</body>
+</html>
