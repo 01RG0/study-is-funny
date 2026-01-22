@@ -21,7 +21,7 @@ body {
 }
 
 header {
-    background-color: #25D366; /* WhatsApp green */
+    background-color: #008080; /* Teal color */
     text-align: center;
     color: var(--text);
     position: relative;
