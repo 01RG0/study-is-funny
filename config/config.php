@@ -42,12 +42,15 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Error Reporting (Development)
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// For production, change these settings:
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
+ini_set('display_errors', 0);  // Hide errors from users
 ini_set('log_errors', 1);
 ini_set('error_log', BASE_PATH . '/logs/error.log');
 
-// For production, uncomment these:
+// For local development, uncomment:
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
 // error_reporting(0);
 // ini_set('display_errors', 0);
 

@@ -1,0 +1,81 @@
+# Study is Funny - .htaccess Configuration
+# Enable mod_rewrite for URL rewriting
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # Redirect .html URLs (remove .html extension)
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}.html -f
+    RewriteRule ^(.*)$ $1.html [L]
+    
+    # Prevent direct access to sensitive files
+    RewriteRule ^config\.php$ - [F]
+    RewriteRule ^\.env$ - [F]
+    RewriteRule ^database\.yml$ - [F]
+</IfModule>
+
+# Protect sensitive files from direct access
+<FilesMatch "^(config|\.env|database\.yml)\.php$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Security headers
+<IfModule mod_headers.c>
+    # Prevent MIME type sniffing
+    Header set X-Content-Type-Options "nosniff"
+    
+    # Prevent clickjacking attacks
+    Header set X-Frame-Options "SAMEORIGIN"
+    
+    # Enable XSS protection in browsers
+    Header set X-XSS-Protection "1; mode=block"
+    
+    # Referrer policy
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Enable GZIP compression for better performance
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript application/json text/xml application/xml+rss
+    AddEncoding gzip .gz
+</IfModule>
+
+# Browser caching for static assets
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Images
+    ExpiresByType image/jpeg "access 1 year"
+    ExpiresByType image/gif "access 1 year"
+    ExpiresByType image/png "access 1 year"
+    ExpiresByType image/webp "access 1 year"
+    ExpiresByType image/x-icon "access 1 year"
+    ExpiresByType image/svg+xml "access 1 year"
+    
+    # CSS and JavaScript
+    ExpiresByType text/css "access 1 month"
+    ExpiresByType application/javascript "access 1 month"
+    ExpiresByType text/javascript "access 1 month"
+    
+    # Fonts
+    ExpiresByType application/font-woff "access 1 year"
+    ExpiresByType application/font-woff2 "access 1 year"
+    ExpiresByType application/x-font-ttf "access 1 year"
+    
+    # Default
+    ExpiresDefault "access 2 days"
+</IfModule>
+
+# Disable directory listing
+Options -Indexes
+
+# Set default character encoding
+AddDefaultCharset utf-8
+
+# Prevent access to PHP error logs
+<Files ~ "\.log$">
+    Order allow,deny
+    Deny from all
+</Files>
