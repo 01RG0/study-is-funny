@@ -227,7 +227,7 @@ function validateSessionData($data) {
 
     if (!isset($data['grade']) || empty($data['grade'])) {
         $errors[] = 'Grade level is required';
-    } elseif (!in_array($data['grade'], ['senior1', 'senior2'])) {
+    } elseif (!in_array($data['grade'], ['senior1', 'senior2', 'senior3'])) {
         $errors[] = 'Invalid grade level selected';
     }
 
@@ -478,66 +478,82 @@ function uploadSession($data) {
         // Get contentType from form (session-level, not per-video)
         $contentType = $_POST['contentType'] ?? 'lecture';
         
-        // Handle video files (videoFile[] format from the form)
-        if (isset($_FILES['videoFile']) && is_array($_FILES['videoFile']['name'])) {
-            $videoTitles = $_POST['videoTitle'] ?? [];
-            $videoDescriptions = $_POST['videoDescription'] ?? [];
-            $videoDurations = $_POST['duration'] ?? [];
-            $videoSources = $_POST['videoSource'] ?? [];
-            $videoLinks = $_POST['videoLink'] ?? [];
+        // Set status based on contentType
+        if ($contentType === 'homework') {
+            $sessionData['status'] = 'homework';
+        } else {
+            $sessionData['status'] = $_POST['isPublished'] ?? 'draft';
+        }
+        
+        // Get video form data
+        $videoTitles = $_POST['videoTitle'] ?? [];
+        $videoDescriptions = $_POST['videoDescription'] ?? [];
+        $videoDurations = $_POST['duration'] ?? [];
+        $videoSources = $_POST['videoSource'] ?? [];
+        $videoLinks = $_POST['videoLink'] ?? [];
+        
+        // Determine number of videos - use the longest array or files count
+        $fileCount = (isset($_FILES['videoFile']) && is_array($_FILES['videoFile']['name'])) ? count($_FILES['videoFile']['name']) : 0;
+        $videoCount = max($fileCount, count($videoTitles), count($videoSources), count($videoLinks));
+        
+        // Process each video entry
+        for ($index = 0; $index < $videoCount; $index++) {
+            $isUpload = ($videoSources[$index] ?? 'upload') === 'upload';
+            $fileName = $_FILES['videoFile']['name'][$index] ?? '';
+            $videoLink = $videoLinks[$index] ?? '';
+            
+            // Skip empty entries
+            if (empty($fileName) && empty($videoLink)) {
+                continue;
+            }
+            
+            if ($isUpload && !empty($fileName) && isset($_FILES['videoFile']['error'][$index]) && $_FILES['videoFile']['error'][$index] === UPLOAD_ERR_OK) {
+                // Handle file upload using Video class
+                $videoFile = [
+                    'name' => $_FILES['videoFile']['name'][$index],
+                    'type' => $_FILES['videoFile']['type'][$index],
+                    'tmp_name' => $_FILES['videoFile']['tmp_name'][$index],
+                    'error' => $_FILES['videoFile']['error'][$index],
+                    'size' => $_FILES['videoFile']['size'][$index]
+                ];
 
-            foreach ($_FILES['videoFile']['name'] as $index => $fileName) {
-                // Check if this is a file upload or link
-                $sourceKey = array_keys($videoSources)[$index] ?? $index;
-                $isUpload = ($videoSources[$sourceKey] ?? 'upload') === 'upload';
-                
-                if ($isUpload && !empty($fileName) && $_FILES['videoFile']['error'][$index] === UPLOAD_ERR_OK) {
-                    // Handle file upload using Video class
-                    $videoFile = [
-                        'name' => $_FILES['videoFile']['name'][$index],
-                        'type' => $_FILES['videoFile']['type'][$index],
-                        'tmp_name' => $_FILES['videoFile']['tmp_name'][$index],
-                        'error' => $_FILES['videoFile']['error'][$index],
-                        'size' => $_FILES['videoFile']['size'][$index]
-                    ];
+                $videoMetadata = [
+                    'title' => $videoTitles[$index] ?? 'Video ' . ($index + 1),
+                    'description' => $videoDescriptions[$index] ?? '',
+                    'video_type' => $contentType,
+                    'duration_seconds' => !empty($videoDurations[$index]) ? (int)$videoDurations[$index] * 60 : null,
+                    'subject_id' => $sessionData['subject'],
+                    'uploaded_by' => $sessionData['createdBy']
+                ];
 
-                    $videoMetadata = [
-                        'title' => $videoTitles[$index] ?? 'Video ' . ($index + 1),
-                        'description' => $videoDescriptions[$index] ?? '',
-                        'video_type' => $contentType,
-                        'duration_seconds' => !empty($videoDurations[$index]) ? (int)$videoDurations[$index] * 60 : null,
-                        'subject_id' => $sessionData['subject'],
-                        'uploaded_by' => $sessionData['createdBy']
-                    ];
+                $uploadResult = $videoManager->upload($videoFile, $videoMetadata);
 
-                    $uploadResult = $videoManager->upload($videoFile, $videoMetadata);
-
-                    if (!$uploadResult['success']) {
-                        echo json_encode(['success' => false, 'message' => 'Video upload failed: ' . $uploadResult['message']]);
-                        return;
-                    }
-
-                    $sessionData['videos'][] = [
-                        'video_id' => $uploadResult['video_id'],
-                        'title' => $videoMetadata['title'],
-                        'type' => $contentType,
-                        'description' => $videoMetadata['description'],
-                        'duration' => $videoMetadata['duration_seconds'],
-                        'source' => 'upload'
-                    ];
-
-                } elseif (!$isUpload && !empty($videoLinks[$index])) {
-                    // Handle video link
-                    $sessionData['videos'][] = [
-                        'video_id' => null,
-                        'title' => $videoTitles[$index] ?? 'Video ' . ($index + 1),
-                        'type' => $contentType,
-                        'description' => $videoDescriptions[$index] ?? '',
-                        'duration' => !empty($videoDurations[$index]) ? (int)$videoDurations[$index] * 60 : null,
-                        'url' => $videoLinks[$index],
-                        'source' => 'link'
-                    ];
+                if (!$uploadResult['success']) {
+                    echo json_encode(['success' => false, 'message' => 'Video upload failed: ' . $uploadResult['message']]);
+                    return;
                 }
+
+                $sessionData['videos'][] = [
+                    'video_id' => $uploadResult['video_id'],
+                    'title' => $videoMetadata['title'],
+                    'type' => $contentType,
+                    'description' => $videoMetadata['description'],
+                    'duration' => $videoMetadata['duration_seconds'],
+                    'source' => 'upload',
+                    'file_path' => $uploadResult['file_path']
+                ];
+
+            } elseif (!$isUpload && !empty($videoLink)) {
+                // Handle video link
+                $sessionData['videos'][] = [
+                    'video_id' => null,
+                    'title' => $videoTitles[$index] ?? 'Video ' . ($index + 1),
+                    'type' => $contentType,
+                    'description' => $videoDescriptions[$index] ?? '',
+                    'duration' => !empty($videoDurations[$index]) ? (int)$videoDurations[$index] * 60 : null,
+                    'url' => $videoLink,
+                    'source' => 'link'
+                ];
             }
         }
 
@@ -1114,6 +1130,7 @@ function checkStudentSessionAccess() {
 
         // Get the online session content if available
         $sessionContent = null;
+        $sessionQueryDebug = '';
         if ($hasAccess && !$isExpired) {
             $sessionFilter = [
                 'subject' => $subject,
@@ -1122,12 +1139,31 @@ function checkStudentSessionAccess() {
                 'isActive' => true,
                 'isPublished' => true
             ];
+            $sessionQueryDebug = 'Filter: ' . json_encode($sessionFilter);
+            error_log('Session query: ' . $sessionQueryDebug);
+            
             $sessionQuery = new MongoDB\Driver\Query($sessionFilter);
             $sessionCursor = $client->executeQuery("$databaseName.online_sessions", $sessionQuery);
             $session = current($sessionCursor->toArray());
 
             if ($session) {
+                error_log('✓ Session found with isPublished=true');
                 $sessionContent = convertSessionToArray($session);
+            } else {
+                error_log('✗ Session NOT found. Query was: ' . $sessionQueryDebug);
+                // Try again without isPublished filter for debugging
+                $sessionFilter2 = [
+                    'subject' => $subject,
+                    'grade' => $grade,
+                    'sessionNumber' => $sessionNumber,
+                    'isActive' => true
+                ];
+                $sessionQuery2 = new MongoDB\Driver\Query($sessionFilter2);
+                $sessionCursor2 = $client->executeQuery("$databaseName.online_sessions", $sessionQuery2);
+                $session2 = current($sessionCursor2->toArray());
+                if ($session2) {
+                    error_log('  Session found without isPublished filter. isPublished value: ' . var_export($session2->isPublished ?? 'NOT SET', true));
+                }
             }
         }
 

@@ -53,9 +53,6 @@
             <a href="upload-session.php" class="nav-item active">
                 <i class="fas fa-upload"></i> Upload Session
             </a>
-            <a href="manage-homework.php" class="nav-item">
-                <i class="fas fa-tasks"></i> Manage Homework
-            </a>
             <a href="manage-sessions.html" class="nav-item">
                 <i class="fas fa-list"></i> Manage Sessions
             </a>
@@ -104,14 +101,12 @@
                             <select id="gradeSubject" name="gradeSubject" required>
                                 <option value="">Select Grade & Subject</option>
                                 <optgroup label="Senior 1">
-                                    <option value="senior1-physics">Senior 1 - Physics</option>
                                     <option value="senior1-mathematics">Senior 1 - Mathematics</option>
-                                    <option value="senior1-statistics">Senior 1 - Statistics</option>
                                 </optgroup>
                                 <optgroup label="Senior 2">
                                     <option value="senior2-physics">Senior 2 - Physics</option>
                                     <option value="senior2-mathematics">Senior 2 - Mathematics</option>
-                                    <option value="senior2-statistics">Senior 2 - Statistics</option>
+                                    <option value="senior2-mechanics">Senior 2 - Mechanics</option>
                                 </optgroup>
                                 <optgroup label="Senior 3">
                                     <option value="senior3-physics">Senior 3 - Physics</option>
@@ -201,11 +196,11 @@
                                     <label>Video Source *</label>
                                     <div class="radio-group">
                                         <label class="radio-label">
-                                            <input type="radio" name="videoSource[]" value="upload" checked
+                                            <input type="radio" name="videoSource[0]" value="upload" checked
                                                 onchange="toggleVideoInput(this)"> Upload File
                                         </label>
                                         <label class="radio-label">
-                                            <input type="radio" name="videoSource[]" value="link"
+                                            <input type="radio" name="videoSource[0]" value="link"
                                                 onchange="toggleVideoInput(this)"> Video Link
                                         </label>
                                     </div>
@@ -333,14 +328,20 @@
                 uploadGroup.style.display = 'block';
                 linkGroup.style.display = 'none';
                 uploadInput.required = true;
+                uploadInput.disabled = false;
                 linkInput.required = false;
+                linkInput.disabled = true;
                 linkInput.value = '';
             } else {
                 uploadGroup.style.display = 'none';
                 linkGroup.style.display = 'block';
                 uploadInput.required = false;
-                uploadInput.value = '';
+                uploadInput.disabled = true;
+                // Clear file input by creating new element
+                const newUploadInput = uploadInput.cloneNode(true);
+                uploadInput.parentNode.replaceChild(newUploadInput, uploadInput);
                 linkInput.required = true;
+                linkInput.disabled = false;
             }
         }
 

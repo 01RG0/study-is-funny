@@ -16,7 +16,7 @@ try {
     $db = new DatabaseMongo();
     $videoManager = new Video($db);
     
-    // Fetch session data
+    // Fetch session data from online_sessions collection
     $filter = ['_id' => DatabaseMongo::createObjectId($sessionId)];
     $session = $db->findOne('online_sessions', $filter);
     
@@ -41,44 +41,78 @@ $requiredGrade = $session->grade ?? 'senior2';
 
 // Process videos array for multi-video support
 $videos = [];
-if (isset($session->videos) && is_array($session->videos) && count($session->videos) > 0) {
-    foreach ($session->videos as $video) {
-        $videoData = [];
-        $videoId = null;
-        $videoSource = null;
-        $videoUrl = null;
-        
-        if (is_object($video)) {
-            $videoId = $video->video_id ?? null;
-            $videoSource = $video->source ?? null;
-            $videoUrl = $video->url ?? null;
-            $videoData['title'] = $video->title ?? 'Video';
-            $videoData['description'] = $video->description ?? '';
-        } elseif (is_array($video)) {
-            $videoId = $video['video_id'] ?? null;
-            $videoSource = $video['source'] ?? null;
-            $videoUrl = $video['url'] ?? null;
-            $videoData['title'] = $video['title'] ?? 'Video';
-            $videoData['description'] = $video['description'] ?? '';
-        }
-        
-        // If source is "upload" and we have a video_id, fetch the actual file path
-        if ($videoSource === 'upload' && $videoId && !$videoUrl) {
-            try {
-                $videoRecord = $videoManager->getById($videoId);
-                if ($videoRecord && isset($videoRecord->video_file_path)) {
-                    $videoUrl = '/uploads/videos/' . ltrim($videoRecord->video_file_path, '/');
-                }
-            } catch (Exception $e) {
-                error_log("Error fetching video record: " . $e->getMessage());
-            }
-        }
-        
-        $videoData['url'] = $videoUrl;
-        $videoData['source'] = $videoSource;
-        $videoData['video_id'] = $videoId;
-        $videos[] = $videoData;
+if (isset($session->videos)) {
+    $videosArray = $session->videos;
+    if (is_object($videosArray)) {
+        $videosArray = (array)$videosArray;
     }
+    if (is_array($videosArray) && count($videosArray) > 0) {
+        foreach ($videosArray as $video) {
+            $videoData = [];
+            $videoId = null;
+            $videoSource = null;
+            $videoUrl = null;
+            $filePath = null;
+            
+            if (is_object($video)) {
+                $videoId = $video->video_id ?? null;
+                $videoSource = $video->source ?? null;
+                $videoUrl = $video->url ?? null;
+                $filePath = $video->file_path ?? null;
+                $videoData['title'] = $video->title ?? 'Video';
+                $videoData['description'] = $video->description ?? '';
+            } elseif (is_array($video)) {
+                $videoId = $video['video_id'] ?? null;
+                $videoSource = $video['source'] ?? null;
+                $videoUrl = $video['url'] ?? null;
+                $filePath = $video['file_path'] ?? null;
+                $videoData['title'] = $video['title'] ?? 'Video';
+                $videoData['description'] = $video['description'] ?? '';
+            }
+            
+            // If source is "upload" and we have a file_path, use it directly
+            if ($videoSource === 'upload' && isset($filePath) && $filePath) {
+                $videoUrl = '/study-is-funny/uploads/videos/' . ltrim($filePath, '/');
+            }
+            // Fallback: Try to fetch from database using video_id
+            elseif ($videoSource === 'upload' && $videoId && !$videoUrl) {
+                try {
+                    $videoRecord = $videoManager->getById($videoId);
+                    if ($videoRecord && isset($videoRecord->video_file_path)) {
+                        $videoUrl = '/study-is-funny/uploads/videos/' . ltrim($videoRecord->video_file_path, '/');
+                    }
+                } catch (Exception $e) {
+                    error_log("Error fetching video record: " . $e->getMessage());
+                }
+                
+                // Last fallback: Direct ID-based path
+                if (!$videoUrl) {
+                    $videoUrl = '/study-is-funny/uploads/videos/' . $videoId . '.mp4';
+                }
+            }
+            
+            // Ensure upload files have proper URL if not already set
+            if ($videoSource === 'upload' && !$videoUrl && $videoId) {
+                $videoUrl = '/study-is-funny/uploads/videos/' . $videoId . '.mp4';
+            }
+            
+            $videoData['url'] = $videoUrl;
+            $videoData['source'] = $videoSource;
+            $videoData['video_id'] = $videoId;
+            $videos[] = $videoData;
+        }
+    }
+}
+
+// Fallback to single video URL if no videos array
+if (empty($videos) && !empty($session->video_url)) {
+    $videos[] = [
+        'url' => $session->video_url,
+        'title' => $session->title ?? 'Video',
+        'description' => '',
+        'source' => 'link',
+        'video_id' => null
+    ];
 }
 
 // Get current video index from URL parameter
@@ -151,6 +185,86 @@ if ($currentVideo && isset($currentVideo['url'])) {
             justify-content: center;
             color: white;
             font-size: 18px;
+        }
+
+        /* Custom Video Player Styles */
+        .custom-player {
+            max-width: 300px;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            margin: 30px auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 128, 128, 0.3);
+            background: #000;
+            position: relative;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        .video-wrapper video,
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+            border: none;
+        }
+
+        .player-controls {
+            background: #1a1a1a;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .player-controls button {
+            padding: 8px 16px;
+            background: #008080;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .player-controls button:hover {
+            background: #006666;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 128, 128, 0.3);
+        }
+
+        .player-controls button:active {
+            transform: translateY(0);
+        }
+
+        .video-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #008080;
+        }
+
+        .video-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .video-info strong {
+            color: #008080;
         }
 
         .controls {
@@ -259,10 +373,24 @@ if ($currentVideo && isset($currentVideo['url'])) {
             line-height: 1.6;
         }
 
+        .video-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #008080;
+            text-align: center;
+            margin: 20px auto;
+            max-width: 800px;
+            padding: 0 15px;
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 20px;
                 margin-top: 15px;
+            }
+
+            .video-title {
+                font-size: 24px;
             }
 
             .controls {
@@ -281,36 +409,57 @@ if ($currentVideo && isset($currentVideo['url'])) {
     <h1><?= htmlspecialchars($title) ?></h1>
     
     <?php if ($currentVideo && isset($currentVideo['title'])): ?>
-    <div class="video-info">
-        <strong>Video <?= $currentVideoIndex + 1 ?> of <?= count($videos) ?>:</strong> <?= htmlspecialchars($currentVideo['title']) ?>
+    <div class="video-title">
+        <?= htmlspecialchars($currentVideo['title']) ?>
     </div>
     <?php endif; ?>
     
-    <div class="video-container">
-        <?php if ($videoUrl): ?>
-            <?php 
-                // Check if it's an iframe-based URL (like Bunny CDN)
-                $isIframe = strpos($videoUrl, 'iframe') !== false || 
-                           strpos($videoUrl, 'youtube') !== false || 
-                           strpos($videoUrl, 'mediadelivery') !== false ||
-                           strpos($videoUrl, 'embed') !== false;
-            ?>
-            <?php if ($isIframe): ?>
-                <iframe id="videoFrame" src="<?= htmlspecialchars($videoUrl) ?>" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-            <?php else: ?>
-                <video id="videoPlayer" controls style="width: 100%; height: 100%;">
+    <?php
+    // Convert YouTube URLs to embed format
+    $embedUrl = $videoUrl ?? '';
+    $isYouTube = false;
+    if (!empty($embedUrl)) {
+        if (strpos($embedUrl, 'youtu.be') !== false) {
+            preg_match('/youtu\.be\/([a-zA-Z0-9_-]{11})/', $embedUrl, $matches);
+            if (!empty($matches[1])) {
+                $embedUrl = 'https://www.youtube.com/embed/' . $matches[1] . '?rel=0&modestbranding=1';
+                $isYouTube = true;
+            }
+        } elseif (strpos($embedUrl, 'youtube.com/watch') !== false) {
+            preg_match('/v=([a-zA-Z0-9_-]{11})/', $embedUrl, $matches);
+            if (!empty($matches[1])) {
+                $embedUrl = 'https://www.youtube.com/embed/' . $matches[1] . '?rel=0&modestbranding=1';
+                $isYouTube = true;
+            }
+        } elseif (strpos($embedUrl, 'youtube.com/embed') !== false) {
+            $isYouTube = true;
+        }
+    }
+    ?>
+    <div class="custom-player">
+        <div class="video-wrapper">
+            <?php if ($isYouTube && !empty($embedUrl)): ?>
+                <iframe src="<?= htmlspecialchars($embedUrl) ?>" allowfullscreen></iframe>
+            <?php elseif ($videoUrl && !$isYouTube): ?>
+                <video id="videoPlayer" controls>
                     <source src="<?= htmlspecialchars($videoUrl) ?>" type="video/mp4">
-                    Your browser does not support the video tag.
+                    Your browser doesn't support HTML5 video.
                 </video>
-            <?php endif; ?>
-        <?php else: ?>
-            <div class="video-placeholder">
-                <div style="text-align: center;">
-                    <div style="font-size: 48px; margin-bottom: 20px;">🎬</div>
-                    <div>Session video coming soon</div>
+            <?php else: ?>
+                <div class="video-placeholder">
+                    <div style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">🎬</div>
+                        <div>Session video coming soon</div>
+                    </div>
                 </div>
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
+        </div>
+        <div class="player-controls">
+            <button onclick="toggleFullscreen(document.querySelector('.custom-player'))">📺 Fullscreen</button>
+            <?php if (!empty($meetingLink)): ?>
+                <button onclick="window.open('<?= htmlspecialchars($meetingLink) ?>', '_blank')">🔗 Join Meeting</button>
+            <?php endif; ?>
+        </div>
     </div>
     
     <?php if (count($videos) > 1): ?>
@@ -334,20 +483,6 @@ if ($currentVideo && isset($currentVideo['url'])) {
         <?php if ($meetingLink): ?>
         <button onclick="window.open('<?= htmlspecialchars($meetingLink) ?>', '_blank')">🎥 Join Meeting</button>
         <?php endif; ?>
-    </div>
-    <?php endif; ?>
-
-    <?php if ($currentVideo && isset($currentVideo['description']) && $currentVideo['description']): ?>
-    <div class="description-box">
-        <strong><?= htmlspecialchars($currentVideo['title']) ?>:</strong><br>
-        <?= htmlspecialchars($currentVideo['description']) ?>
-    </div>
-    <?php endif; ?>
-
-    <?php if ($description): ?>
-    <div class="description-box">
-        <strong>Session Description:</strong><br>
-        <?= htmlspecialchars($description) ?>
     </div>
     <?php endif; ?>
 
@@ -427,23 +562,24 @@ if ($currentVideo && isset($currentVideo['url'])) {
         // Check access on page load
         window.addEventListener('load', checkUserAccess);
         
-        function toggleFullscreen() {
-            const videoContainer = document.querySelector('.video-container');
+        // Updated fullscreen function for custom player
+        function toggleFullscreen(element) {
+            const customPlayer = element || document.querySelector('.custom-player');
             const videoPlayer = document.getElementById('videoPlayer');
-            const videoFrame = document.getElementById('videoFrame');
             
             if (document.fullscreenElement) {
                 document.exitFullscreen();
             } else {
-                if (videoPlayer) {
-                    videoPlayer.requestFullscreen().catch(err => {
-                        videoContainer.requestFullscreen();
+                if (customPlayer && customPlayer.requestFullscreen) {
+                    customPlayer.requestFullscreen().catch(err => {
+                        console.log('Fullscreen request failed:', err);
                     });
-                } else if (videoFrame) {
-                    videoContainer.requestFullscreen();
+                } else if (videoPlayer && videoPlayer.requestFullscreen) {
+                    videoPlayer.requestFullscreen();
                 }
             }
         }
-    </script>
+
+
 </body>
 </html>

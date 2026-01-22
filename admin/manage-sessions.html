@@ -99,6 +99,17 @@
             color: #c2185b;
         }
 
+        .session-description {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border-left: 3px solid #008080;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+            border-radius: 2px;
+        }
+
         .session-actions {
             display: flex;
             gap: 8px;
@@ -450,8 +461,12 @@
             container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading sessions...</div>';
 
             try {
-                console.log('Fetching sessions from: ../api/sessions.php?action=getAllSessions&includeInactive=true');
-                const response = await fetch('../api/sessions.php?action=getAllSessions&includeInactive=true');
+                // Force cache bust by adding timestamp
+                // Do NOT include inactive sessions - only show active sessions to admins
+                const timestamp = new Date().getTime();
+                const url = `../api/sessions.php?action=getAllSessions&t=${timestamp}`;
+                console.log('Fetching sessions from:', url);
+                const response = await fetch(url);
                 console.log('Response status:', response.status);
                 
                 const result = await response.json();
@@ -529,6 +544,7 @@
                         <div><strong>Teacher:</strong> ${escapeHtml(session.teacher || 'N/A')}</div>
                         <div><strong>Videos:</strong> ${(session.videos || []).length}</div>
                     </div>
+                    ${session.description ? `<div class="session-description">${escapeHtml(session.description)}</div>` : ''}
                     <div>
                         <span class="session-badge ${session.accessControl === 'free' ? 'badge-free' : 'badge-restricted'}">
                             ${session.accessControl === 'free' ? '🔓 Free' : '🔒 Restricted'}

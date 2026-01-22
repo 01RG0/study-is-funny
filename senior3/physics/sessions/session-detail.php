@@ -16,7 +16,7 @@ try {
     $db = new DatabaseMongo();
     $videoManager = new Video($db);
     
-    // Fetch session data
+    // Fetch session data from online_sessions collection
     $filter = ['_id' => DatabaseMongo::createObjectId($sessionId)];
     $session = $db->findOne('online_sessions', $filter);
     
@@ -50,19 +50,29 @@ if (isset($session->videos) && is_array($session->videos)) {
             $videoData['description'] = $video->description ?? '';
             $videoData['source'] = $video->source ?? 'upload';
             $videoData['url'] = $video->url ?? null;
+            $videoData['file_path'] = $video->file_path ?? null;
         } elseif (is_array($video)) {
             $videoData = $video;
         }
         
-        // If source is "upload" and we have a video_id, fetch the actual file path
-        if ($videoData['source'] === 'upload' && isset($videoData['video_id']) && $videoData['video_id']) {
+        // If source is "upload" and we have a file_path, use it directly
+        if ($videoData['source'] === 'upload' && isset($videoData['file_path']) && $videoData['file_path']) {
+            $videoData['url'] = '/study-is-funny/uploads/videos/' . ltrim($videoData['file_path'], '/');
+        }
+        // Fallback: Try to fetch from database using video_id
+        elseif ($videoData['source'] === 'upload' && isset($videoData['video_id']) && $videoData['video_id']) {
             try {
                 $videoRecord = $videoManager->getById($videoData['video_id']);
                 if ($videoRecord && isset($videoRecord->video_file_path)) {
-                    $videoData['url'] = '/uploads/videos/' . ltrim($videoRecord->video_file_path, '/');
+                    $videoData['url'] = '/study-is-funny/uploads/videos/' . ltrim($videoRecord->video_file_path, '/');
                 }
             } catch (Exception $e) {
                 error_log("Error fetching video record: " . $e->getMessage());
+            }
+            
+            // Last fallback: Direct ID-based path
+            if (!$videoData['url']) {
+                $videoData['url'] = '/study-is-funny/uploads/videos/' . $videoData['video_id'] . '.mp4';
             }
         }
         
@@ -138,6 +148,86 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
             justify-content: center;
             color: white;
             font-size: 18px;
+        }
+
+        /* Custom Video Player Styles */
+        .custom-player {
+            max-width: 300px;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            margin: 30px auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 128, 128, 0.3);
+            background: #000;
+            position: relative;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        .video-wrapper video,
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+            border: none;
+        }
+
+        .player-controls {
+            background: #1a1a1a;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .player-controls button {
+            padding: 8px 16px;
+            background: #008080;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .player-controls button:hover {
+            background: #006666;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 128, 128, 0.3);
+        }
+
+        .player-controls button:active {
+            transform: translateY(0);
+        }
+
+        .video-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #008080;
+        }
+
+        .video-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .video-info strong {
+            color: #008080;
         }
 
         .controls {
@@ -254,6 +344,16 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
             opacity: 0.6;
         }
 
+        .video-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #008080;
+            text-align: center;
+            margin: 20px auto;
+            max-width: 800px;
+            padding: 0 15px;
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 20px;
@@ -275,40 +375,52 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
 <body>
     <h1><?= htmlspecialchars($title) ?></h1>
     
-    <?php if (!empty($videos)): ?>
-    <div class="video-info">
-        📹 Video <?= ($currentVideoIndex + 1) ?> of <?= count($videos) ?> 
-        <?php if ($currentVideo): ?>
-            - <?= htmlspecialchars($currentVideo['title'] ?? 'Video') ?>
-        <?php endif; ?>
+    <?php if (!empty($videos) && $currentVideo): ?>
+    <div class="video-title">
+        <?= htmlspecialchars($currentVideo['title'] ?? 'Video') ?>
     </div>
     <?php endif; ?>
     
-    <div class="video-container">
-        <?php if ($currentVideo && $currentVideo['url']): ?>
-            <?php 
-                // Check if it's an iframe-based URL (like Bunny CDN)
-                $isIframe = strpos($currentVideo['url'], 'iframe') !== false || 
-                           strpos($currentVideo['url'], 'youtube') !== false || 
-                           strpos($currentVideo['url'], 'mediadelivery') !== false ||
-                           strpos($currentVideo['url'], 'embed') !== false;
-            ?>
-            <?php if ($isIframe): ?>
-                <iframe id="videoFrame" src="<?= htmlspecialchars($currentVideo['url']) ?>" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-            <?php else: ?>
-                <video id="videoPlayer" controls style="width: 100%; height: 100%;">
+    <?php
+    // Convert YouTube URLs to embed format
+    $embedUrl = ($currentVideo && $currentVideo['url']) ? $currentVideo['url'] : '';
+    $isYouTube = false;
+    if (!empty($embedUrl)) {
+        if (strpos($embedUrl, 'youtu.be') !== false) {
+            preg_match('/youtu\.be\/([a-zA-Z0-9_-]{11})/', $embedUrl, $matches);
+            if (!empty($matches[1])) {
+                $embedUrl = 'https://www.youtube.com/embed/' . $matches[1] . '?rel=0&modestbranding=1';
+                $isYouTube = true;
+            }
+        } elseif (strpos($embedUrl, 'youtube.com/watch') !== false) {
+            preg_match('/v=([a-zA-Z0-9_-]{11})/', $embedUrl, $matches);
+            if (!empty($matches[1])) {
+                $embedUrl = 'https://www.youtube.com/embed/' . $matches[1] . '?rel=0&modestbranding=1';
+                $isYouTube = true;
+            }
+        } elseif (strpos($embedUrl, 'youtube.com/embed') !== false) {
+            $isYouTube = true;
+        }
+    }
+    ?>
+    <div class="custom-player">
+        <div class="video-wrapper">
+            <?php if ($isYouTube && !empty($embedUrl)): ?>
+                <iframe src="<?= htmlspecialchars($embedUrl) ?>" allowfullscreen></iframe>
+            <?php elseif ($currentVideo && $currentVideo['url'] && !$isYouTube): ?>
+                <video id="videoPlayer" controls>
                     <source src="<?= htmlspecialchars($currentVideo['url']) ?>" type="video/mp4">
-                    Your browser does not support the video tag.
+                    Your browser doesn't support HTML5 video.
                 </video>
-            <?php endif; ?>
-        <?php else: ?>
-            <div class="video-placeholder">
-                <div style="text-align: center;">
-                    <div style="font-size: 48px; margin-bottom: 20px;">🎬</div>
-                    <div>Session video coming soon</div>
+            <?php else: ?>
+                <div class="video-placeholder">
+                    <div style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">🎬</div>
+                        <div>Session video coming soon</div>
+                    </div>
                 </div>
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
+        </div>
     </div>
     
     <?php if ($currentVideo): ?>
@@ -332,20 +444,6 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
            style="<?= ($currentVideoIndex === count($videos) - 1) ? 'opacity: 0.5; cursor: not-allowed;' : '' ?>">
             Next Video ➡️
         </a>
-    </div>
-    <?php endif; ?>
-
-    <?php if ($currentVideo && !empty($currentVideo['description'])): ?>
-    <div class="description-box">
-        <strong>📝 Video Description:</strong><br>
-        <?= htmlspecialchars($currentVideo['description']) ?>
-    </div>
-    <?php endif; ?>
-
-    <?php if ($description): ?>
-    <div class="description-box">
-        <strong>📚 Session Description:</strong><br>
-        <?= htmlspecialchars($description) ?>
     </div>
     <?php endif; ?>
 
@@ -425,23 +523,25 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
         // Check access on page load
         window.addEventListener('load', checkUserAccess);
         
-        function toggleFullscreen() {
-            const videoContainer = document.querySelector('.video-container');
+        // Updated fullscreen function for custom player
+        function toggleFullscreen(element) {
+            const customPlayer = element || document.querySelector('.custom-player');
             const videoPlayer = document.getElementById('videoPlayer');
-            const videoFrame = document.getElementById('videoFrame');
             
             if (document.fullscreenElement) {
                 document.exitFullscreen();
             } else {
-                if (videoPlayer) {
-                    videoPlayer.requestFullscreen().catch(err => {
-                        videoContainer.requestFullscreen();
+                if (customPlayer && customPlayer.requestFullscreen) {
+                    customPlayer.requestFullscreen().catch(err => {
+                        console.log('Fullscreen request failed:', err);
                     });
-                } else if (videoFrame) {
-                    videoContainer.requestFullscreen();
+                } else if (videoPlayer && videoPlayer.requestFullscreen) {
+                    videoPlayer.requestFullscreen();
                 }
             }
         }
+
+
     </script>
 </body>
 </html>

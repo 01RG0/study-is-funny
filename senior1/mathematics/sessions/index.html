@@ -122,6 +122,14 @@
                     return;
                 }
 
+                // Filter out homework sessions before displaying
+                const lectureSessions = data.sessions.filter(session => session.status !== 'homework');
+                if (lectureSessions.length === 0) {
+                    document.getElementById('emptyState').style.display = 'block';
+                    document.getElementById('navigation').style.display = 'flex';
+                    return;
+                }
+
                 displaySessions(data.sessions);
                 document.getElementById('navigation').style.display = 'flex';
             } catch (error) {
@@ -134,10 +142,13 @@
             const container = document.getElementById('sessionsContainer');
             const sessionsList = document.getElementById('sessionsList');
 
+            // Filter out homework sessions - only show lectures (status !== 'homework')
+            const lectureSessions = sessions.filter(session => session.status !== 'homework');
+
             container.style.display = 'block';
             sessionsList.innerHTML = '';
 
-            sessions.forEach((session, index) => {
+            lectureSessions.forEach((session, index) => {
                 const card = createSessionCard(session, index);
                 sessionsList.appendChild(card);
             });

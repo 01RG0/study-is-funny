@@ -141,7 +141,17 @@
                     return;
                 }
 
-                console.log(`Successfully loaded ${data.sessions.length} sessions.`);
+                // Filter out homework sessions - only show lectures
+                const lectureSessions = data.sessions.filter(session => session.status !== 'homework');
+                if (lectureSessions.length === 0) {
+                    const emptyState = document.getElementById('emptyState');
+                    emptyState.querySelector('p').textContent = `No lecture sessions found for subject: "${subject}"`;
+                    emptyState.style.display = 'block';
+                    document.getElementById('navigation').style.display = 'flex';
+                    return;
+                }
+
+                console.log(`Successfully loaded ${lectureSessions.length} lecture sessions.`);
                 displaySessions(data.sessions);
                 document.getElementById('navigation').style.display = 'flex';
             } catch (error) {
@@ -157,10 +167,13 @@
             const container = document.getElementById('sessionsContainer');
             const sessionsList = document.getElementById('sessionsList');
 
+            // Filter out homework sessions - only show lectures
+            const lectureSessions = sessions.filter(session => session.status !== 'homework');
+
             container.style.display = 'block';
             sessionsList.innerHTML = '';
 
-            sessions.forEach((session, index) => {
+            lectureSessions.forEach((session, index) => {
                 const card = createSessionCard(session, index);
                 sessionsList.appendChild(card);
             });

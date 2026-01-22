@@ -134,10 +134,13 @@
             const container = document.getElementById('sessionsContainer');
             const sessionsList = document.getElementById('sessionsList');
 
+            // Filter out homework sessions - only show lectures
+            const lectureSessions = sessions.filter(session => session.status !== 'homework');
+
             container.style.display = 'block';
             sessionsList.innerHTML = '';
 
-            sessions.forEach((session, index) => {
+            lectureSessions.forEach((session, index) => {
                 const card = createSessionCard(session, index);
                 sessionsList.appendChild(card);
             });

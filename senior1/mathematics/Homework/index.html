@@ -208,7 +208,8 @@
         console.log('Page URL:', window.location.href);
         console.log('API_BASE_URL:', window.API_BASE_URL);
         
-        const url = `${window.API_BASE_URL}homework.php?action=list&subject=${encodeURIComponent(subject)}&grade=${grade}`;
+        // Query sessions.php for homework content (contentType: 'homework')
+        const url = `${window.API_BASE_URL}sessions.php?action=all`;
         console.log('Final API URL:', url);
         
         console.log('Fetching homework...');
@@ -228,14 +229,19 @@
           return;
         }
 
-        if (!data.homework || data.homework.length === 0) {
+        // Filter sessions to only homework content (contentType: 'homework')
+        const homeworkSessions = (data.sessions || []).filter(session => 
+          session.status === 'homework' || (session.type && session.type.includes('homework'))
+        );
+
+        if (!homeworkSessions || homeworkSessions.length === 0) {
           console.log('No homework found');
           document.getElementById('empty-state').style.display = 'block';
           return;
         }
 
-        console.log(`Successfully loaded ${data.homework.length} homework items.`);
-        displayHomework(data.homework);
+        console.log(`Successfully loaded ${homeworkSessions.length} homework items.`);
+        displayHomework(homeworkSessions);
       } catch (error) {
         console.error('❌ ERROR FETCHING HOMEWORK:', error);
         console.error('Error message:', error.message);
@@ -287,7 +293,7 @@
 
       card.onclick = () => {
         // Navigate to homework detail page or submission page
-        window.location.href = `homework-detail.php?id=${hw.id}`;
+        window.location.href = `../sessions/session-detail.php?id=${hw._id}`;
       };
 
       return card;
