@@ -150,10 +150,12 @@
         }
         (async function() {
             const phone = getQueryParam('phone');
+            const subjectParam = getQueryParam('subject');
             const infoDiv = document.getElementById('studentInfo');
             const tablesContainer = document.getElementById('tablesContainer');
             try {
-                const res = await fetch(`${window.API_BASE_URL}students.php?action=get&phone=${encodeURIComponent(phone)}`);
+                const subjectQuery = subjectParam ? `&subject=${encodeURIComponent(subjectParam)}` : '';
+                const res = await fetch(`${window.API_BASE_URL}students.php?action=get&phone=${encodeURIComponent(phone)}${subjectQuery}`);
                 const data = await res.json();
                 if (data.success && data.student) {
                     const studentObj = data.student;
@@ -169,11 +171,13 @@
                     // Map to Arabic if possible
                     const subjectMapping = {
                         'mathematics': 'الرياضيات',
+                        'pure_math': 'رياضيات بحتة',
                         'physics': 'الفيزياء',
                         'mechanics': 'الميكانيكا',
                         'statistics': 'الإحصاء'
                     };
                     const subjectsArabic = allSubjects.map(s => subjectMapping[s] || s).join('، ');
+                    const selectedSubjectLabel = subjectParam ? (subjectMapping[subjectParam] || subjectParam) : '';
                     
                     infoDiv.innerHTML = `
                         <p><strong>الاسم:</strong> ${studentObj.studentName || studentObj.name || '-'}</p>
@@ -181,6 +185,7 @@
                         <p><strong>هاتف ولي الأمر:</strong> ${studentObj.parentPhone || '-'}</p>
                         <p><strong>الصف:</strong> ${studentObj.grade || '-'}</p>
                         <p><strong>المواد:</strong> ${subjectsArabic || '-'}</p>
+                        ${subjectParam ? `<p><strong>المادة المختارة:</strong> ${selectedSubjectLabel}</p>` : ''}
                         <p><strong>الحالة:</strong> ${(studentObj.isActive === false) ? 'غير نشط' : 'نشط'}</p>
                     `;
                     // Find all session keys and determine max session number

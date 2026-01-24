@@ -235,6 +235,7 @@ function getStudent() {
         $databaseName = $GLOBALS['databaseName'];
 
         $phone = $_GET['phone'] ?? '';
+        $subjectFilter = $_GET['subject'] ?? '';
         if (!$phone) {
             echo json_encode(['success' => false, 'message' => 'Phone number required']);
             return;
@@ -254,6 +255,53 @@ function getStudent() {
         $allMatches = $viewCursor->toArray();
 
         if (!empty($allMatches)) {
+            $subjectMapping = [
+                'math' => 'mathematics',
+                'pure math' => 'pure_math',
+                'pure' => 'pure_math',
+                'physics' => 'physics',
+                'mechanics' => 'mechanics',
+                'stat' => 'statistics',
+                'statistics' => 'statistics'
+            ];
+
+            $normalizeSubject = function ($rawSubject) use ($subjectMapping) {
+                $cleanedSubject = preg_replace('/^\s*S[123]\s*-?\s*/i', '', strtolower($rawSubject));
+                foreach ($subjectMapping as $key => $slug) {
+                    if (stripos($cleanedSubject, $key) !== false) {
+                        return $slug;
+                    }
+                }
+                if (stripos($cleanedSubject, 'mathematics') !== false || stripos($cleanedSubject, 'math') !== false) {
+                    return 'mathematics';
+                }
+                if (stripos($cleanedSubject, 'pure math') !== false || stripos($cleanedSubject, 'pure') !== false) {
+                    return 'pure_math';
+                }
+                if (stripos($cleanedSubject, 'physics') !== false) {
+                    return 'physics';
+                }
+                if (stripos($cleanedSubject, 'mechanics') !== false) {
+                    return 'mechanics';
+                }
+                if (stripos($cleanedSubject, 'statistics') !== false || stripos($cleanedSubject, 'stat') !== false) {
+                    return 'statistics';
+                }
+                return null;
+            };
+
+            if (!empty($subjectFilter)) {
+                $allMatches = array_values(array_filter($allMatches, function ($match) use ($normalizeSubject, $subjectFilter) {
+                    $rawSubject = $match->subject ?? '';
+                    return $normalizeSubject($rawSubject) === $subjectFilter;
+                }));
+            }
+
+            if (empty($allMatches)) {
+                echo json_encode(['success' => false, 'message' => 'No subject data found for this student']);
+                return;
+            }
+
             // Use the first match as the base student
             $base = (array)$allMatches[0];
             $merged = [
@@ -264,54 +312,21 @@ function getStudent() {
                 'grade' => 'senior1',
                 'isActive' => true
             ];
-            $subjectMapping = [
-                'math' => 'mathematics',
-                'pure math' => 'mathematics',
-                'pure' => 'mathematics',
-                'physics' => 'physics',
-                'mechanics' => 'mechanics',
-                'stat' => 'mathematics',
-                'statistics' => 'mathematics'
-            ];
             foreach ($allMatches as $match) {
-                $rawSubject = strtolower($match->subject ?? '');
-                // Remove grade prefix first
-                $cleanedSubject = preg_replace('/^\s*S[123]\s*-?\s*/i', '', $rawSubject);
-                
                 if (isset($match->subject)) {
                     if (strpos($match->subject, 'S1') !== false) $merged['grade'] = 'senior1';
                     elseif (strpos($match->subject, 'S2') !== false) $merged['grade'] = 'senior2';
                     elseif (strpos($match->subject, 'S3') !== false) $merged['grade'] = 'senior3';
                 }
-                
-                // Try to map subject - check longest matches first
-                $foundSlug = null;
-                foreach ($subjectMapping as $key => $slug) {
-                    if (stripos($cleanedSubject, $key) !== false) {
-                        $foundSlug = $slug;
-                        break;
-                    }
-                }
-                
-                // If no match found, try to extract subject name directly
-                if (!$foundSlug && !empty($cleanedSubject)) {
-                    // Common subject names
-                    if (stripos($cleanedSubject, 'mathematics') !== false || stripos($cleanedSubject, 'math') !== false) {
-                        $foundSlug = 'mathematics';
-                    } elseif (stripos($cleanedSubject, 'physics') !== false) {
-                        $foundSlug = 'physics';
-                    } elseif (stripos($cleanedSubject, 'mechanics') !== false) {
-                        $foundSlug = 'mechanics';
-                    } elseif (stripos($cleanedSubject, 'statistics') !== false || stripos($cleanedSubject, 'stat') !== false) {
-                        $foundSlug = 'mathematics';
-                    }
-                }
-                
+
+                $foundSlug = $normalizeSubject($match->subject ?? '');
+
                 if ($foundSlug && !in_array($foundSlug, $merged['subjects'])) {
                     $merged['subjects'][] = $foundSlug;
                     $merged['subjectIds'][$foundSlug] = $match->studentId ?? null;
                 }
             }
+
             if (empty($merged['subjects'])) {
                 $merged['subjects'] = ($merged['grade'] === 'senior1') ? ['mathematics'] : ['physics', 'mathematics', 'mechanics'];
             }
@@ -330,6 +345,7 @@ function getStudent() {
                 'grade' => $merged['grade'],
                 'subjects' => array_values($merged['subjects']),
                 'subjectIds' => $merged['subjectIds'],
+                'subject' => $subjectFilter ?: null,
                 'isActive' => true,
                 'totalSessionsViewed' => 0,
                 'totalWatchTime' => 0,
@@ -337,6 +353,7 @@ function getStudent() {
                 'watchedSessions' => 0,
                 'totalWatchTimeFormatted' => '0h 0m'
             ], $sessionFields);
+
             echo json_encode(['success' => true, 'student' => $studentArray]);
             return;
         }
@@ -438,13 +455,17 @@ function getStudentByParentPhone() {
                         
                         // Map to standard subject slugs
                         $subjectMapping = [
-                            'pure math' => 'mathematics',
-                            'pure' => 'mathematics',
+                            // Senior 1
                             'math' => 'mathematics',
-                            'physics' => 'physics',
+                            'mathematics' => 'mathematics',
+                            // Senior 2
+                            'pure math' => 'pure_math',
+                            'pure' => 'pure_math',
                             'mechanics' => 'mechanics',
-                            'statistics' => 'mathematics',
-                            'stat' => 'mathematics'
+                            'physics' => 'physics',
+                            // Senior 3
+                            'statistics' => 'statistics',
+                            'stat' => 'statistics'
                         ];
                         
                         $slug = null;
@@ -458,12 +479,16 @@ function getStudentByParentPhone() {
                         
                         // Fallback: direct comparison
                         if (!$slug) {
-                            if (stripos($cleanSubject, 'mathematics') !== false) {
+                            if (stripos($cleanSubject, 'mathematics') !== false || stripos($cleanSubject, 'math') !== false) {
                                 $slug = 'mathematics';
+                            } elseif (stripos($cleanSubject, 'pure math') !== false || stripos($cleanSubject, 'pure') !== false) {
+                                $slug = 'pure_math';
                             } elseif (stripos($cleanSubject, 'physics') !== false) {
                                 $slug = 'physics';
                             } elseif (stripos($cleanSubject, 'mechanics') !== false) {
                                 $slug = 'mechanics';
+                            } elseif (stripos($cleanSubject, 'statistics') !== false || stripos($cleanSubject, 'stat') !== false) {
+                                $slug = 'statistics';
                             } else {
                                 $slug = 'mathematics'; // default
                             }
