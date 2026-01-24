@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/all.min.css">
     <link rel="icon" class="circular-icon" type="image/png" href="images/logo.png">
+    <script src="js/api-config.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -16,7 +17,7 @@
             color: #222;
         }
         .details-container {
-            max-width: 600px;
+            max-width: 1000px;
             margin: 40px auto;
             background: #fff;
             border-radius: 10px;
@@ -27,13 +28,26 @@
             color: #008080;
             text-align: center;
         }
+        h2 {
+            color: #008080;
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
         .student-info {
             margin: 30px 0;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #008080;
         }
         .student-info p {
-            font-size: 1.2rem;
-            margin: 10px 0;
+            font-size: 1.1rem;
+            margin: 12px 0;
             color: #222;
+        }
+        .student-info strong {
+            color: #008080;
         }
         .back-btn {
             display: block;
@@ -50,11 +64,61 @@
         .back-btn:hover {
             background: #005f5f;
         }
+        
+        /* Table Styling */
         table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        table thead {
+            background: #008080;
+            color: white;
+        }
+        
+        table th {
+            padding: 15px;
+            text-align: right;
+            font-weight: bold;
+            border-bottom: 2px solid #008080;
+        }
+        
+        table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
             color: #222;
         }
-        th, td {
-            color: #222;
+        
+        table tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        table tbody tr:hover {
+            background: #f0f8ff;
+        }
+        
+        /* Responsive Table */
+        @media (max-width: 768px) {
+            .details-container {
+                max-width: 100%;
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            table {
+                font-size: 0.9rem;
+            }
+            
+            table th, table td {
+                padding: 8px 10px;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
         }
     </style>
 </head>
@@ -89,17 +153,35 @@
             const infoDiv = document.getElementById('studentInfo');
             const tablesContainer = document.getElementById('tablesContainer');
             try {
-                const res = await fetch(`api/students.php?action=get&phone=${encodeURIComponent(phone)}`);
+                const res = await fetch(`${window.API_BASE_URL}students.php?action=get&phone=${encodeURIComponent(phone)}`);
                 const data = await res.json();
                 if (data.success && data.student) {
                     const studentObj = data.student;
-                            infoDiv.innerHTML = `
-                                <p><strong>الاسم:</strong> ${studentObj.studentName || studentObj.name || '-'}</p>
-                                <p><strong>الهاتف:</strong> ${studentObj.phone || '-'}</p>
-                                <p><strong>هاتف ولي الأمر:</strong> ${studentObj.parentPhone || '-'}</p>
-                                <p><strong>الصف:</strong> ${studentObj.grade || '-'}</p>
-                                <p><strong>المادة:</strong> ${studentObj.subject || (studentObj.subjects ? studentObj.subjects.join('، ') : '-')}</p>
-                                <p><strong>الحالة:</strong> ${(studentObj.isActive === false) ? 'غير نشط' : 'نشط'}</p>
+                            
+                    // Collect all subjects properly
+                    let allSubjects = [];
+                    if (studentObj.subjects && Array.isArray(studentObj.subjects)) {
+                        allSubjects = [...studentObj.subjects];
+                    } else if (studentObj.subject) {
+                        allSubjects = [studentObj.subject];
+                    }
+                    
+                    // Map to Arabic if possible
+                    const subjectMapping = {
+                        'mathematics': 'الرياضيات',
+                        'physics': 'الفيزياء',
+                        'mechanics': 'الميكانيكا',
+                        'statistics': 'الإحصاء'
+                    };
+                    const subjectsArabic = allSubjects.map(s => subjectMapping[s] || s).join('، ');
+                    
+                    infoDiv.innerHTML = `
+                        <p><strong>الاسم:</strong> ${studentObj.studentName || studentObj.name || '-'}</p>
+                        <p><strong>الهاتف:</strong> ${studentObj.phone || '-'}</p>
+                        <p><strong>هاتف ولي الأمر:</strong> ${studentObj.parentPhone || '-'}</p>
+                        <p><strong>الصف:</strong> ${studentObj.grade || '-'}</p>
+                        <p><strong>المواد:</strong> ${subjectsArabic || '-'}</p>
+                        <p><strong>الحالة:</strong> ${(studentObj.isActive === false) ? 'غير نشط' : 'نشط'}</p>
                     `;
                     // Find all session keys and determine max session number
                     const sessionKeys = Object.keys(studentObj).filter(k => k.startsWith('session_'));
@@ -107,37 +189,35 @@
                     const maxSession = sessionNumbers.length > 0 ? Math.max(...sessionNumbers) : 0;
                     let tableHtml = '';
                     if (maxSession > 0) {
-                        tableHtml += `<h2 style="text-align:center">جدول الجلسات</h2>`;
-                        tableHtml += `<table style="width:100%;border-collapse:collapse;margin:20px 0;">
-                            <thead>
-                                <tr style="background:#f0f0f0">
-                                    <th>رقم الجلسة</th>
-                                    <th>التاريخ</th>
-                                    <th>الحضور</th>
-                                    <th>حضر؟</th>
-                                    <th>الواجب</th>
-                                    <th>الدرجة</th>
-                                    <th>ملاحظات</th>
-                                </tr>
-                            </thead>
-                            <tbody>`;
+                        tableHtml += `<h2>جدول الجلسات</h2>`;
+                        tableHtml += `<div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: center;">رقم الجلسة</th>
+                                        <th style="text-align: center;">التاريخ</th>
+                                        <th style="text-align: center;">الحضور</th>
+                                        <th style="text-align: center;">الواجب</th>
+                                        <th style="text-align: center;">الدرجة</th>
+                                        <th style="text-align: center;">ملاحظات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
                         for (let i = 1; i <= maxSession; i++) {
                             const key = `session_${i}`;
                             const s = studentObj[key] || {};
-                            let attended = (s.attendanceStatus === 'Present') ? 'نعم' : 'لا';
                             tableHtml += `<tr>
-                                <td>${i}</td>
-                                <td>${s.date || '-'}</td>
-                                <td>${formatAttendance(s.attendanceStatus)}</td>
-                                <td>${attended}</td>
-                                <td>${s.homeworkStatus || '-'}</td>
-                                <td>${s.examMark != null ? s.examMark : '-'}</td>
+                                <td style="text-align: center;">${i}</td>
+                                <td style="text-align: center;">${s.date || '-'}</td>
+                                <td style="text-align: center;">${formatAttendance(s.attendanceStatus)}</td>
+                                <td style="text-align: center;">${s.homeworkStatus || '-'}</td>
+                                <td style="text-align: center;">${s.examMark != null ? s.examMark : '-'}</td>
                                 <td>${s.comment || '-'}</td>
                             </tr>`;
                         }
-                        tableHtml += '</tbody></table>';
+                        tableHtml += '</tbody></table></div>';
                     } else {
-                        tableHtml = '<p>لا توجد بيانات جلسات متاحة لهذا الطالب.</p>';
+                        tableHtml = '<p style="text-align: center; padding: 20px; color: #666;">لا توجد بيانات جلسات متاحة لهذا الطالب.</p>';
                     }
                     tablesContainer.innerHTML = tableHtml;
                 } else {

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/all.min.css">
     <link rel="icon" class="circular-icon" type="image/png" href="images/logo.png">
+    <script src="js/api-config.js"></script>
     <style>
         :root {
             --primary: #008080;
@@ -343,13 +344,44 @@
                     const card = document.createElement('div');
                     card.className = 'student-card';
 
+                    // Properly handle subjects - ensure they're unique and from the array
+                    let subjectsArray = [];
+                    
+                    // Collect from subjects array
+                    if (student.subjects && Array.isArray(student.subjects)) {
+                        subjectsArray = [...student.subjects];
+                    }
+                    
+                    // Also check if there's a single subject field (for legacy compatibility)
+                    if (student.subject && typeof student.subject === 'string' && student.subject.trim()) {
+                        // Only add if not already in array
+                        if (!subjectsArray.includes(student.subject)) {
+                            subjectsArray.push(student.subject);
+                        }
+                    }
+                    
+                    // Remove duplicates
+                    const uniqueSubjects = [...new Set(subjectsArray)];
+                    
+                    // Map subjects to Arabic names
+                    const subjectNames = uniqueSubjects.map(subj => {
+                        const mapping = {
+                            'mathematics': 'الرياضيات',
+                            'physics': 'الفيزياء',
+                            'mechanics': 'الميكانيكا',
+                            'statistics': 'الإحصاء'
+                        };
+                        return mapping[subj] || subj;
+                    });
+                    
+                    const subjectsText = subjectNames.length > 0 ? subjectNames.join('، ') : 'غير محدد';
                     
                     card.innerHTML = `
                         <h3><i class="fas fa-user-graduate"></i> ${student.name}</h3>
-                        <p>${student.subject || ''}</p>
+                        <p><strong>المواد:</strong> ${subjectsText}</p>
                         <p><strong>الهاتف:</strong> ${student.phone}</p>
                         <button class="view-btn" onclick="selectStudent(${index})">
-                            <i class="fas fa-eye"></i> عرض التفاصيل${student.subject ? ' - ' + student.subject : ''}
+                            <i class="fas fa-eye"></i> عرض التفاصيل
                         </button>
                     `;
                     studentsGrid.appendChild(card);

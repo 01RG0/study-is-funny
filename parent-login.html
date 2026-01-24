@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/all.min.css">
     <link rel="icon" class="circular-icon" type="image/png" href="images/logo.png">
+    <script src="js/api-config.js"></script>
     <style>
         h2 { text-align: center; color: #333; }
         input, select, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #FF8C69; box-sizing: border-box; }
@@ -94,13 +95,32 @@
 
             try {
                 // Search for student by parentPhone in the database
-                const response = await fetch(`api/students.php?action=getByParentPhone&parentPhone=${encodeURIComponent(phone)}`);
+                const response = await fetch(`${window.API_BASE_URL}students.php?action=getByParentPhone&parentPhone=${encodeURIComponent(phone)}`);
                 const result = await response.json();
 
                 if (result.success && result.students && result.students.length > 0) {
+                    // Deduplicate students by phone
+                    const uniqueStudents = {};
+                    result.students.forEach(student => {
+                        if (!uniqueStudents[student.phone]) {
+                            uniqueStudents[student.phone] = student;
+                        } else {
+                            // Merge subjects if same student appears multiple times
+                            if (student.subjects && Array.isArray(student.subjects)) {
+                                const combined = new Set([
+                                    ...(uniqueStudents[student.phone].subjects || []),
+                                    ...student.subjects
+                                ]);
+                                uniqueStudents[student.phone].subjects = Array.from(combined);
+                            }
+                        }
+                    });
+                    
+                    const deduplicatedStudents = Object.values(uniqueStudents);
+                    
                     // Store parent phone and students data
                     localStorage.setItem('parentPhone', phone);
-                    localStorage.setItem('studentsData', JSON.stringify(result.students));
+                    localStorage.setItem('studentsData', JSON.stringify(deduplicatedStudents));
                     localStorage.setItem('parentAccessGranted', 'true');
                     
                     // Redirect to parent dashboard
