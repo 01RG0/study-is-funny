@@ -1,17 +1,29 @@
 <?php
-// Prevent HTML errors from being output - output JSON only
+
+// Improved error handling and debug logging
 @ini_set('display_errors', '0');
 @ini_set('log_errors', '1');
-error_reporting(E_ALL & ~E_DEPRECATED & ~E_WARNING);
+error_reporting(E_ALL);
 
 header('Content-Type: application/json');
 
-// Catch any fatal errors
+function debug_log($msg) {
+    $logFile = __DIR__ . '/../logs/debug_log.txt';
+    file_put_contents($logFile, date('Y-m-d H:i:s') . "\n" . print_r($msg, true) . "\n\n", FILE_APPEND);
+}
+
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
-    // Ignore deprecated warnings
     if ($errno === E_DEPRECATED || $errno === E_USER_DEPRECATED) {
         return true;
     }
+    $msg = [
+        'php_error' => true,
+        'errno' => $errno,
+        'errstr' => $errstr,
+        'file' => $errfile,
+        'line' => $errline
+    ];
+    debug_log($msg);
     http_response_code(500);
     echo json_encode([
         'success' => false,
@@ -20,6 +32,21 @@ set_error_handler(function($errno, $errstr, $errfile, $errline) {
         'line' => $errline
     ]);
     exit;
+});
+
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        debug_log($error);
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Fatal error: ' . $error['message'],
+            'file' => basename($error['file']),
+            'line' => $error['line']
+        ]);
+        exit;
+    }
 });
 
 require_once dirname(__DIR__) . '/config/config.php';
@@ -235,7 +262,6 @@ function getStudent() {
         $databaseName = $GLOBALS['databaseName'];
 
         $phone = $_GET['phone'] ?? '';
-        $subjectFilter = $_GET['subject'] ?? '';
         if (!$phone) {
             echo json_encode(['success' => false, 'message' => 'Phone number required']);
             return;
@@ -255,53 +281,6 @@ function getStudent() {
         $allMatches = $viewCursor->toArray();
 
         if (!empty($allMatches)) {
-            $subjectMapping = [
-                'math' => 'mathematics',
-                'pure math' => 'pure_math',
-                'pure' => 'pure_math',
-                'physics' => 'physics',
-                'mechanics' => 'mechanics',
-                'stat' => 'statistics',
-                'statistics' => 'statistics'
-            ];
-
-            $normalizeSubject = function ($rawSubject) use ($subjectMapping) {
-                $cleanedSubject = preg_replace('/^\s*S[123]\s*-?\s*/i', '', strtolower($rawSubject));
-                foreach ($subjectMapping as $key => $slug) {
-                    if (stripos($cleanedSubject, $key) !== false) {
-                        return $slug;
-                    }
-                }
-                if (stripos($cleanedSubject, 'mathematics') !== false || stripos($cleanedSubject, 'math') !== false) {
-                    return 'mathematics';
-                }
-                if (stripos($cleanedSubject, 'pure math') !== false || stripos($cleanedSubject, 'pure') !== false) {
-                    return 'pure_math';
-                }
-                if (stripos($cleanedSubject, 'physics') !== false) {
-                    return 'physics';
-                }
-                if (stripos($cleanedSubject, 'mechanics') !== false) {
-                    return 'mechanics';
-                }
-                if (stripos($cleanedSubject, 'statistics') !== false || stripos($cleanedSubject, 'stat') !== false) {
-                    return 'statistics';
-                }
-                return null;
-            };
-
-            if (!empty($subjectFilter)) {
-                $allMatches = array_values(array_filter($allMatches, function ($match) use ($normalizeSubject, $subjectFilter) {
-                    $rawSubject = $match->subject ?? '';
-                    return $normalizeSubject($rawSubject) === $subjectFilter;
-                }));
-            }
-
-            if (empty($allMatches)) {
-                echo json_encode(['success' => false, 'message' => 'No subject data found for this student']);
-                return;
-            }
-
             // Use the first match as the base student
             $base = (array)$allMatches[0];
             $merged = [
@@ -312,39 +291,63 @@ function getStudent() {
                 'grade' => 'senior1',
                 'isActive' => true
             ];
+            $subjectMapping = [
+                'math' => 'mathematics',
+                'pure math' => 'mathematics',
+                'pure' => 'mathematics',
+                'physics' => 'physics',
+                'mechanics' => 'mechanics',
+                'stat' => 'mathematics',
+                'statistics' => 'mathematics'
+            ];
             foreach ($allMatches as $match) {
+                $rawSubject = strtolower($match->subject ?? '');
+                // Remove grade prefix first
+                $cleanedSubject = preg_replace('/^\s*S[123]\s*-?\s*/i', '', $rawSubject);
+                
                 if (isset($match->subject)) {
                     if (strpos($match->subject, 'S1') !== false) $merged['grade'] = 'senior1';
                     elseif (strpos($match->subject, 'S2') !== false) $merged['grade'] = 'senior2';
                     elseif (strpos($match->subject, 'S3') !== false) $merged['grade'] = 'senior3';
                 }
-
-                $foundSlug = $normalizeSubject($match->subject ?? '');
-
+                
+                // Try to map subject - check longest matches first
+                $foundSlug = null;
+                foreach ($subjectMapping as $key => $slug) {
+                    if (stripos($cleanedSubject, $key) !== false) {
+                        $foundSlug = $slug;
+                        break;
+                    }
+                }
+                
+                // If no match found, try to extract subject name directly
+                if (!$foundSlug && !empty($cleanedSubject)) {
+                    // Common subject names
+                    if (stripos($cleanedSubject, 'mathematics') !== false || stripos($cleanedSubject, 'math') !== false) {
+                        $foundSlug = 'mathematics';
+                    } elseif (stripos($cleanedSubject, 'physics') !== false) {
+                        $foundSlug = 'physics';
+                    } elseif (stripos($cleanedSubject, 'mechanics') !== false) {
+                        $foundSlug = 'mechanics';
+                    } elseif (stripos($cleanedSubject, 'statistics') !== false || stripos($cleanedSubject, 'stat') !== false) {
+                        $foundSlug = 'mathematics';
+                    }
+                }
+                
                 if ($foundSlug && !in_array($foundSlug, $merged['subjects'])) {
                     $merged['subjects'][] = $foundSlug;
                     $merged['subjectIds'][$foundSlug] = $match->studentId ?? null;
                 }
             }
-
             if (empty($merged['subjects'])) {
                 $merged['subjects'] = ($merged['grade'] === 'senior1') ? ['mathematics'] : ['physics', 'mathematics', 'mechanics'];
             }
-            // Merge session fields - only from matching subject if filter is applied
+            // Merge all session fields from allMatches
             $sessionFields = [];
             foreach ($allMatches as $match) {
                 foreach ((array)$match as $k => $v) {
                     if (strpos($k, 'session_') === 0) {
-                        // If subject filter is applied, only include sessions from matching subjects
-                        if (!empty($subjectFilter)) {
-                            $matchSubject = $normalizeSubject($match->subject ?? '');
-                            if ($matchSubject === $subjectFilter) {
-                                $sessionFields[$k] = $v;
-                            }
-                        } else {
-                            // No filter - include all sessions
-                            $sessionFields[$k] = $v;
-                        }
+                        $sessionFields[$k] = $v;
                     }
                 }
             }
@@ -354,7 +357,6 @@ function getStudent() {
                 'grade' => $merged['grade'],
                 'subjects' => array_values($merged['subjects']),
                 'subjectIds' => $merged['subjectIds'],
-                'subject' => $subjectFilter ?: null,
                 'isActive' => true,
                 'totalSessionsViewed' => 0,
                 'totalWatchTime' => 0,
@@ -362,7 +364,6 @@ function getStudent() {
                 'watchedSessions' => 0,
                 'totalWatchTimeFormatted' => '0h 0m'
             ], $sessionFields);
-
             echo json_encode(['success' => true, 'student' => $studentArray]);
             return;
         }
@@ -421,118 +422,65 @@ function getStudentByParentPhone() {
             $phonesToTry[] = $cleanPhone;
         } elseif (strlen($cleanPhone) === 11 && substr($cleanPhone, 0, 1) === '0') {
             // 01060416120 -> 201060416120
-            $phonesToTry[] = '+2' . $cleanPhone;
-            $phonesToTry[] = '2' . $cleanPhone;
+            $phonesToTry[] = '20' . substr($cleanPhone, 1);
+            $phonesToTry[] = '+20' . substr($cleanPhone, 1);
             $phonesToTry[] = $cleanPhone;
-        } elseif (strlen($cleanPhone) === 10) {
-            // 1060416120 -> 01060416120 and 201060416120
-            $phonesToTry[] = '0' . $cleanPhone;
-            $phonesToTry[] = '+20' . $cleanPhone;
-            $phonesToTry[] = '20' . $cleanPhone;
         }
 
-        // Search in all_students_view for parentPhone
-        $viewQuery = new MongoDB\Driver\Query(['parentPhone' => ['$in' => $phonesToTry]]);
-        $viewCursor = $client->executeQuery("$databaseName.all_students_view", $viewQuery);
-        $matches = $viewCursor->toArray();
+        // PRIMARY: Search all_students_view collection (management system)
+        $filter = ['parentPhone' => ['$in' => $phonesToTry]];
+        $query = new MongoDB\Driver\Query($filter);
+        $cursor = $client->executeQuery("$databaseName.all_students_view", $query);
+        $matches = $cursor->toArray();
 
         if (!empty($matches)) {
+            // Return one record per subject enrollment - DO NOT GROUP
             $students = [];
-            $studentsByPhone = [];
             
-            // Group all rows by student phone to aggregate subjects
             foreach ($matches as $studentData) {
-                $studentPhone = $studentData->phone ?? $studentData->studentPhone ?? null;
+                $phone = $studentData->phone ?? $studentData->studentPhone ?? '';
+                if (empty($phone)) continue;
                 
-                if ($studentPhone) {
-                    if (!isset($studentsByPhone[$studentPhone])) {
-                        $studentsByPhone[$studentPhone] = [
-                            'name' => $studentData->studentName ?? $studentData->name ?? 'Student',
-                            'phone' => $studentPhone,
-                            'grade' => $studentData->grade ?? 'senior1',
-                            'subjects' => [],
-                            'subject' => ''
-                        ];
-                    }
-                    
-                    // Collect all subjects from all rows for this student
-                    if (isset($studentData->subject) && $studentData->subject) {
-                        $subjectValue = $studentData->subject;
-                        // Extract subject name (remove grade prefix like S1, S2, S3)
-                        $cleanSubject = preg_replace('/^\s*S[123]\s*-?\s*/i', '', $subjectValue);
-                        $cleanSubject = trim(strtolower($cleanSubject));
-                        
-                        // Map to standard subject slugs
-                        $subjectMapping = [
-                            // Senior 1
-                            'math' => 'mathematics',
-                            'mathematics' => 'mathematics',
-                            // Senior 2
-                            'pure math' => 'pure_math',
-                            'pure' => 'pure_math',
-                            'mechanics' => 'mechanics',
-                            'physics' => 'physics',
-                            // Senior 3
-                            'statistics' => 'statistics',
-                            'stat' => 'statistics'
-                        ];
-                        
-                        $slug = null;
-                        // Check in order of specificity
-                        foreach ($subjectMapping as $key => $value) {
-                            if (stripos($cleanSubject, $key) !== false) {
-                                $slug = $value;
-                                break;
-                            }
-                        }
-                        
-                        // Fallback: direct comparison
-                        if (!$slug) {
-                            if (stripos($cleanSubject, 'mathematics') !== false || stripos($cleanSubject, 'math') !== false) {
-                                $slug = 'mathematics';
-                            } elseif (stripos($cleanSubject, 'pure math') !== false || stripos($cleanSubject, 'pure') !== false) {
-                                $slug = 'pure_math';
-                            } elseif (stripos($cleanSubject, 'physics') !== false) {
-                                $slug = 'physics';
-                            } elseif (stripos($cleanSubject, 'mechanics') !== false) {
-                                $slug = 'mechanics';
-                            } elseif (stripos($cleanSubject, 'statistics') !== false || stripos($cleanSubject, 'stat') !== false) {
-                                $slug = 'statistics';
-                            } else {
-                                $slug = 'mathematics'; // default
-                            }
-                        }
-                        
-                        if (!in_array($slug, $studentsByPhone[$studentPhone]['subjects'])) {
-                            $studentsByPhone[$studentPhone]['subjects'][] = $slug;
-                        }
-                        
-                        // Keep the first subject for backward compatibility
-                        if (!$studentsByPhone[$studentPhone]['subject']) {
-                            $studentsByPhone[$studentPhone]['subject'] = $subjectValue;
-                        }
-                    }
-                    
-                    // Update grade from all rows
-                    if (isset($studentData->grade)) {
-                        $studentsByPhone[$studentPhone]['grade'] = $studentData->grade;
+                // Extract grade from subject if present
+                $grade = 'senior1';
+                if (isset($studentData->subject)) {
+                    if (strpos($studentData->subject, 'S1') !== false) {
+                        $grade = 'senior1';
+                    } elseif (strpos($studentData->subject, 'S2') !== false) {
+                        $grade = 'senior2';
+                    } elseif (strpos($studentData->subject, 'S3') !== false) {
+                        $grade = 'senior3';
                     }
                 }
-            }
-            
-            // Convert to final array
-            foreach ($studentsByPhone as $phone => $studentData) {
-                if (empty($studentData['subjects'])) {
-                    $studentData['subjects'] = ['mathematics'];
+                
+                // Extract subject slug
+                $subjectSlug = 'mathematics';
+                if (isset($studentData->subject)) {
+                    $rawSubject = strtolower($studentData->subject);
+                    $cleanedSubject = preg_replace('/^\\s*S[123]\\s*-?\\s*/i', '', $rawSubject);
+                    
+                    if (stripos($cleanedSubject, 'pure') !== false || stripos($cleanedSubject, 'math') !== false) {
+                        $subjectSlug = 'mathematics';
+                    } elseif (stripos($cleanedSubject, 'physics') !== false) {
+                        $subjectSlug = 'physics';
+                    } elseif (stripos($cleanedSubject, 'mechanics') !== false) {
+                        $subjectSlug = 'mechanics';
+                    } elseif (stripos($cleanedSubject, 'stat') !== false) {
+                        $subjectSlug = 'statistics';
+                    }
                 }
+                
+                // Create a separate record for each enrollment
                 $students[] = [
-                    'name' => $studentData['name'],
+                    'name' => $studentData->studentName ?? $studentData->name ?? 'Student',
                     'phone' => $phone,
-                    'parentPhone' => $parentPhone,
-                    'grade' => $studentData['grade'],
-                    'subject' => $studentData['subject'],
-                    'subjects' => array_values(array_unique($studentData['subjects'])),
-                    'isActive' => true
+                    'parentPhone' => $studentData->parentPhone ?? $parentPhone,
+                    'grade' => $grade,
+                    'subject' => $studentData->subject ?? '',
+                    'subjects' => [$subjectSlug],
+                    'balance' => $studentData->balance ?? 0,
+                    'bookletBalance' => $studentData->bookletBalance ?? 0,
+                    'isActive' => $studentData->isActive ?? true
                 ];
             }
             
@@ -542,7 +490,7 @@ function getStudentByParentPhone() {
             }
         }
 
-        // Fallback: Search in users collection
+        // FALLBACK: Search in users collection
         $filter = ['parentPhone' => ['$in' => $phonesToTry]];
         $query = new MongoDB\Driver\Query($filter);
         $cursor = $client->executeQuery("$databaseName.users", $query);
@@ -580,6 +528,8 @@ function getStudentByParentPhone() {
                     'grade' => $student->grade ?? 'senior1',
                     'subject' => $subjectValue,
                     'subjects' => $subjectsArray,
+                    'balance' => $student->balance ?? 0,
+                    'bookletBalance' => $student->bookletBalance ?? 0,
                     'isActive' => $student->isActive ?? true
                 ];
             }

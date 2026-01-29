@@ -1,28 +1,87 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en" dir="ltr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ولي أمر</title>
+    <title>Parent Login</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/all.min.css">
     <link rel="icon" class="circular-icon" type="image/png" href="images/logo.png">
     <script src="js/api-config.js"></script>
     <style>
-        h2 { text-align: center; color: #333; }
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #FF8C69; box-sizing: border-box; }
-        form { background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); width: 300px; margin: auto; margin-top: 50px; }
-        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; width: 250px; }
-        button:hover { background-color: #45a049; }
-        .form-header { display: flex; flex-direction: column; align-items: center; margin-top: 50px; direction: rtl; }
-        .logo { max-width: 150px; border-radius: 50%; }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #FF8C69;
+            box-sizing: border-box;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin: auto;
+            margin-top: 50px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 250px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .form-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+
+        .logo {
+            max-width: 150px;
+            border-radius: 50%;
+        }
+
         /* Dark Mode Styles */
-        body.dark-mode { background-color: #121212; color: #e0e0e0; }
-        .dark-mode .form-header form { background-color: #1f1f1f; }
-        .dark-mode .form-header h2{color: wheat;}
-        .dark-mode .phone { background-color: #2a2a2a; border: 1px solid #4CAF50; color: #e0e0e0; }
+        body.dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        .dark-mode .form-header form {
+            background-color: #1f1f1f;
+        }
+
+        .dark-mode .form-header h2 {
+            color: wheat;
+        }
+
+        .dark-mode .phone {
+            background-color: #2a2a2a;
+            border: 1px solid #4CAF50;
+            color: #e0e0e0;
+        }
     </style>
 </head>
+
 <body>
     <header>
         <div class="banner">
@@ -39,10 +98,10 @@
         </div>
     </header>
     <div class="form-header">
-        <h2>ولي أمر</h2>
+        <h2>Parent Login</h2>
         <form id="parentForm">
-            <input type="text" id="phone" class="phone" placeholder="الهاتف" required><br>
-            <button type="submit" id="submitButton">متابعة</button>
+            <input type="text" id="phone" class="phone" placeholder="Phone Number" required><br>
+            <button type="submit" id="submitButton">Continue</button>
         </form>
     </div>
     <script src="js/database.js"></script>
@@ -64,7 +123,7 @@
         });
 
         // Handle Parent Login Form Submission
-        document.getElementById('parentForm').addEventListener('submit', async function(e) {
+        document.getElementById('parentForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
             const phone = document.getElementById('phone').value.trim();
@@ -81,7 +140,7 @@
             if (!phone) {
                 const errorMessage = document.createElement('p');
                 errorMessage.id = 'dynamicError';
-                errorMessage.textContent = 'يرجى إدخال رقم الهاتف.';
+                errorMessage.textContent = 'Please enter phone number.';
                 errorMessage.style.color = 'red';
                 errorMessage.style.fontWeight = 'bold';
                 errorMessage.style.textAlign = 'center';
@@ -91,67 +150,67 @@
 
             // Disable the submit button
             submitButton.disabled = true;
-            submitButton.textContent = 'جاري التحقق...';
+            submitButton.textContent = 'Verifying...';
 
             try {
                 // Search for student by parentPhone in the database
-                const response = await fetch(`${window.API_BASE_URL}students.php?action=getByParentPhone&parentPhone=${encodeURIComponent(phone)}`);
+                const apiUrl = `${window.API_BASE_URL}students.php?action=getByParentPhone&parentPhone=${encodeURIComponent(phone)}`;
+                console.log('[DEBUG] Fetching students for parent:', apiUrl);
+                const response = await fetch(apiUrl);
                 const result = await response.json();
+                console.log('[DEBUG] API response:', result);
+                // Also send debug info to backend log
+                try {
+                    await fetch(window.API_BASE_URL + 'debug.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            event: 'parent-login',
+                            apiUrl,
+                            apiResponse: result,
+                            timestamp: new Date().toISOString()
+                        })
+                    });
+                } catch (e) {
+                    // ignore debug logging errors
+                }
 
                 if (result.success && result.students && result.students.length > 0) {
-                    // Deduplicate students by phone
-                    const uniqueStudents = {};
-                    result.students.forEach(student => {
-                        if (!uniqueStudents[student.phone]) {
-                            uniqueStudents[student.phone] = student;
-                        } else {
-                            // Merge subjects if same student appears multiple times
-                            if (student.subjects && Array.isArray(student.subjects)) {
-                                const combined = new Set([
-                                    ...(uniqueStudents[student.phone].subjects || []),
-                                    ...student.subjects
-                                ]);
-                                uniqueStudents[student.phone].subjects = Array.from(combined);
-                            }
-                        }
-                    });
-                    
-                    const deduplicatedStudents = Object.values(uniqueStudents);
-                    
-                    // Store parent phone and students data
+                    // Store parent phone and ALL student records as returned by API
                     localStorage.setItem('parentPhone', phone);
-                    localStorage.setItem('studentsData', JSON.stringify(deduplicatedStudents));
+                    localStorage.setItem('studentsData', JSON.stringify(result.students));
                     localStorage.setItem('parentAccessGranted', 'true');
-                    
+                    console.log('[DEBUG] Stored studentsData:', result.students);
                     // Redirect to parent dashboard
-                    window.location.href = 'parent-dashboard';
+                    window.location.href = 'parent-dashboard.html';
                 } else {
                     // Show error message
                     const errorMessage = document.createElement('p');
                     errorMessage.id = 'dynamicError';
-                    errorMessage.textContent = result.message || 'رقم الهاتف غير مسجل كولي أمر';
+                    errorMessage.textContent = result.message || 'Phone number not registered as a parent';
                     errorMessage.style.color = 'red';
                     errorMessage.style.fontWeight = 'bold';
                     errorMessage.style.textAlign = 'center';
                     formHeader.appendChild(errorMessage);
-                    
+
                     submitButton.disabled = false;
-                    submitButton.textContent = 'متابعة';
+                    submitButton.textContent = 'Continue';
                 }
             } catch (error) {
                 console.error('Error during parent login:', error);
                 const errorMessage = document.createElement('p');
                 errorMessage.id = 'dynamicError';
-                errorMessage.textContent = 'حدث خطأ في الاتصال. يرجى المحاولة لاحقاً.';
+                errorMessage.textContent = 'Connection error. Please try again later.';
                 errorMessage.style.color = 'red';
                 errorMessage.style.fontWeight = 'bold';
                 errorMessage.style.textAlign = 'center';
                 formHeader.appendChild(errorMessage);
-                
+
                 submitButton.disabled = false;
-                submitButton.textContent = 'متابعة';
+                submitButton.textContent = 'Continue';
             }
         });
     </script>
 </body>
+
 </html>

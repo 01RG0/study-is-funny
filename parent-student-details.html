@@ -1,237 +1,614 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تفاصيل الطالب</title>
+    <title>Student Details</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/all.min.css">
     <link rel="icon" class="circular-icon" type="image/png" href="images/logo.png">
     <script src="js/api-config.js"></script>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #F0F0F0;
+        * {
             margin: 0;
             padding: 0;
-            color: #222;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            color: #e0e0e0;
+        }
+
         .details-container {
-            max-width: 1000px;
-            margin: 40px auto;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
-        h1 {
-            color: #008080;
+
+        body.dark-mode .details-container {
+            background: #1e1e1e;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, #008080 0%, #006666 100%);
+            color: white;
+            padding: 40px;
             text-align: center;
         }
+
+        .header-section h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header-section p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content-section {
+            padding: 40px;
+        }
+
         h2 {
             color: #008080;
-            text-align: center;
-            margin-top: 30px;
-            margin-bottom: 20px;
+            font-size: 1.8em;
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #008080;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
+
+        body.dark-mode h2 {
+            color: #00b3b3;
+            border-bottom-color: #00b3b3;
+        }
+
         .student-info {
-            margin: 30px 0;
-            background: #f9f9f9;
-            padding: 20px;
+            background: linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%);
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 5px solid #008080;
+            margin-bottom: 30px;
+        }
+
+        body.dark-mode .student-info {
+            background: linear-gradient(135deg, #252525 0%, #2a2a2a 100%);
+            border-left-color: #00b3b3;
+        }
+
+        .student-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .info-card {
+            background: white;
+            padding: 15px;
             border-radius: 8px;
-            border-left: 4px solid #008080;
+            border-top: 3px solid #008080;
         }
-        .student-info p {
-            font-size: 1.1rem;
-            margin: 12px 0;
-            color: #222;
+
+        body.dark-mode .info-card {
+            background: #333;
+            border-top-color: #00b3b3;
         }
-        .student-info strong {
+
+        .info-card-label {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        body.dark-mode .info-card-label {
+            color: #aaa;
+        }
+
+        .info-card-value {
+            font-size: 1.3em;
             color: #008080;
+            font-weight: bold;
         }
-        .back-btn {
-            display: block;
-            margin: 30px auto 0 auto;
-            background: #008080;
-            color: #fff;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: background 0.2s;
+
+        /* Sessions Table Styling */
+        .sessions-wrapper {
+            overflow-x: auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #f0f0f0;
         }
-        .back-btn:hover {
-            background: #005f5f;
+
+        body.dark-mode .sessions-wrapper {
+            background: #2a2a2a;
+            border-color: #404040;
         }
-        
-        /* Table Styling */
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
-            background: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
+
+        body.dark-mode table {
+            color: #e0e0e0;
+        }
+
         table thead {
-            background: #008080;
+            background: linear-gradient(135deg, #008080 0%, #006666 100%);
             color: white;
         }
-        
+
+        body.dark-mode table thead {
+            background: linear-gradient(135deg, #00b3b3 0%, #008080 100%);
+        }
+
         table th {
-            padding: 15px;
-            text-align: right;
-            font-weight: bold;
-            border-bottom: 2px solid #008080;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.95em;
+            letter-spacing: 0.5px;
         }
-        
+
         table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #e0e0e0;
-            color: #222;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e8e8e8;
+            text-align: left;
+            font-size: 0.95em;
         }
-        
+
+        body.dark-mode table td {
+            border-bottom-color: #404040;
+        }
+
+        table tbody tr {
+            transition: background-color 0.3s ease;
+        }
+
         table tbody tr:nth-child(even) {
             background: #f9f9f9;
         }
-        
+
+        body.dark-mode table tbody tr:nth-child(even) {
+            background: #1f1f1f;
+        }
+
         table tbody tr:hover {
             background: #f0f8ff;
         }
-        
-        /* Responsive Table */
+
+        body.dark-mode table tbody tr:hover {
+            background: #404040;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        .status-present {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-absent {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-late {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-excused {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-no-status {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #008080 0%, #006666 100%);
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 128, 128, 0.3);
+        }
+
+        .print-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .print-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 1.1em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #008080;
+            font-size: 1.1em;
+        }
+
         @media (max-width: 768px) {
             .details-container {
-                max-width: 100%;
-                margin: 10px;
-                padding: 15px;
+                border-radius: 10px;
             }
-            
-            table {
-                font-size: 0.9rem;
+
+            .header-section {
+                padding: 20px;
             }
-            
-            table th, table td {
-                padding: 8px 10px;
+
+            .header-section h1 {
+                font-size: 1.8em;
             }
-            
+
+            .content-section {
+                padding: 20px;
+            }
+
             h2 {
-                font-size: 1.3rem;
+                font-size: 1.4em;
+            }
+
+            .student-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.85em;
+            }
+
+            table th,
+            table td {
+                padding: 10px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .back-btn,
+            .print-btn {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="details-container">
-        <h1>لوحة الطالب</h1>
-        <div class="student-info" id="studentInfo">
-            <p>جاري تحميل البيانات...</p>
+        <div class="header-section">
+            <h1><i class="fas fa-chart-bar"></i> Student Details</h1>
+            <p>Comprehensive tracking of student performance and attendance</p>
         </div>
-        <div id="tablesContainer"></div>
-        <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-right"></i> العودة</button>
+
+        <div class="content-section">
+            <div class="student-info" id="studentInfo">
+                <div class="student-info-grid">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading data...
+                    </div>
+                </div>
+            </div>
+
+            <div id="tablesContainer"></div>
+
+            <div class="action-buttons">
+                <button class="back-btn" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </button>
+                <button class="print-btn" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print Report
+                </button>
+            </div>
+        </div>
     </div>
+
     <script src="js/database.js"></script>
     <script>
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(param);
         }
+
         function goBack() {
-            window.history.back();
+            window.location.href = 'parent-dashboard.html';
         }
-        // Helper to format attendance status
+
+        // Format attendance status with better icons
         function formatAttendance(status) {
-            if (status === 'Present') return '<span style="color:green;font-weight:bold">✔️ حاضر</span>';
-            if (status === 'Absent') return '<span style="color:red;font-weight:bold">❌ غائب</span>';
-            if (status === 'Late') return '<span style="color:orange;font-weight:bold">⏰ متأخر</span>';
-            if (status === 'Excused') return '<span style="color:blue;font-weight:bold">📄 بعذر</span>';
-            return '-';
+            const statuses = {
+                'Present': { class: 'status-present', text: '✓ Present', icon: 'check-circle' },
+                'Absent': { class: 'status-absent', text: '✗ Absent', icon: 'times-circle' },
+                'Late': { class: 'status-late', text: '⏰ Late', icon: 'clock' },
+                'Excused': { class: 'status-excused', text: '📄 Excused', icon: 'file-alt' }
+            };
+
+            const statusObj = statuses[status] || { class: 'status-no-status', text: '-', icon: 'question-circle' };
+            return `<span class="status-badge ${statusObj.class}"><i class="fas fa-${statusObj.icon}"></i> ${statusObj.text}</span>`;
         }
-        (async function() {
+
+        (async function () {
             const phone = getQueryParam('phone');
             const subjectParam = getQueryParam('subject');
             const infoDiv = document.getElementById('studentInfo');
             const tablesContainer = document.getElementById('tablesContainer');
+
+            if (!phone) {
+                infoDiv.innerHTML = '<p style="color: red;">Phone number is required</p>';
+                return;
+            }
+
             try {
-                const subjectQuery = subjectParam ? `&subject=${encodeURIComponent(subjectParam)}` : '';
-                const res = await fetch(`${window.API_BASE_URL}students.php?action=get&phone=${encodeURIComponent(phone)}${subjectQuery}`);
-                const data = await res.json();
-                if (data.success && data.student) {
-                    const studentObj = data.student;
-                            
-                    // Collect all subjects properly
-                    let allSubjects = [];
-                    if (studentObj.subjects && Array.isArray(studentObj.subjects)) {
-                        allSubjects = [...studentObj.subjects];
-                    } else if (studentObj.subject) {
-                        allSubjects = [studentObj.subject];
+                // Always try to get the specific student by phone first
+                let apiUrl = `${window.API_BASE_URL}students.php?action=get&phone=${encodeURIComponent(phone)}`;
+
+                // If we have a subject parameter, we'll use parent phone to get all enrollments
+                // This helps us find the right enrollment when the same student has multiple subjects
+                if (subjectParam) {
+                    const parentPhone = localStorage.getItem('parentPhone');
+                    if (parentPhone) {
+                        apiUrl = `${window.API_BASE_URL}students.php?action=getByParentPhone&parentPhone=${encodeURIComponent(parentPhone)}`;
                     }
-                    
-                    // Map to Arabic if possible
-                    const subjectMapping = {
-                        'mathematics': 'الرياضيات',
-                        'pure_math': 'رياضيات بحتة',
-                        'physics': 'الفيزياء',
-                        'mechanics': 'الميكانيكا',
-                        'statistics': 'الإحصاء'
-                    };
-                    const subjectsArabic = allSubjects.map(s => subjectMapping[s] || s).join('، ');
-                    const selectedSubjectLabel = subjectParam ? (subjectMapping[subjectParam] || subjectParam) : '';
-                    
-                    infoDiv.innerHTML = `
-                        <p><strong>الاسم:</strong> ${studentObj.studentName || studentObj.name || '-'}</p>
-                        <p><strong>الهاتف:</strong> ${studentObj.phone || '-'}</p>
-                        <p><strong>هاتف ولي الأمر:</strong> ${studentObj.parentPhone || '-'}</p>
-                        <p><strong>الصف:</strong> ${studentObj.grade || '-'}</p>
-                        <p><strong>المواد:</strong> ${subjectsArabic || '-'}</p>
-                        ${subjectParam ? `<p><strong>المادة المختارة:</strong> ${selectedSubjectLabel}</p>` : ''}
-                        <p><strong>الحالة:</strong> ${(studentObj.isActive === false) ? 'غير نشط' : 'نشط'}</p>
-                    `;
-                    // Find all session keys and determine max session number
-                    const sessionKeys = Object.keys(studentObj).filter(k => k.startsWith('session_'));
-                    const sessionNumbers = sessionKeys.map(k => parseInt(k.split('_')[1])).filter(n => !isNaN(n));
-                    const maxSession = sessionNumbers.length > 0 ? Math.max(...sessionNumbers) : 0;
-                    let tableHtml = '';
-                    if (maxSession > 0) {
-                        tableHtml += `<h2>جدول الجلسات</h2>`;
-                        tableHtml += `<div style="overflow-x: auto;">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th style="text-align: center;">رقم الجلسة</th>
-                                        <th style="text-align: center;">التاريخ</th>
-                                        <th style="text-align: center;">الحضور</th>
-                                        <th style="text-align: center;">الواجب</th>
-                                        <th style="text-align: center;">الدرجة</th>
-                                        <th style="text-align: center;">ملاحظات</th>
-                                    </tr>
-                                </thead>
-                                <tbody>`;
-                        for (let i = 1; i <= maxSession; i++) {
-                            const key = `session_${i}`;
-                            const s = studentObj[key] || {};
-                            tableHtml += `<tr>
-                                <td style="text-align: center;">${i}</td>
-                                <td style="text-align: center;">${s.date || '-'}</td>
-                                <td style="text-align: center;">${formatAttendance(s.attendanceStatus)}</td>
-                                <td style="text-align: center;">${s.homeworkStatus || '-'}</td>
-                                <td style="text-align: center;">${s.examMark != null ? s.examMark : '-'}</td>
-                                <td>${s.comment || '-'}</td>
-                            </tr>`;
+                }
+
+                const res = await fetch(apiUrl);
+                const data = await res.json();
+
+                let studentObj = null;
+
+                // Handle response - could be single student or array of enrollments
+                if (data.success && data.students && Array.isArray(data.students)) {
+                    if (subjectParam) {
+                        // Find the specific enrollment matching BOTH phone AND subject
+                        // This ensures we get the right student even if parent has multiple kids in same subject
+                        studentObj = data.students.find(s =>
+                            s.phone === phone && s.subject === subjectParam
+                        );
+
+                        // Fallback: if exact match not found, try matching just by phone and subject slug
+                        if (!studentObj) {
+                            studentObj = data.students.find(s => {
+                                if (s.phone !== phone) return false;
+                                // Check if subject slug matches
+                                const slugs = s.subjects || [];
+                                const subjectLower = subjectParam.toLowerCase();
+                                return slugs.some(slug =>
+                                    subjectLower.includes(slug) || slug.includes(subjectLower)
+                                );
+                            });
                         }
+                    } else {
+                        // No subject filter, take first match by phone
+                        studentObj = data.students.find(s => s.phone === phone);
+                    }
+                } else if (data.success && data.student) {
+                    // Single student response (from direct phone lookup)
+                    studentObj = data.student;
+                }
+
+                if (studentObj) {
+                    // Subject mapping
+                    const subjectMapping = {
+                        'mathematics': 'Mathematics',
+                        'pure_math': 'Pure Math',
+                        'physics': 'Physics',
+                        'mechanics': 'Mechanics',
+                        'statistics': 'Statistics',
+                        'S2 Pure Math': 'Pure Math - Senior 2',
+                        'S2 Mechanics': 'Mechanics - Senior 2',
+                        'S2 Physics': 'Physics - Senior 2',
+                        'S1 Mathematics': 'Math - Senior 1',
+                        'S3 Pure Math': 'Pure Math - Senior 3',
+                        'S3 Mechanics': 'Mechanics - Senior 3',
+                        'S3 Physics': 'Physics - Senior 3',
+                        'رياضيات': 'Mathematics',
+                        'رياضيات بحتة': 'Pure Math',
+                        'فيزياء': 'Physics',
+                        'ميكانيكا': 'Mechanics',
+                        'إحصاء': 'Statistics',
+                        'S1 رياضيات': 'Math - Senior 1',
+                        'S2 رياضيات بحتة': 'Pure Math - Senior 2',
+                        'S2 ميكانيكا': 'Mechanics - Senior 2',
+                        'S2 فيزياء': 'Physics - Senior 2',
+                        'S3 رياضيات بحتة': 'Pure Math - Senior 3',
+                        'S3 ميكانيكا': 'Mechanics - Senior 3',
+                        'S3 فيزياء': 'Physics - Senior 3'
+                    };
+
+                    // Display subject in header if provided
+                    let displaySubject = '';
+                    if (subjectParam) {
+                        displaySubject = subjectMapping[subjectParam] || subjectParam;
+                        document.querySelector('.header-section h1').innerHTML = `<i class="fas fa-chart-bar"></i> Student Details - ${displaySubject}`;
+                    } else {
+                        // Collect all subjects for display
+                        let allSubjects = [];
+                        if (studentObj.subjects && Array.isArray(studentObj.subjects)) {
+                            allSubjects = [...studentObj.subjects];
+                        } else if (studentObj.subject) {
+                            allSubjects = [studentObj.subject];
+                        }
+                        displaySubject = allSubjects.map(s => subjectMapping[s] || s).join(' • ');
+                    }
+
+                    const studentName = studentObj.studentName || studentObj.name || '-';
+                    const grade = studentObj.grade || '-';
+                    const parentPhone = studentObj.parentPhone || '-';
+                    const status = (studentObj.isActive === false) ? 'Inactive' : 'Active';
+                    const balance = studentObj.balance || 0;
+                    const bookletBalance = studentObj.bookletBalance || 0;
+
+                    infoDiv.innerHTML = `
+                        <div class="student-info-grid">
+                            <div class="info-card">
+                                <div class="info-card-label"><i class="fas fa-user"></i> Student Name</div>
+                                <div class="info-card-value">${studentName}</div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-label"><i class="fas fa-graduation-cap"></i> Grade</div>
+                                <div class="info-card-value">${grade}</div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-label"><i class="fas fa-phone"></i> Phone</div>
+                                <div class="info-card-value">${phone}</div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-label"><i class="fas fa-user-tie"></i> Parent Phone</div>
+                                <div class="info-card-value">${parentPhone}</div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-label"><i class="fas fa-wallet"></i> Balance</div>
+                                <div class="info-card-value" style="color: ${balance >= 0 ? '#4CAF50' : '#f44336'}">${balance >= 0 ? '+' : ''}${balance} EGP</div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-label"><i class="fas fa-book-reader"></i> Booklet Balance</div>
+                                <div class="info-card-value">${bookletBalance}</div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-label"><i class="fas fa-book"></i> ${subjectParam ? 'Subject' : 'Subjects'}</div>
+                                <div class="info-card-value" style="font-size: 1em;">${displaySubject}</div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-label"><i class="fas fa-heart-pulse"></i> Status</div>
+                                <div class="info-card-value">${status}</div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Find and display all sessions
+                    const sessionKeys = Object.keys(studentObj).filter(k => k.startsWith('session_')).sort((a, b) => {
+                        const numA = parseInt(a.split('_')[1]);
+                        const numB = parseInt(b.split('_')[1]);
+                        return numA - numB;
+                    });
+
+                    let tableHtml = '';
+
+                    if (sessionKeys.length > 0) {
+                        tableHtml += `
+                            <h2><i class="fas fa-list"></i> Session History${subjectParam ? ' - ' + displaySubject : ''} (${sessionKeys.length} sessions)</h2>
+                            <div class="sessions-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: center; width: 10%;"><i class="fas fa-list-ol"></i> No.</th>
+                                            <th style="text-align: center;"><i class="fas fa-calendar"></i> Date</th>
+                                            <th style="text-align: center;"><i class="fas fa-door-open"></i> Attendance</th>
+                                            <th style="text-align: center;"><i class="fas fa-tasks"></i> Homework</th>
+                                            <th style="text-align: center;"><i class="fas fa-star"></i> Grade</th>
+                                            <th style="text-align: left;"><i class="fas fa-comment"></i> Comments</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                        `;
+
+                        sessionKeys.forEach(key => {
+                            const sessionNum = key.split('_')[1];
+                            const s = studentObj[key] || {};
+                            const homeworkStatus = s.homeworkStatus || '-';
+                            const examMark = s.examMark != null ? s.examMark : '-';
+                            const comment = s.comment || '-';
+                            const date = s.date || '-';
+                            const attendanceStatus = s.attendanceStatus || 'No Status';
+
+                            tableHtml += `<tr>
+                                <td style="text-align: center; font-weight: bold;">${sessionNum}</td>
+                                <td style="text-align: center;">${date}</td>
+                                <td style="text-align: center;">${formatAttendance(attendanceStatus)}</td>
+                                <td style="text-align: center;">
+                                    ${homeworkStatus === 'Complete' ? '<span style="color: #4CAF50; font-weight: bold;">✓ Complete</span>' : homeworkStatus === 'Pending' ? '<span style="color: #FF9800; font-weight: bold;">⟳ Pending</span>' : homeworkStatus}
+                                </td>
+                                <td style="text-align: center; font-weight: bold; color: #008080;">${examMark}</td>
+                                <td>${comment}</td>
+                            </tr>`;
+                        });
+
                         tableHtml += '</tbody></table></div>';
                     } else {
-                        tableHtml = '<p style="text-align: center; padding: 20px; color: #666;">لا توجد بيانات جلسات متاحة لهذا الطالب.</p>';
+                        tableHtml = '<div class="no-data"><i class="fas fa-inbox"></i><p>No session data available for this student yet.</p></div>';
                     }
+
                     tablesContainer.innerHTML = tableHtml;
                 } else {
-                    infoDiv.innerHTML = '<p>تعذر العثور على بيانات الطالب.</p>';
+                    infoDiv.innerHTML = '<div class="no-data"><i class="fas fa-search"></i><p>Student data not found. Please check phone number and subject.</p></div>';
                 }
             } catch (e) {
-                infoDiv.innerHTML = '<p>حدث خطأ أثناء تحميل بيانات الطالب.</p>';
+                console.error('Error:', e);
+                infoDiv.innerHTML = '<div class="no-data"><i class="fas fa-exclamation-triangle"></i><p>Error loading student data. Please try again.</p></div>';
             }
         })();
     </script>
 </body>
+
 </html>
