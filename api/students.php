@@ -288,6 +288,7 @@ function getStudent() {
                 'phone' => $phone,
                 'subjects' => [],
                 'subjectIds' => [],
+                'subjectBalances' => [],
                 'grade' => 'senior1',
                 'isActive' => true
             ];
@@ -337,8 +338,13 @@ function getStudent() {
                 if ($foundSlug && !in_array($foundSlug, $merged['subjects'])) {
                     $merged['subjects'][] = $foundSlug;
                     $merged['subjectIds'][$foundSlug] = $match->studentId ?? null;
+                    $merged['subjectBalances'][$foundSlug] = $match->balance ?? 0;
                 }
             }
+            
+            // Calculate total balance
+            $merged['balance'] = array_sum($merged['subjectBalances']);
+            
             if (empty($merged['subjects'])) {
                 $merged['subjects'] = ($merged['grade'] === 'senior1') ? ['mathematics'] : ['physics', 'mathematics', 'mechanics'];
             }
@@ -357,6 +363,8 @@ function getStudent() {
                 'grade' => $merged['grade'],
                 'subjects' => array_values($merged['subjects']),
                 'subjectIds' => $merged['subjectIds'],
+                'subjectBalances' => $merged['subjectBalances'],
+                'balance' => $merged['balance'],
                 'isActive' => true,
                 'totalSessionsViewed' => 0,
                 'totalWatchTime' => 0,

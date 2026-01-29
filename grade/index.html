@@ -402,6 +402,8 @@
         .qr-code-display img {
             display: block;
             margin: 0 auto;
+            max-width: 100%;
+            max-height: 100%;
         }
 
         /* Modal Styles */
@@ -654,7 +656,8 @@
                 Your QR Codes
             </h2>
             <p class="qr-description">
-                Use these QR codes to access your sessions in different subjects. Each QR code is for a specific subject.
+                Use these QR codes to access your sessions in different subjects. Each QR code is for a specific
+                subject.
             </p>
             <div id="qrCodesContainer" class="qr-codes-container">
                 <!-- QR codes will be loaded here -->
@@ -801,6 +804,10 @@
                     console.error(`❌ No studentId found for ${subject}. Skipping.`);
                     return;
                 }
+                const subjectBalance = studentData.subjectBalances && studentData.subjectBalances[subject] !== undefined
+                    ? studentData.subjectBalances[subject]
+                    : 0;
+
                 // Improved QR card UI
                 const qrCard = document.createElement('div');
                 qrCard.className = 'qr-code-card';
@@ -811,6 +818,10 @@
                     </div>
                     <h3 style="font-size:20px;letter-spacing:1px;">${subjectInfo.name}</h3>
                     <div class="qr-code-display" id="qr-container-${subject}" onclick="showQRModal('${subject}', '${subjectInfo.name}', '${studentId}')" title="Click to enlarge"></div>
+                    <div style="margin: 10px 0; padding: 5px; background: rgba(0,0,0,0.05); border-radius: 8px;">
+                        <span style="font-size: 14px; color: #666;">Subject Balance:</span>
+                        <div style="font-size: 20px; font-weight: bold; color: ${subjectBalance < 0 ? '#ff4d4d' : '#00b894'};">${subjectBalance} EGP</div>
+                    </div>
                     <div class="qr-code-value" style="color: #222; font-size: 18px; font-weight: bold; margin-top: 12px; background:#fff; border-radius:6px; padding:4px 0; border:1.5px solid #000;">${studentId}</div>
                     <button class="qr-download-btn" onclick="downloadQR('${subject}', '${subjectInfo.name}', '${studentId}')">
                         <i class="fas fa-download"></i> Download
@@ -827,8 +838,8 @@
                     try {
                         new QRCode(qrContainer, {
                             text: String(studentId),
-                            width: 220,
-                            height: 220,
+                            width: 600,
+                            height: 600,
                             colorDark: '#000000',
                             colorLight: '#ffffff',
                             correctLevel: QRCode.CorrectLevel.H
@@ -853,34 +864,41 @@
             }
             const canvas = container.querySelector('canvas');
             if (canvas) {
-                // Create a new canvas for the styled QR
-                const size = 600;
-                const border = 24;
-                const codeHeight = 60;
-                const totalHeight = size + border * 2 + codeHeight;
+                // Create a 1000x1000 canvas as requested
                 const outCanvas = document.createElement('canvas');
-                outCanvas.width = size + border * 2;
-                outCanvas.height = totalHeight;
+                outCanvas.width = 1000;
+                outCanvas.height = 1000;
                 const ctx = outCanvas.getContext('2d');
-                // White background
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(0, 0, outCanvas.width, outCanvas.height);
-                // Black border
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 8;
-                ctx.strokeRect(4, 4, outCanvas.width - 8, outCanvas.height - 8);
-                // Draw QR
-                ctx.drawImage(canvas, border, border, size, size);
-                // Draw code under QR
-                ctx.font = 'bold 40px Arial';
-                ctx.fillStyle = '#000';
+
+                // 1. Fill white background
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, 1000, 1000);
+
+                // 2. Setup frame dimensions (700x700)
+                const frameSize = 700;
+                const frameX = (1000 - frameSize) / 2; // 150
+                const frameY = 120; // Positioned slightly high to leave room for text
+
+                // 3. Draw Thick Black Frame
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 15;
+                ctx.strokeRect(frameX, frameY, frameSize, frameSize);
+
+                // 4. Draw QR Code inside the frame (with small padding)
+                const padding = 20;
+                ctx.drawImage(canvas, frameX + padding, frameY + padding, frameSize - padding * 2, frameSize - padding * 2);
+
+                // 5. Draw Code text below frame
+                ctx.font = 'bold 55px Arial';
+                ctx.fillStyle = '#000000';
                 ctx.textAlign = 'center';
-                ctx.fillText(studentId, outCanvas.width / 2, size + border + codeHeight / 1.5);
-                // Download
+                ctx.fillText(studentId, 500, frameY + frameSize + 100);
+
+                // Trigger Download
                 outCanvas.toBlob(function (blob) {
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
-                    link.download = `QR-${subjectName}-${Date.now()}.png`;
+                    link.download = `QR-${subjectName}-${studentId}.png`;
                     link.href = url;
                     document.body.appendChild(link);
                     link.click();
@@ -902,26 +920,32 @@
             if (originalContainer) {
                 const canvas = originalContainer.querySelector('canvas');
                 if (canvas) {
-                    // Create styled preview (same as download)
-                    const size = 400;
-                    const border = 16;
-                    const codeHeight = 40;
-                    const totalHeight = size + border * 2 + codeHeight;
-                    const outCanvas = document.createElement('canvas');
-                    outCanvas.width = size + border * 2;
-                    outCanvas.height = totalHeight;
-                    const ctx = outCanvas.getContext('2d');
-                    ctx.fillStyle = '#fff';
-                    ctx.fillRect(0, 0, outCanvas.width, outCanvas.height);
-                    ctx.strokeStyle = '#000';
-                    ctx.lineWidth = 6;
-                    ctx.strokeRect(3, 3, outCanvas.width - 6, outCanvas.height - 6);
-                    ctx.drawImage(canvas, border, border, size, size);
+                    // Create styled preview (scaled down version of download style)
+                    const previewCanvas = document.createElement('canvas');
+                    previewCanvas.width = 500;
+                    previewCanvas.height = 500;
+                    const ctx = previewCanvas.getContext('2d');
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, 500, 500);
+
+                    const frameSize = 350;
+                    const frameX = (500 - frameSize) / 2;
+                    const frameY = 60;
+
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 8;
+                    ctx.strokeRect(frameX, frameY, frameSize, frameSize);
+
+                    const padding = 10;
+                    ctx.drawImage(canvas, frameX + padding, frameY + padding, frameSize - padding * 2, frameSize - padding * 2);
+
                     ctx.font = 'bold 28px Arial';
-                    ctx.fillStyle = '#000';
+                    ctx.fillStyle = '#000000';
                     ctx.textAlign = 'center';
-                    ctx.fillText(studentId, outCanvas.width / 2, size + border + codeHeight / 1.5);
-                    modalContainer.appendChild(outCanvas);
+                    ctx.fillText(studentId, 250, frameY + frameSize + 50);
+
+                    modalContainer.appendChild(previewCanvas);
                     modal.classList.add('active');
                 }
             }
