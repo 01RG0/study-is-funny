@@ -330,12 +330,21 @@ function getStudent() {
             if (empty($merged['subjects'])) {
                 $merged['subjects'] = ($merged['grade'] === 'senior1') ? ['mathematics'] : ['physics', 'mathematics', 'mechanics'];
             }
-            // Merge all session fields from allMatches
+            // Merge session fields - only from matching subject if filter is applied
             $sessionFields = [];
             foreach ($allMatches as $match) {
                 foreach ((array)$match as $k => $v) {
                     if (strpos($k, 'session_') === 0) {
-                        $sessionFields[$k] = $v;
+                        // If subject filter is applied, only include sessions from matching subjects
+                        if (!empty($subjectFilter)) {
+                            $matchSubject = $normalizeSubject($match->subject ?? '');
+                            if ($matchSubject === $subjectFilter) {
+                                $sessionFields[$k] = $v;
+                            }
+                        } else {
+                            // No filter - include all sessions
+                            $sessionFields[$k] = $v;
+                        }
                     }
                 }
             }

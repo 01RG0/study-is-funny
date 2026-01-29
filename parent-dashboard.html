@@ -168,6 +168,20 @@
             transform: translateY(-2px);
         }
 
+        .loading-indicator {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            padding: 8px;
+            background: rgba(74, 144, 226, 0.1);
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        
+        .loading-indicator i {
+            margin-left: 5px;
+        }
+
         .logout-btn {
             background: #dc3545;
             padding: 10px 20px;
@@ -366,14 +380,21 @@
                         card.className = 'student-card';
 
                         const subjectLabel = getSubjectName(subject);
-
+                        
+                        // Get grade-specific styling
+                        const gradeClass = student.grade || 'senior1';
+                        
                         card.innerHTML = `
                             <h3><i class="fas fa-user-graduate"></i> ${student.name}</h3>
+                            <p><strong>الصف:</strong> ${getGradeName(student.grade)}</p>
                             <p><strong>المادة:</strong> ${subjectLabel}</p>
                             <p><strong>الهاتف:</strong> ${student.phone}</p>
                             <button class="view-btn" onclick="selectStudentWithSubject(${studentIndex}, '${subject}')">
                                 <i class="fas fa-eye"></i> عرض التفاصيل
                             </button>
+                            <div class="loading-indicator" id="loading-${studentIndex}-${subject}" style="display: none; margin-top: 10px;">
+                                <i class="fas fa-spinner fa-spin"></i> جاري تحميل البيانات...
+                            </div>
                         `;
                         studentsGrid.appendChild(card);
                     });
@@ -385,12 +406,46 @@
         }
 
         // Select a student with specific subject to view details
-        window.selectStudentWithSubject = function(studentIndex, subject) {
+        window.selectStudentWithSubject = async function(studentIndex, subject) {
             const student = students[studentIndex];
-            selectedStudent = {
-                ...student,
-                selectedSubject: subject
-            };
+            
+            // Show loading indicator
+            const loadingEl = document.getElementById(`loading-${studentIndex}-${subject}`);
+            if (loadingEl) {
+                loadingEl.style.display = 'block';
+            }
+            
+            // Fetch fresh data filtered by subject
+            try {
+                const response = await fetch(`${window.API_BASE_URL}students.php?action=get&phone=${encodeURIComponent(student.phone)}&subject=${encodeURIComponent(subject)}`);
+                const data = await response.json();
+                
+                if (data.success && data.student) {
+                    selectedStudent = {
+                        ...data.student,
+                        selectedSubject: subject
+                    };
+                } else {
+                    // Fallback to original student data
+                    selectedStudent = {
+                        ...student,
+                        selectedSubject: subject
+                    };
+                }
+            } catch (error) {
+                console.error('Error fetching subject-specific data:', error);
+                // Fallback to original student data
+                selectedStudent = {
+                    ...student,
+                    selectedSubject: subject
+                };
+            } finally {
+                // Hide loading indicator
+                if (loadingEl) {
+                    loadingEl.style.display = 'none';
+                }
+            }
+            
             const subjectParam = `&subject=${encodeURIComponent(subject)}`;
             window.location.href = `parent-student-details.html?phone=${encodeURIComponent(student.phone)}${subjectParam}`;
         };
