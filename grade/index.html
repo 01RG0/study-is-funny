@@ -616,53 +616,45 @@
         </a>
     </header>
 
+
     <div class="container1">
         <div class="year-selection">
             <h1>Select Your Current Year</h1>
-
             <div class="phone-display-container">
                 <div class="phone-number" id="displayPhone">
-                    <div class="phone-label">الرقم المستخدم حالياً هو:</div>
+                    <div class="phone-label">Current Phone Number:</div>
                     <div class="phone-value">
                         <script>
-                            // Get the phone number from localStorage
                             const userPhone = localStorage.getItem('userPhone');
-
-                            // Display the phone number
                             if (userPhone) {
                                 document.write(userPhone);
                             } else {
-                                document.write('لم يتم العثور على رقم هاتف');
+                                document.write('No phone number found');
                             }
                         </script>
                     </div>
                 </div>
             </div>
-
+            <div id="studentBalanceContainer" style="margin: 20px auto; max-width: 350px; text-align: center;"></div>
             <!-- Buttons with icons for each year selection -->
             <button onclick="location.href = '../senior1'; incrementClickCount('Sheet1', 'A1')">
                 <i class="fas fa-user-graduate"></i> Senior 1
             </button>
-
             <button onclick="location.href = '../senior2'; incrementClickCount('Sheet2', 'A1')">
                 <i class="fas fa-user-graduate"></i> Senior 2
             </button>
-
             <button onclick="location.href = '../senior3'; incrementClickCount('Sheet3', 'A1')">
                 <i class="fas fa-user-graduate"></i> Senior 3
             </button>
-
         </div>
-
         <!-- QR Codes Section -->
         <div class="qr-section">
             <h2>
                 <i class="fas fa-qrcode"></i>
-                رموز QR الخاصة بك
+                Your QR Codes
             </h2>
             <p class="qr-description">
-                استخدم هذه الرموز QR للوصول إلى جلساتك في المواد المختلفة.
-                كل رمز QR يخص مادة محددة.
+                Use these QR codes to access your sessions in different subjects. Each QR code is for a specific subject.
             </p>
             <div id="qrCodesContainer" class="qr-codes-container">
                 <!-- QR codes will be loaded here -->
@@ -753,6 +745,21 @@
         }
 
         function displayStudentQRCodes(studentData) {
+            // Show balance if available
+            const balanceContainer = document.getElementById('studentBalanceContainer');
+            if (balanceContainer) {
+                let balance = studentData.balance !== undefined ? studentData.balance : null;
+                let bookletBalance = studentData.bookletBalance !== undefined ? studentData.bookletBalance : null;
+                let html = '';
+                if (balance !== null) {
+                    html += `<div style="background:#fff;border:2px solid #008080;color:#008080;font-size:20px;font-weight:bold;border-radius:10px;padding:10px 0;margin-bottom:8px;">Balance: <span style='color:#333;'>${balance}</span> EGP</div>`;
+                }
+                if (bookletBalance !== null) {
+                    html += `<div style="background:#fff;border:2px solid #f093fb;color:#f093fb;font-size:16px;font-weight:bold;border-radius:10px;padding:8px 0;">Booklet Balance: <span style='color:#333;'>${bookletBalance}</span> EGP</div>`;
+                }
+                balanceContainer.innerHTML = html;
+            }
+
             const container = document.getElementById('qrCodesContainer');
             container.innerHTML = '';
 
@@ -772,13 +779,11 @@
                 console.log('📊 Filtered for Senior 2: Math, Physics, Mechanics');
             }
 
-            console.log('🎨 Displaying QR codes for subjects:', subjects);
-            console.log(`📊 Student has ${subjects.length} subject(s):`, subjects.join(', '));
-
+            // English subject names
             const subjectNames = {
-                physics: { name: 'الفيزياء', icon: 'fas fa-atom' },
-                mathematics: { name: 'الرياضيات', icon: 'fas fa-calculator' },
-                mechanics: { name: 'الميكانيكا', icon: 'fas fa-cogs' }
+                physics: { name: 'Physics', icon: 'fas fa-atom' },
+                mathematics: { name: 'Mathematics', icon: 'fas fa-calculator' },
+                mechanics: { name: 'Mechanics', icon: 'fas fa-cogs' }
             };
 
             let generatedCount = 0;
@@ -788,79 +793,51 @@
                     console.warn(`⚠️ Unknown subject: ${subject} - Skipping QR generation`);
                     return;
                 }
-                console.log(`✏️ Creating QR for: ${subjectInfo.name} (${subject})`);
                 generatedCount++;
-
-                // Get the studentId for this specific subject
                 const studentId = studentData.subjectIds && studentData.subjectIds[subject]
                     ? studentData.subjectIds[subject]
                     : null;
-
                 if (!studentId) {
                     console.error(`❌ No studentId found for ${subject}. Skipping.`);
                     return;
                 }
-
-                console.log(`🆔 Using studentId: ${studentId} for ${subject}`);
-
-                try {
-                    // Create access URL - QR code contains ONLY the student ID
-                    const appRoot = window.APP_BASE_URL || '../';
-                    const accessUrl = `${appRoot}senior${studentData.grade.includes('1') ? '1' : (studentData.grade.includes('3') ? '3' : '2')}/${subject}/qr-access/?id=${studentId}`;
-
-                    console.log(`🔗 [${subject}] Simple URL with ID ${studentId}:`, accessUrl);
-
-                    const qrCard = document.createElement('div');
-                    qrCard.className = 'qr-code-card';
-                    qrCard.setAttribute('data-subject', subject);
-
-                    qrCard.innerHTML = `
-                        <div class="qr-subject-icon">
-                            <i class="${subjectInfo.icon}"></i>
-                        </div>
-                        <h3>${subjectInfo.name}</h3>
-                        <div class="qr-code-display" id="qr-container-${subject}" onclick="showQRModal('${subject}', '${subjectInfo.name}')" title="انقر للتكبير">
-                        </div>
-                        <div class="qr-code-value" style="color: var(--text); font-size: 18px; font-weight: bold; margin-top: 12px;">${studentId}</div>
-                        <button class="qr-download-btn" onclick="downloadQR('${subject}', '${subjectInfo.name}')">
-                            <i class="fas fa-download"></i> تحميل
-                        </button>
-                    `;
-
-                    container.appendChild(qrCard);
-
-                    // Generate QR code using QRCodeJS
-                    if (typeof QRCode === 'undefined') {
-                        throw new Error('QR library missing');
-                    }
-
-                    const qrContainer = document.getElementById(`qr-container-${subject}`);
-                    if (!qrContainer) throw new Error(`Container not found`);
-
-                    // Small delay to ensure DOM is ready
-                    setTimeout(() => {
-                        try {
-                            new QRCode(qrContainer, {
-                                text: String(studentId),
-                                width: 180,
-                                height: 180,
-                                colorDark: '#000000',
-                                colorLight: '#ffffff',
-                                correctLevel: QRCode.CorrectLevel.M
-                            });
-                            console.log(`✅ QR Created for ID: ${studentId} [${subject}]`);
-                        } catch (error) {
-                            console.error(`❌ QR Error [${subject}]:`, error);
-                            qrContainer.innerHTML = `<div style="color:red; font-size:12px;">خطأ في الرسم: ${error.message}</div>`;
-                        }
-                    }, 50);
-
-                } catch (err) {
-                    console.error(`❌ Error rendering QR for ${subject}:`, err);
+                // Improved QR card UI
+                const qrCard = document.createElement('div');
+                qrCard.className = 'qr-code-card';
+                qrCard.setAttribute('data-subject', subject);
+                qrCard.innerHTML = `
+                    <div class="qr-subject-icon">
+                        <i class="${subjectInfo.icon}"></i>
+                    </div>
+                    <h3 style="font-size:20px;letter-spacing:1px;">${subjectInfo.name}</h3>
+                    <div class="qr-code-display" id="qr-container-${subject}" onclick="showQRModal('${subject}', '${subjectInfo.name}', '${studentId}')" title="Click to enlarge"></div>
+                    <div class="qr-code-value" style="color: #222; font-size: 18px; font-weight: bold; margin-top: 12px; background:#fff; border-radius:6px; padding:4px 0; border:1.5px solid #000;">${studentId}</div>
+                    <button class="qr-download-btn" onclick="downloadQR('${subject}', '${subjectInfo.name}', '${studentId}')">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                `;
+                container.appendChild(qrCard);
+                // Generate QR code using QRCodeJS
+                if (typeof QRCode === 'undefined') {
+                    throw new Error('QR library missing');
                 }
+                const qrContainer = document.getElementById(`qr-container-${subject}`);
+                if (!qrContainer) throw new Error(`Container not found`);
+                setTimeout(() => {
+                    try {
+                        new QRCode(qrContainer, {
+                            text: String(studentId),
+                            width: 220,
+                            height: 220,
+                            colorDark: '#000000',
+                            colorLight: '#ffffff',
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    } catch (error) {
+                        qrContainer.innerHTML = `<div style="color:red; font-size:12px;">QR error: ${error.message}</div>`;
+                    }
+                }, 50);
             });
-
-            console.log(`✅ QR Code Generation Complete: ${generatedCount} code(s) created`);
         }
 
         function generateAccessToken(phone, subject) {
@@ -868,71 +845,84 @@
             return btoa(`${phone}:${subject}:${Date.now()}`).substring(0, 16);
         }
 
-        function downloadQR(subject, subjectName) {
+        function downloadQR(subject, subjectName, studentId) {
             const container = document.getElementById(`qr-container-${subject}`);
             if (!container) {
                 console.error(`Container not found for ${subject}`);
                 return;
             }
-
-            // QRCodeJS creates a canvas element inside the container
             const canvas = container.querySelector('canvas');
             if (canvas) {
-                try {
-                    // Convert canvas to blob for better download
-                    canvas.toBlob(function (blob) {
-                        const url = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.download = `QR-${subjectName}-${Date.now()}.png`;
-                        link.href = url;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        URL.revokeObjectURL(url);
-                        console.log(`✅ Downloaded QR for ${subjectName}`);
-                    }, 'image/png', 1.0);
-                } catch (error) {
-                    // Fallback to dataURL method
-                    console.warn('Blob method failed, using dataURL fallback');
+                // Create a new canvas for the styled QR
+                const size = 600;
+                const border = 24;
+                const codeHeight = 60;
+                const totalHeight = size + border * 2 + codeHeight;
+                const outCanvas = document.createElement('canvas');
+                outCanvas.width = size + border * 2;
+                outCanvas.height = totalHeight;
+                const ctx = outCanvas.getContext('2d');
+                // White background
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, outCanvas.width, outCanvas.height);
+                // Black border
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 8;
+                ctx.strokeRect(4, 4, outCanvas.width - 8, outCanvas.height - 8);
+                // Draw QR
+                ctx.drawImage(canvas, border, border, size, size);
+                // Draw code under QR
+                ctx.font = 'bold 40px Arial';
+                ctx.fillStyle = '#000';
+                ctx.textAlign = 'center';
+                ctx.fillText(studentId, outCanvas.width / 2, size + border + codeHeight / 1.5);
+                // Download
+                outCanvas.toBlob(function (blob) {
+                    const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.download = `QR-${subjectName}-${Date.now()}.png`;
-                    link.href = canvas.toDataURL('image/png');
+                    link.href = url;
+                    document.body.appendChild(link);
                     link.click();
-                }
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                }, 'image/png', 1.0);
             } else {
-                console.error('❌ QR code canvas not found for download');
-                alert('لم يتم العثور على رمز QR للتحميل');
+                alert('QR code not found for download');
             }
         }
 
-        function showQRModal(subject, subjectName) {
+        function showQRModal(subject, subjectName, studentId) {
             const modal = document.getElementById('qrModal');
             const modalTitle = document.getElementById('modalSubjectName');
             const modalContainer = document.getElementById('modalQRContainer');
-
-            // Set title
             modalTitle.textContent = subjectName;
-
-            // Clear previous QR
             modalContainer.innerHTML = '';
-
-            // Get the original container
             const originalContainer = document.getElementById(`qr-container-${subject}`);
             if (originalContainer) {
                 const canvas = originalContainer.querySelector('canvas');
                 if (canvas) {
-                    // Clone the canvas with larger size
-                    const dataURL = canvas.toDataURL();
-                    const img = document.createElement('img');
-                    img.src = dataURL;
-                    img.style.width = '400px';
-                    img.style.height = '400px';
-                    img.style.imageRendering = 'pixelated'; // Keeps QR sharp when enlarged
-                    modalContainer.appendChild(img);
-
-                    // Show modal
+                    // Create styled preview (same as download)
+                    const size = 400;
+                    const border = 16;
+                    const codeHeight = 40;
+                    const totalHeight = size + border * 2 + codeHeight;
+                    const outCanvas = document.createElement('canvas');
+                    outCanvas.width = size + border * 2;
+                    outCanvas.height = totalHeight;
+                    const ctx = outCanvas.getContext('2d');
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(0, 0, outCanvas.width, outCanvas.height);
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 6;
+                    ctx.strokeRect(3, 3, outCanvas.width - 6, outCanvas.height - 6);
+                    ctx.drawImage(canvas, border, border, size, size);
+                    ctx.font = 'bold 28px Arial';
+                    ctx.fillStyle = '#000';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(studentId, outCanvas.width / 2, size + border + codeHeight / 1.5);
+                    modalContainer.appendChild(outCanvas);
                     modal.classList.add('active');
-                    console.log(`📱 Showing enlarged QR for ${subject}`);
                 }
             }
         }
