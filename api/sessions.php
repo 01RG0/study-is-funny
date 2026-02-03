@@ -927,8 +927,8 @@ function checkStudentSessionAccess() {
             $student = null;
             $searchedCollections = [];
             
-            // Try to find student in all_students_view or subject-specific collections
-            $collectionsToTry = ['all_students_view'];
+            // Try to find student in all_students_view, users, or subject-specific collections
+            $collectionsToTry = ['all_students_view', 'users', 'students'];
             
             // Add subject-specific collections based on common subjects
             $subjectCollections = [
@@ -950,6 +950,14 @@ function checkStudentSessionAccess() {
                     error_log('  Trying ' . $collection . ' with phone: ' . $phoneVariation);
                     
                     $studentFilter = ['phone' => $phoneVariation];
+                    
+                    // If subject is provided, add it to the filter for more precision
+                    // But only for non-user collections
+                    if ($subject && !in_array($collection, ['users', 'students'])) {
+                        // Some collections might use 'subject' field
+                        $studentFilter['subject'] = ['$regex' => $subject, '$options' => 'i'];
+                    }
+
                     $query = new MongoDB\Driver\Query($studentFilter);
                     
                     try {
@@ -958,7 +966,16 @@ function checkStudentSessionAccess() {
                         
                         if ($student) {
                             error_log('  ✓ Found student in collection: ' . $collection);
-                            break 2;  // Break both loops
+                            
+                            // Check if student has the session key
+                            $sessionKey = 'session_' . $sessionNumber;
+                            if (isset($student->$sessionKey)) {
+                                error_log('  ✓ Student has ' . $sessionKey . '. Breaking search.');
+                                break 2; // Found student WITH the session data
+                            } else {
+                                error_log('  ⚠ Student found but missing ' . $sessionKey . '. Continuing search...');
+                                // Continue searching other collections in case they have the enrollment with session data
+                            }
                         }
                     } catch (Exception $e) {
                         error_log('  Error querying ' . $collection . ': ' . $e->getMessage());
@@ -991,18 +1008,18 @@ function checkStudentSessionAccess() {
                 
                 // Session is an object with online_session field
                 if (is_object($studentSession) && isset($studentSession->online_session)) {
-                    $hasAccess = $studentSession->online_session === true;
+                    $hasAccess = (bool)$studentSession->online_session === true;
                     error_log('  online_session value: ' . ($studentSession->online_session ? 'true' : 'false'));
                 } 
                 // Session might be an array
                 elseif (is_array($studentSession) && isset($studentSession['online_session'])) {
-                    $hasAccess = $studentSession['online_session'] === true;
+                    $hasAccess = (bool)$studentSession['online_session'] === true;
                     error_log('  online_session value: ' . ($studentSession['online_session'] ? 'true' : 'false'));
                 }
                 // Session might be boolean directly
-                elseif ($studentSession === true) {
+                elseif ($studentSession === true || $studentSession === 1 || $studentSession === 'true') {
                     $hasAccess = true;
-                    error_log('  Session value is boolean true');
+                    error_log('  Session value is truthy');
                 }
                 else {
                     error_log('  Session exists but online_session not found or is falsy');

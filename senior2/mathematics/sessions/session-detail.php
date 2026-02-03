@@ -71,14 +71,14 @@ if (isset($session->videos)) {
             
             // If source is "upload" and we have a file_path, use it directly
             if ($videoSource === 'upload' && isset($filePath) && $filePath) {
-                $videoUrl = '/study-is-funny/uploads/videos/' . ltrim($filePath, '/');
+                $videoUrl = '../../../uploads/videos/' . ltrim($filePath, '/');
             }
             // Fallback: Try to fetch from database using video_id
             elseif ($videoSource === 'upload' && $videoId && !$videoUrl) {
                 try {
                     $videoRecord = $videoManager->getById($videoId);
                     if ($videoRecord && isset($videoRecord->video_file_path)) {
-                        $videoUrl = '/study-is-funny/uploads/videos/' . ltrim($videoRecord->video_file_path, '/');
+                        $videoUrl = '../../../uploads/videos/' . ltrim($videoRecord->video_file_path, '/');
                     }
                 } catch (Exception $e) {
                     error_log("Error fetching video record: " . $e->getMessage());
@@ -86,13 +86,13 @@ if (isset($session->videos)) {
                 
                 // Last fallback: Direct ID-based path
                 if (!$videoUrl) {
-                    $videoUrl = '/study-is-funny/uploads/videos/' . $videoId . '.mp4';
+                    $videoUrl = '../../../uploads/videos/' . $videoId . '.mp4';
                 }
             }
             
             // Ensure upload files have proper URL if not already set
             if ($videoSource === 'upload' && !$videoUrl && $videoId) {
-                $videoUrl = '/uploads/videos/' . $videoId . '.mp4';
+                $videoUrl = '../../../uploads/videos/' . $videoId . '.mp4';
             }
             
             $videoData['url'] = $videoUrl;
@@ -123,7 +123,6 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
 if ($currentVideo && isset($currentVideo['url'])) {
     $videoUrl = $currentVideo['url'];
 }
-?>
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -479,83 +478,109 @@ if ($currentVideo && isset($currentVideo['url'])) {
     </div>
     <?php endif; ?>
 
+    <!-- Access Control Overlay -->
+    <div id="accessLoadingOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Segoe UI', Arial, sans-serif;">
+        <div style="width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #008080; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <p style="margin-top: 20px; color: #008080; font-weight: 500; font-size: 18px;">Verifying Access...</p>
+    </div>
+
+    <style>
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .access-denied-card {
+            background: white;
+            padding: 50px 30px;
+            border-radius: 20px;
+            max-width: 550px;
+            width: 90%;
+            margin: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            text-align: center;
+            border-top: 5px solid #ff4757;
+            animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .denied-icon {
+            font-size: 80px;
+            color: #ff4757;
+            margin-bottom: 25px;
+            animation: pulse-red 2s infinite;
+        }
+        
+        @keyframes pulse-red {
+            0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 71, 87, 0)); }
+            70% { transform: scale(1.1); filter: drop-shadow(0 0 15px rgba(255, 71, 87, 0.4)); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 71, 87, 0)); }
+        }
+    </style>
+
     <script>
         // Check user access before displaying content
         async function checkUserAccess() {
+            const overlay = document.getElementById('accessLoadingOverlay');
             const userPhone = localStorage.getItem('userPhone');
-            const sessionId = '<?= htmlspecialchars($sessionId) ?>';
             const sessionNumber = <?= $sessionNumber ? $sessionNumber : 'null' ?>;
             const accessControl = '<?= htmlspecialchars($accessControl) ?>';
-            const requiredGrade = '<?= htmlspecialchars($requiredGrade) ?>';
             
             console.log('=== Access Control Check ===');
-            console.log('User Phone:', userPhone);
-            console.log('Session ID:', sessionId);
-            console.log('Session Number:', sessionNumber);
-            console.log('Access Control:', accessControl);
-            console.log('Required Grade:', requiredGrade);
             
-            // Check if user is logged in
             if (!userPhone) {
-                console.log('No user phone found - redirecting to login');
                 window.location.href = '/login/index.html';
                 return;
             }
             
-            // If access is "free for all", allow access
             if (accessControl === 'free') {
-                console.log('Free access enabled for all students');
+                if (overlay) overlay.style.display = 'none';
                 return;
             }
             
-            // If access is "restricted", check if student purchased this session
             if (accessControl === 'restricted' && sessionNumber) {
-                console.log('Restricted access - checking if student paid for session', sessionNumber);
-                
                 try {
-                    // Call API to check subscription
                     const response = await fetch(`${window.API_BASE_URL}sessions.php?action=check-access&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}`);
                     const data = await response.json();
                     
-                    console.log('Access check response:', data);
-                    
-                    if (!data.success || !data.hasAccess) {
-                        console.log('Student does not have access to this session');
-                        showAccessDenied();
+                    if (data.success && data.hasAccess) {
+                        if (overlay) overlay.style.display = 'none';
                         return;
+                    } else {
+                        showAccessDenied(data.message || "You don't have access to this session.");
                     }
-                    
-                    console.log('Student has access to session', sessionNumber);
                 } catch (error) {
                     console.error('Error checking access:', error);
-                    // Continue anyway if API fails
+                    if (overlay) overlay.style.display = 'none'; 
                 }
+            } else {
+                if (overlay) overlay.style.display = 'none';
             }
         }
         
-        function showAccessDenied() {
+        function showAccessDenied(message) {
+            const backLink = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+            document.body.style.background = '#f1f2f6';
             document.body.innerHTML = `
-                <div style="text-align: center; padding: 50px; font-family: Arial; background: #ffffff; min-height: 100vh;">
-                    <div style="background: white; padding: 40px; border-radius: 10px; max-width: 500px; margin: 100px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <h2 style="color: #d32f2f; margin-bottom: 20px;">🔒 Access Denied</h2>
-                        <p style="color: #666; font-size: 16px; margin-bottom: 20px;">
-                            This session requires a paid subscription. You don't have access to this lecture.
+                <div style="display: flex; min-height: 100vh; align-items: center; justify-content: center; padding: 20px;">
+                    <div class="access-denied-card">
+                        <div class="denied-icon">🚫</div>
+                        <h1 style="color: #2f3542; margin-bottom: 15px; font-size: 28px;">الدخول غير مصرح به</h1>
+                        <p style="color: #57606f; font-size: 18px; margin-bottom: 30px; line-height: 1.6;">
+                            نعتذر، هذه المحاضرة مخصصة للمشتركين فقط.<br>
+                            <span style="font-weight: bold; color: #ff4757;">${message}</span>
                         </p>
-                        <p style="color: #999; font-size: 14px; margin-bottom: 30px;">
-                            Please contact your instructor or purchase this session to view the content.
-                        </p>
-                        <a href="/senior2/mathematics/sessions/" style="display: inline-block; padding: 10px 20px; background: #008080; color: white; text-decoration: none; border-radius: 5px;">
-                            Back to Sessions
-                        </a>
+                        <div style="display: flex; gap: 15px; justify-content: center;">
+                            <a href="${backLink}" style="padding: 12px 25px; background: #008080; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; transition: 0.3s; box-shadow: 0 4px 12px rgba(0, 128, 128, 0.2);">
+                                العودة للمحاضرات
+                            </a>
+                            <a href="https://wa.me/201558145450" target="_blank" style="padding: 12px 25px; background: #25D366; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; transition: 0.3s; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);">
+                                تواصل معنا
+                            </a>
+                        </div>
                     </div>
                 </div>
             `;
         }
         
-        // Check access on page load
-        window.addEventListener('load', checkUserAccess);
-        
-        // Updated fullscreen function for custom player
         function toggleFullscreen(element) {
             const customPlayer = element || document.querySelector('.custom-player');
             const videoPlayer = document.getElementById('videoPlayer');
@@ -563,7 +588,7 @@ if ($currentVideo && isset($currentVideo['url'])) {
             if (document.fullscreenElement) {
                 document.exitFullscreen();
             } else {
-                if (customPlayer.requestFullscreen) {
+                if (customPlayer && customPlayer.requestFullscreen) {
                     customPlayer.requestFullscreen().catch(err => {
                         console.log('Fullscreen request failed:', err);
                     });
@@ -601,6 +626,8 @@ if ($currentVideo && isset($currentVideo['url'])) {
                     break;
             }
         });
+
+        checkUserAccess();
     </script>
 </body>
 </html>

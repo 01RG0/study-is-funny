@@ -15,17 +15,17 @@
             const protocol = window.location.protocol;
             const host = window.location.host;
             const pathname = window.location.pathname;
-            
+
             // Check if we're in a hosted subdirectory (contains 'study-is-funny')
             if (pathname.includes('study-is-funny')) {
-                const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);                const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
+                const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//); const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
                 return `${protocol}//${host}${basePath}/api/`;
             }
-            
+
             // Local development or root path
             return `${protocol}//${host}/api/`;
         }
-        
+
         window.API_BASE_URL = getApiBaseUrl();
         console.log('✓ API Base URL:', window.API_BASE_URL);
         console.log('✓ Current Location:', window.location.href);
@@ -175,7 +175,7 @@
         }
 
         function openSession(sessionId, sessionNumber) {
-            const sessionPath = `/senior3/physics/sessions/session-detail.php?id=${sessionId}&session=${sessionNumber || 1}`;
+            const sessionPath = `./session-detail.php?id=${sessionId}&session=${sessionNumber || 1}`;
             window.location.href = sessionPath;
         }
 

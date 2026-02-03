@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -178,25 +179,26 @@
   <script>
     // API Configuration - Handles correct API path for both local and hosted environments
     function getApiBaseUrl() {
-        const protocol = window.location.protocol;
-        const host = window.location.host;
-        const pathname = window.location.pathname;
-        
-        // Check if we're in a hosted subdirectory (contains 'study-is-funny')
-        if (pathname.includes('study-is-funny')) {
-            const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);            const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
-            return `${protocol}//${host}${basePath}/api/`;
-        }
-        
-        // Local development or root path
-        return `${protocol}//${host}/api/`;
+      const protocol = window.location.protocol;
+      const host = window.location.host;
+      const pathname = window.location.pathname;
+
+      // Check if we're in a hosted subdirectory (contains 'study-is-funny')
+      if (pathname.includes('study-is-funny')) {
+        const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//); const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
+        return `${protocol}//${host}${basePath}/api/`;
+      }
+
+      // Local development or root path
+      return `${protocol}//${host}/api/`;
     }
-    
+
     window.API_BASE_URL = getApiBaseUrl();
     console.log('✓ API Base URL:', window.API_BASE_URL);
     console.log('✓ Current Location:', window.location.href);
   </script>
 </head>
+
 <body>
 
   <h1>📚 Homework Assignments</h1>
@@ -220,7 +222,7 @@
         // Query sessions.php for homework content (status: 'homework')
         const url = `${window.API_BASE_URL}sessions.php?action=all`;
         console.log('API URL:', url);
-        
+
         const response = await fetch(url);
         const data = await response.json();
 
@@ -232,7 +234,7 @@
         }
 
         // Filter sessions to only homework content (status: 'homework')
-        const homeworkSessions = (data.sessions || []).filter(session => 
+        const homeworkSessions = (data.sessions || []).filter(session =>
           session.status === 'homework' || (session.type && session.type.includes('homework'))
         );
 
@@ -305,8 +307,9 @@
   </script>
 
   <div class="back-button">
-    <a href="/senior3/">← Back to Senior 3</a>
+    <a href="../">← Back to Senior 3</a>
   </div>
 
 </body>
+
 </html>
