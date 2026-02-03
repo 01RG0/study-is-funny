@@ -736,14 +736,19 @@
                 const status = session.attendanceStatus || 'No Status';
                 const statusBadgeClass = status === 'Present' ? 'status-present' : 'status-absent';
                 const statusText = status === 'Present' ? '✓ Present' : status === 'Absent' ? '✗ Absent' : status;
+                const onlineText = session.online_attendance === true ? '<span class="status-badge status-present" style="font-size: 0.8em;"><i class="fas fa-globe"></i> Online</span>' :
+                    session.online_attendance === false ? '<span class="status-badge status-absent" style="font-size: 0.8em;"><i class="fas fa-door-closed"></i> Center</span>' : '';
 
                 html += `
                     <div class="session-item">
                         <span class="session-number">Session ${sessionNum}</span>
-                        <span class="session-status">
-                            <span class="status-badge ${statusBadgeClass}">${statusText}</span>
-                            ${session.date ? `<span style="color: #999;">${session.date}</span>` : ''}
-                        </span>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                            <div class="session-status">
+                                ${onlineText}
+                                <span class="status-badge ${statusBadgeClass}">${statusText}</span>
+                            </div>
+                            <span style="color: #999; font-size: 0.8em;">${session.date || ''}</span>
+                        </div>
                     </div>
                 `;
             });

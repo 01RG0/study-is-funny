@@ -429,11 +429,21 @@
             background: white;
             padding: 30px;
             border-radius: 15px;
+            width: auto;
             max-width: 90%;
-            max-height: 90%;
+            max-height: 90vh;
             text-align: center;
             animation: zoomIn 0.3s ease;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        .qr-modal-content canvas {
+            max-width: 100%;
+            height: auto !important;
         }
 
         .qr-modal-content h2 {
@@ -538,6 +548,17 @@
                 width: 120px;
                 height: 120px;
             }
+
+            .qr-modal-content {
+                padding: 20px 10px;
+                width: 95%;
+                max-width: 95%;
+            }
+
+            .qr-modal-content h2 {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
         }
 
         /* Compact phone display styles */
@@ -623,6 +644,7 @@
         <div class="year-selection">
             <h1>Select Your Current Year</h1>
             <div class="phone-display-container">
+                <div id="studentNameContainer" style="margin-bottom: 15px;"></div>
                 <div class="phone-number" id="displayPhone">
                     <div class="phone-label">Current Phone Number:</div>
                     <div class="phone-value">
@@ -671,7 +693,8 @@
             <span class="qr-modal-close" onclick="closeQRModal()">&times;</span>
             <h2 id="modalSubjectName"></h2>
             <div id="modalQRContainer"
-                style="display: inline-block; background: white; padding: 20px; border-radius: 10px;"></div>
+                style="display: flex; justify-content: center; background: white; padding: 10px; border-radius: 10px; width: 100%; box-sizing: border-box;">
+            </div>
         </div>
     </div>
 
@@ -748,6 +771,19 @@
         }
 
         function displayStudentQRCodes(studentData) {
+            // Show student name
+            const nameContainer = document.getElementById('studentNameContainer');
+            if (nameContainer && studentData.name) {
+                nameContainer.innerHTML = `
+                    <div class="phone-number" style="border-color: var(--contrast); background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);">
+                        <div class="phone-label">Student Name:</div>
+                        <div class="phone-value" style="color: var(--contrast); border-color: var(--contrast); font-size: 1.2em;">
+                            <i class="fas fa-user-circle"></i> ${studentData.name}
+                        </div>
+                    </div>
+                `;
+            }
+
             // Show balance if available
             const balanceContainer = document.getElementById('studentBalanceContainer');
             if (balanceContainer) {
@@ -884,11 +920,17 @@
                 ctx.lineWidth = 15;
                 ctx.strokeRect(frameX, frameY, frameSize, frameSize);
 
-                // 4. Draw QR Code inside the frame (with small padding)
+                // 4. Draw Subject Name at TOP
+                ctx.font = 'bold 60px Arial';
+                ctx.fillStyle = '#000000';
+                ctx.textAlign = 'center';
+                ctx.fillText(subjectName, 500, 80);
+
+                // 5. Draw QR Code inside the frame (with small padding)
                 const padding = 20;
                 ctx.drawImage(canvas, frameX + padding, frameY + padding, frameSize - padding * 2, frameSize - padding * 2);
 
-                // 5. Draw Code text below frame
+                // 6. Draw Code text below frame
                 ctx.font = 'bold 55px Arial';
                 ctx.fillStyle = '#000000';
                 ctx.textAlign = 'center';
@@ -936,6 +978,12 @@
                     ctx.strokeStyle = '#000000';
                     ctx.lineWidth = 8;
                     ctx.strokeRect(frameX, frameY, frameSize, frameSize);
+
+                    // Draw Subject Name at TOP
+                    ctx.font = 'bold 30px Arial';
+                    ctx.fillStyle = '#000000';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(subjectName, 250, 40);
 
                     const padding = 10;
                     ctx.drawImage(canvas, frameX + padding, frameY + padding, frameSize - padding * 2, frameSize - padding * 2);

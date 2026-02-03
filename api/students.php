@@ -270,8 +270,13 @@ function getStudent() {
         // Normalize phone formats
         $phonesToTry = [$phone];
         $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
-        if (strlen($cleanPhone) === 11 && substr($cleanPhone, 0, 1) === '0') {
+        if (strlen($cleanPhone) === 12 && substr($cleanPhone, 0, 2) === '20') {
+            $phonesToTry[] = '0' . substr($cleanPhone, 2);
+            $phonesToTry[] = '+' . $cleanPhone;
+            $phonesToTry[] = $cleanPhone;
+        } elseif (strlen($cleanPhone) === 11 && substr($cleanPhone, 0, 1) === '0') {
             $phonesToTry[] = '+2' . $cleanPhone;
+            $phonesToTry[] = '20' . $cleanPhone;
             $phonesToTry[] = $cleanPhone;
         }
 
@@ -381,9 +386,16 @@ function getStudent() {
         $query = new MongoDB\Driver\Query($filter);
         $cursor = $client->executeQuery("$databaseName.users", $query);
         $platformStudent = current($cursor->toArray());
-
         if ($platformStudent) {
-            $studentArray = [
+            // Extract session fields
+            $sessionFields = [];
+            foreach ((array)$platformStudent as $k => $v) {
+                if (strpos($k, 'session_') === 0) {
+                    $sessionFields[$k] = $v;
+                }
+            }
+            
+            $studentArray = array_merge([
                 'name' => $platformStudent->name ?? 'Student',
                 'phone' => $phone,
                 'grade' => $platformStudent->grade ?? 'senior1',
@@ -394,7 +406,7 @@ function getStudent() {
                 'totalSessions' => isset($platformStudent->subjects) ? count((array)$platformStudent->subjects) * 5 : 15,
                 'watchedSessions' => $platformStudent->totalSessionsViewed ?? 0,
                 'totalWatchTimeFormatted' => formatWatchTime($platformStudent->totalWatchTime ?? 0)
-            ];
+            ], $sessionFields);
 
             echo json_encode(['success' => true, 'student' => $studentArray]);
             return;
@@ -478,8 +490,16 @@ function getStudentByParentPhone() {
                     }
                 }
                 
+                // Extract session fields
+                $sessionFields = [];
+                foreach ((array)$studentData as $k => $v) {
+                    if (strpos($k, 'session_') === 0) {
+                        $sessionFields[$k] = $v;
+                    }
+                }
+                
                 // Create a separate record for each enrollment
-                $students[] = [
+                $students[] = array_merge([
                     'name' => $studentData->studentName ?? $studentData->name ?? 'Student',
                     'phone' => $phone,
                     'parentPhone' => $studentData->parentPhone ?? $parentPhone,
@@ -489,7 +509,7 @@ function getStudentByParentPhone() {
                     'balance' => $studentData->balance ?? 0,
                     'bookletBalance' => $studentData->bookletBalance ?? 0,
                     'isActive' => $studentData->isActive ?? true
-                ];
+                ], $sessionFields);
             }
             
             if (!empty($students)) {
@@ -529,7 +549,7 @@ function getStudentByParentPhone() {
                 // Remove duplicates
                 $subjectsArray = array_values(array_unique($subjectsArray));
                 
-                $students[] = [
+                $sData = [
                     'name' => $student->name ?? 'Student',
                     'phone' => $student->phone ?? '',
                     'parentPhone' => $parentPhone,
@@ -540,6 +560,15 @@ function getStudentByParentPhone() {
                     'bookletBalance' => $student->bookletBalance ?? 0,
                     'isActive' => $student->isActive ?? true
                 ];
+                
+                // Extract session fields
+                foreach ((array)$student as $k => $v) {
+                    if (strpos($k, 'session_') === 0) {
+                        $sData[$k] = $v;
+                    }
+                }
+                
+                $students[] = $sData;
             }
 
             echo json_encode(['success' => true, 'students' => $students, 'count' => count($students)]);
