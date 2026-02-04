@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Diagnostic - Check Session & Logs</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        button {
+            padding: 12px 24px;
+            margin: 5px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        pre {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            border: 1px solid #ddd;
+        }
+
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔍 Diagnostic Tool - Session & API Check</h1>
+
+        <div class="section">
+            <h3>Step 1: Check Session Data</h3>
+            <p>Session ID: <code>698197a9247102af2b0e7c42</code></p>
+            <button onclick="checkSession()">Check Session Info</button>
+            <pre id="sessionResult">Click button to check...</pre>
+        </div>
+
+        <div class="section">
+            <h3>Step 2: Test API Call with Logging</h3>
+            <p>Phone: <code>01274856549</code> | Session: <code>1</code></p>
+            <button onclick="testAPI()">Test API Call</button>
+            <pre id="apiResult">Click button to test...</pre>
+        </div>
+
+        <div class="section">
+            <h3>Step 3: Check Database</h3>
+            <p>After testing, check MongoDB for:</p>
+            <pre>db.all_students_view.findOne(
+  { phone: "+201274856549" },
+  { "session_1.online_attendance": 1, "session_1.online_attendance_completed_at": 1 }
+)</pre>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
+
+        async function checkSession() {
+            const result = document.getElementById('sessionResult');
+            result.textContent = 'Loading session data...\n\n';
+
+            try {
+                const response = await fetch(`${baseUrl}/api/sessions.php?action=get&id=698197a9247102af2b0e7c42`);
+                const data = await response.json();
+
+                result.textContent = 'Session Data:\n';
+                result.textContent += JSON.stringify(data, null, 2);
+
+                if (data.session) {
+                    result.textContent += '\n\n📋 Key Info:\n';
+                    result.textContent += `- Session Number: ${data.session.sessionNumber || 'N/A'}\n`;
+                    result.textContent += `- Access Control: ${data.session.accessControl || 'N/A'}\n`;
+                    result.textContent += `- Grade: ${data.session.grade || 'N/A'}\n`;
+                    result.textContent += `- Subject: ${data.session.subject || 'N/A'}\n`;
+
+                    if (data.session.accessControl === 'free') {
+                        result.textContent += '\n⚠️ WARNING: This is a FREE session!\n';
+                        result.textContent += 'The API will NOT be called for free sessions.\n';
+                        result.textContent += 'online_attendance tracking only works for RESTRICTED sessions.';
+                    }
+                }
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function testAPI() {
+            const result = document.getElementById('apiResult');
+            result.textContent = 'Testing API call...\n\n';
+
+            try {
+                const url = `${baseUrl}/api/sessions.php?action=check-access&phone=01274856549&session_number=1`;
+                result.textContent += `URL: ${url}\n\n`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                result.textContent += 'Response:\n';
+                result.textContent += JSON.stringify(data, null, 2);
+
+                if (data.success && data.hasAccess) {
+                    result.textContent += '\n\n✅ API returned success!';
+                    result.textContent += '\n\n📝 Check your PHP server logs for:';
+                    result.textContent += '\n- "✓ Student found in collection: [name]"';
+                    result.textContent += '\n- "Current online_attendance: false"';
+                    result.textContent += '\n- "🔄 Updating online_attendance to true"';
+                    result.textContent += '\n- "✅ Updated X record(s)"';
+                    result.textContent += '\n\nIf you don\'t see these logs, the update code isn\'t running!';
+                } else {
+                    result.textContent += '\n\n❌ Access denied or error';
+                }
+            } catch (error) {
+                result.textContent += '\n\nError: ' + error.message;
+            }
+        }
+    </script>
+</body>
+
+</html>

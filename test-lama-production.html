@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Production API Test - Lama Mohamed</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 900px;
+            margin: 0 auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+
+        button {
+            padding: 12px 24px;
+            margin: 5px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        pre {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #ddd;
+            font-size: 12px;
+        }
+
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .warning {
+            color: #ff9800;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧪 Production API Test - Lama Mohamed Session 1</h1>
+
+        <div class="info">
+            <strong>Student:</strong> Lama Mohamed<br>
+            <strong>Phone:</strong> +201274856549<br>
+            <strong>Session:</strong> 1 (S3 Physics)<br>
+            <strong>Current Status:</strong> online_attendance = false<br>
+            <strong>Expected:</strong> Should change to true after access
+        </div>
+
+        <button onclick="testDirectAPI()">🔍 Test Direct API Call</button>
+        <button onclick="testViaFetch()">📡 Test via Fetch (CORS)</button>
+        <button onclick="clearResults()">🗑️ Clear Results</button>
+
+        <h3>Test Results:</h3>
+        <pre id="results">Click a button above to start testing...</pre>
+    </div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+
+        // Get the base URL dynamically
+        const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
+
+        async function testDirectAPI() {
+            resultsDiv.textContent = '🔄 Testing Direct API Call...\n\n';
+
+            try {
+                // Build the API URL - try both relative and absolute paths
+                const apiUrl = baseUrl + '/api/sessions.php?action=check-access&phone=01274856549&session_number=1';
+
+                resultsDiv.textContent += `📍 API URL: ${apiUrl}\n\n`;
+                resultsDiv.textContent += '⏳ Sending request...\n\n';
+
+                const response = await fetch(apiUrl);
+
+                resultsDiv.textContent += `📊 Status: ${response.status} ${response.statusText}\n`;
+                resultsDiv.textContent += `📋 Content-Type: ${response.headers.get('content-type')}\n\n`;
+
+                const text = await response.text();
+
+                // Try to parse as JSON
+                try {
+                    const data = JSON.parse(text);
+                    resultsDiv.textContent += '✅ Valid JSON Response:\n';
+                    resultsDiv.textContent += JSON.stringify(data, null, 2);
+
+                    if (data.success && data.hasAccess) {
+                        resultsDiv.textContent += '\n\n✅ SUCCESS - Access granted!';
+                        resultsDiv.textContent += '\n\n📝 Next Steps:';
+                        resultsDiv.textContent += '\n1. Check server error logs for "Updating online_attendance to true"';
+                        resultsDiv.textContent += '\n2. Query the database to verify online_attendance changed to true';
+                        resultsDiv.textContent += '\n3. Call this API again - it should NOT update a second time';
+                    } else {
+                        resultsDiv.textContent += '\n\n❌ Access denied or student not found';
+                        resultsDiv.textContent += '\nMessage: ' + (data.message || 'No message');
+                    }
+                } catch (e) {
+                    resultsDiv.textContent += '❌ INVALID JSON - Raw Response:\n';
+                    resultsDiv.textContent += text.substring(0, 1000);
+                    if (text.length > 1000) {
+                        resultsDiv.textContent += '\n\n... (truncated, total length: ' + text.length + ' chars)';
+                    }
+                }
+
+            } catch (error) {
+                resultsDiv.textContent += '\n\n❌ ERROR: ' + error.message;
+                resultsDiv.textContent += '\n\nStack: ' + error.stack;
+            }
+        }
+
+        async function testViaFetch() {
+            resultsDiv.textContent = '🔄 Testing via Fetch with different phone formats...\n\n';
+
+            const phones = [
+                '01274856549',
+                '+201274856549',
+                '201274856549'
+            ];
+
+            for (const phone of phones) {
+                resultsDiv.textContent += `\n📞 Testing with phone: ${phone}\n`;
+                resultsDiv.textContent += '─'.repeat(50) + '\n';
+
+                try {
+                    const apiUrl = baseUrl + `/api/sessions.php?action=check-access&phone=${encodeURIComponent(phone)}&session_number=1`;
+                    const response = await fetch(apiUrl);
+                    const text = await response.text();
+
+                    try {
+                        const data = JSON.parse(text);
+                        resultsDiv.textContent += `Status: ${response.status}\n`;
+                        resultsDiv.textContent += `Result: ${JSON.stringify(data)}\n`;
+
+                        if (data.success && data.hasAccess) {
+                            resultsDiv.textContent += '✅ ACCESS GRANTED!\n';
+                        }
+                    } catch (e) {
+                        resultsDiv.textContent += `❌ Invalid JSON (${text.substring(0, 50)}...)\n`;
+                    }
+                } catch (error) {
+                    resultsDiv.textContent += `❌ Error: ${error.message}\n`;
+                }
+            }
+        }
+
+        function clearResults() {
+            resultsDiv.textContent = 'Click a button above to start testing...';
+        }
+
+        // Auto-run on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            resultsDiv.textContent = '📍 Base URL: ' + baseUrl + '\n';
+            resultsDiv.textContent += '📍 Current Page: ' + window.location.href + '\n\n';
+            resultsDiv.textContent += 'Ready to test! Click a button above.';
+        });
+    </script>
+</body>
+
+</html>

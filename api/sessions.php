@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // Prevent HTML errors from being output - output JSON only
 @ini_set('display_errors', '0');
 @ini_set('log_errors', '1');
@@ -66,7 +66,7 @@ function normalizeSubject($subjectName) {
 }
 
 // Normalize phone numbers
-function normalizPhoneNumber($phone) {
+function normalizePhoneNumber($phone) {
     // Remove all non-digit characters except leading +
     $phone = preg_replace('/[^\d+]/', '', $phone);
     
@@ -91,7 +91,7 @@ function normalizPhoneNumber($phone) {
 // Convert phone to +20 format for database lookup
 function convertTo20Format($phone) {
     // First normalize to 01... format
-    $normalized = normalizPhoneNumber($phone);
+    $normalized = normalizePhoneNumber($phone);
     
     // If it starts with 0, replace with +20
     if (strpos($normalized, '0') === 0) {
@@ -135,6 +135,9 @@ function handleGet($action) {
             break;
         case 'check-access':
             checkStudentSessionAccess();
+            break;
+        case 'purchase-session':
+            purchaseStudentSession();
             break;
         default:
             http_response_code(400);
@@ -912,49 +915,58 @@ function checkStudentSessionAccess() {
             // Database has: +201280912038
             $phoneVariations = [
                 $phone,  // Original as provided
-                normalizPhoneNumber($phone),  // Normalized to 01... format
+                normalizePhoneNumber($phone),  // Normalized to 01... format
                 convertTo20Format($phone),  // Converted to +20... format
             ];
             
             // Remove duplicates and empty values
-            $phoneVariations = array_unique(array_filter($phoneVariations));
+            $phoneVariations = array_values(array_unique(array_filter($phoneVariations)));
             
             error_log('=== checkStudentSessionAccess ===');
             error_log('Phone input: ' . $phone);
             error_log('Phone variations: ' . implode(' | ', $phoneVariations));
             error_log('Session Number: ' . $sessionNumber);
+            error_log('Subject: ' . $subject);
+            error_log('Grade: ' . $grade);
             
             $student = null;
-            $searchedCollections = [];
+            $foundInCollection = null;
+
+            // Map subject/grade to physical collection for precise security
+            $targetCollection = null;
+            $normSubject = normalizeSubject($subject);
+            $normGrade = strtolower(trim($grade));
             
-            // Try to find student in all_students_view, users, or subject-specific collections
-            $collectionsToTry = ['all_students_view', 'users', 'students'];
-            
-            // Add subject-specific collections based on common subjects
-            $subjectCollections = [
-                'senior1_math',
-                'senior2_pure_math',
-                'senior2_physics',
-                'senior2_mechanics',
-                'senior3_math',
-                'senior3_physics',
-                'senior3_statistics'
-            ];
-            
-            $collectionsToTry = array_merge($collectionsToTry, $subjectCollections);
+            // Define precise mapping
+            if ($normGrade === 'senior1') {
+                if ($normSubject === 'mathematics') $targetCollection = 'senior1_math';
+            } elseif ($normGrade === 'senior2') {
+                if ($normSubject === 'mathematics') $targetCollection = 'senior2_pure_math';
+                elseif ($normSubject === 'mechanics') $targetCollection = 'senior2_mechanics';
+                elseif ($normSubject === 'physics') $targetCollection = 'senior2_physics';
+            } elseif ($normGrade === 'senior3') {
+                if ($normSubject === 'mathematics') $targetCollection = 'senior3_math';
+                elseif ($normSubject === 'physics') $targetCollection = 'senior3_physics';
+                elseif ($normSubject === 'statistics') $targetCollection = 'senior3_statistics';
+            }
+
+            $collectionsToTry = [];
+            if ($targetCollection) {
+                $collectionsToTry[] = $targetCollection;
+                error_log('Targeting specific collection: ' . $targetCollection);
+            } else {
+                // Fallback for older links or imprecise parameters
+                error_log('No specific target collection found. Falling back to broad search.');
+                $collectionsToTry = ['all_students_view', 'senior1_math', 'senior2_pure_math', 'senior2_mechanics', 'senior2_physics', 'senior3_math', 'senior3_physics', 'senior3_statistics'];
+            }
             
             // Try each collection and phone variation
             foreach ($collectionsToTry as $collection) {
                 foreach ($phoneVariations as $phoneVariation) {
-                    $searchedCollections[] = $collection . ':' . $phoneVariation;
-                    error_log('  Trying ' . $collection . ' with phone: ' . $phoneVariation);
-                    
                     $studentFilter = ['phone' => $phoneVariation];
                     
-                    // If subject is provided, add it to the filter for more precision
-                    // But only for non-user collections
-                    if ($subject && !in_array($collection, ['users', 'students'])) {
-                        // Some collections might use 'subject' field
+                    // If subject is provided and we are checking a broad collection, add subject filter
+                    if ($subject && in_array($collection, ['all_students_view', 'users', 'students'])) {
                         $studentFilter['subject'] = ['$regex' => $subject, '$options' => 'i'];
                     }
 
@@ -965,16 +977,13 @@ function checkStudentSessionAccess() {
                         $student = current($cursor->toArray());
                         
                         if ($student) {
-                            error_log('  ✓ Found student in collection: ' . $collection);
-                            
-                            // Check if student has the session key
                             $sessionKey = 'session_' . $sessionNumber;
                             if (isset($student->$sessionKey)) {
-                                error_log('  ✓ Student has ' . $sessionKey . '. Breaking search.');
-                                break 2; // Found student WITH the session data
+                                $foundInCollection = $collection;
+                                error_log('  âœ“ Found student with session in: ' . $collection);
+                                break 2; 
                             } else {
-                                error_log('  ⚠ Student found but missing ' . $sessionKey . '. Continuing search...');
-                                // Continue searching other collections in case they have the enrollment with session data
+                                $student = null; // Continue searching
                             }
                         }
                     } catch (Exception $e) {
@@ -984,17 +993,16 @@ function checkStudentSessionAccess() {
             }
 
             if (!$student) {
-                error_log('✗ Student not found in any collection');
-                error_log('Searched: ' . implode(', ', $searchedCollections));
+                error_log('âœ— Access Denied: Student or Session record not found');
                 echo json_encode([
-                    'success' => false, 
-                    'hasAccess' => false, 
-                    'message' => 'Student not found'
+                    'success' => false,
+                    'hasAccess' => false,
+                    'message' => 'Student not found or not enrolled in this session'
                 ]);
                 return;
             }
 
-            error_log('✓ Student found! Checking session access...');
+            error_log('âœ“ Student found in collection: ' . $foundInCollection);
 
             // Check if student has purchased this session number
             // Structure: session_13.online_session = true
@@ -1021,34 +1029,77 @@ function checkStudentSessionAccess() {
                     $hasAccess = true;
                     error_log('  Session value is truthy');
                 }
-                else {
-                    error_log('  Session exists but online_session not found or is falsy');
-                    if (is_object($studentSession)) {
-                        error_log('  Session object keys: ' . implode(', ', array_keys((array)$studentSession)));
-                    }
-                }
-            } else {
-                error_log('  Session key does not exist: ' . $sessionKey);
-                // Log available session keys for debugging
-                $sessionKeys = [];
-                foreach ((array)$student as $key => $value) {
-                    if (strpos($key, 'session_') === 0) {
-                        $sessionKeys[] = $key;
-                    }
-                }
-                if (!empty($sessionKeys)) {
-                    error_log('  Available session keys: ' . implode(', ', $sessionKeys));
-                }
             }
 
-            error_log('Access result: ' . ($hasAccess ? '✓ GRANTED' : '✗ DENIED'));
+            error_log('Access result: ' . ($hasAccess ? 'âœ“ GRANTED' : 'âœ— DENIED'));
+
+            // Update online_attendance if access is granted and it's currently false
+            if ($hasAccess && $foundInCollection) {
+                $shouldUpdate = false;
+                
+                if (isset($student->$sessionKey)) {
+                    $studentSession = $student->$sessionKey;
+                    $currentOnlineAttendance = false;
+                    
+                    if (is_object($studentSession) && isset($studentSession->online_attendance)) {
+                        $currentOnlineAttendance = (bool)$studentSession->online_attendance;
+                    } elseif (is_array($studentSession) && isset($studentSession['online_attendance'])) {
+                        $currentOnlineAttendance = (bool)$studentSession['online_attendance'];
+                    }
+                    
+                    error_log('  Current online_attendance: ' . ($currentOnlineAttendance ? 'true' : 'false'));
+                    
+                    if (!$currentOnlineAttendance) {
+                        $shouldUpdate = true;
+                    }
+                }
+                
+                if ($shouldUpdate) {
+                    error_log('  ðŸ”„ Updating online_attendance to true for session ' . $sessionNumber);
+                    
+                    $updateFields = [
+                        $sessionKey . '.online_attendance' => true,
+                        $sessionKey . '.online_attendance_completed_at' => date('Y-m-d\TH:i:s.v\Z')
+                    ];
+                    
+                    try {
+                        $bulk = new MongoDB\Driver\BulkWrite();
+                        $bulk->update(
+                            ['phone' => ['$in' => $phoneVariations]],
+                            ['$set' => $updateFields],
+                            ['multi' => false]
+                        );
+                        $client->executeBulkWrite("$databaseName." . $foundInCollection, $bulk);
+                        
+                        // Also update students collection
+                        if ($foundInCollection !== 'students') {
+                            $bulk2 = new MongoDB\Driver\BulkWrite();
+                            $bulk2->update(
+                                ['phone' => ['$in' => $phoneVariations], 'subject' => $student->subject],
+                                ['$set' => $updateFields],
+                                ['multi' => true]
+                            );
+                            $client->executeBulkWrite("$databaseName.students", $bulk2);
+                        }
+                    } catch (Exception $e) {
+                        error_log('  âŒ Update error: ' . $e->getMessage());
+                    }
+                }
+            }
 
             echo json_encode([
                 'success' => true,
                 'hasAccess' => $hasAccess,
-                'message' => $hasAccess ? 'Access granted' : 'No subscription for this session',
+                'message' => $hasAccess ? 'Access granted' : ($foundInCollection ? 'No subscription for this session' : 'Student not found or not enrolled in this subject'),
                 'sessionNumber' => $sessionNumber,
-                'phone' => $phone
+                'phone' => $phone,
+                'student' => $student ? [
+                    'name' => $student->studentName ?? 'Student',
+                    'subject' => $student->subject ?? '',
+                    'grade' => $student->grade ?? '',
+                    'balance' => $student->balance ?? 0,
+                    'paymentAmount' => $student->paymentAmount ?? 80
+                ] : null
             ]);
             return;
         }
@@ -1095,8 +1146,16 @@ function checkStudentSessionAccess() {
             echo json_encode([
                 'success' => true,
                 'hasAccess' => $hasAccess,
+                'message' => $hasAccess ? 'Access granted' : 'No subscription for this session',
                 'sessionId' => $sessionId,
-                'phone' => $phone
+                'phone' => $phone,
+                'student' => [
+                    'name' => $student->studentName ?? 'Student',
+                    'subject' => $student->subject ?? '',
+                    'grade' => $student->grade ?? '',
+                    'balance' => $student->balance ?? 0,
+                    'paymentAmount' => $student->paymentAmount ?? 80
+                ]
             ]);
             return;
         }
@@ -1109,8 +1168,9 @@ function checkStudentSessionAccess() {
         // Try both studentId and phone number
         $studentFilter = [
             '$or' => [
-                ['studentId' => (int)$studentId],
-                ['phone' => $studentId]
+                ['phone' => $phone],
+                ['phone' => normalizePhoneNumber($phone)],
+                ['phone' => convertTo20Format($phone)]
             ],
             'subject' => $subject,
             'isActive' => true
@@ -1164,10 +1224,10 @@ function checkStudentSessionAccess() {
             $session = current($sessionCursor->toArray());
 
             if ($session) {
-                error_log('✓ Session found with isPublished=true');
+                error_log('âœ“ Session found with isPublished=true');
                 $sessionContent = convertSessionToArray($session);
             } else {
-                error_log('✗ Session NOT found. Query was: ' . $sessionQueryDebug);
+                error_log('âœ— Session NOT found. Query was: ' . $sessionQueryDebug);
                 // Try again without isPublished filter for debugging
                 $sessionFilter2 = [
                     'subject' => $subject,
@@ -1193,11 +1253,13 @@ function checkStudentSessionAccess() {
             'student' => [
                 'name' => $student->studentName ?? 'Student',
                 'subject' => $student->subject ?? '',
-                'grade' => $student->grade ?? ''
+                'grade' => $student->grade ?? '',
+                'balance' => $student->balance ?? 0,
+                'paymentAmount' => $student->paymentAmount ?? 80
             ]
         ]);
 
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         echo json_encode(['success' => false, 'message' => 'Access check error: ' . $e->getMessage()]);
     }
 }
@@ -1272,6 +1334,228 @@ function formatMongoDate($mongoDate) {
     } catch (Exception $e) {
         error_log('Error formatting date: ' . $e->getMessage());
         return null;
+    }
+}
+
+function purchaseStudentSession() {
+
+    try {
+
+        $client = $GLOBALS['mongoClient'];
+
+        $databaseName = $GLOBALS['databaseName'];
+
+
+
+        $phone = $_GET['phone'] ?? '';
+
+        $sessionNumber = (int)($_GET['sessionNumber'] ?? $_GET['session_number'] ?? 0);
+
+        $subject = $_GET['subject'] ?? '';
+
+        $grade = $_GET['grade'] ?? '';
+
+
+
+        if (!$phone || !$sessionNumber || !$subject || !$grade) {
+
+            echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
+
+            return;
+
+        }
+
+
+
+        // Map subject/grade to physical collection
+
+        $targetCollection = null;
+
+        $normSubject = normalizeSubject($subject);
+
+        $normGrade = strtolower(trim($grade));
+
+        
+
+        if ($normGrade === 'senior1') {
+
+            if ($normSubject === 'mathematics') $targetCollection = 'senior1_math';
+
+        } elseif ($normGrade === 'senior2') {
+
+            if ($normSubject === 'mathematics') $targetCollection = 'senior2_pure_math';
+
+            elseif ($normSubject === 'mechanics') $targetCollection = 'senior2_mechanics';
+
+            elseif ($normSubject === 'physics') $targetCollection = 'senior2_physics';
+
+        } elseif ($normGrade === 'senior3') {
+
+            if ($normSubject === 'mathematics') $targetCollection = 'senior3_math';
+
+            elseif ($normSubject === 'physics') $targetCollection = 'senior3_physics';
+
+            elseif ($normSubject === 'statistics') $targetCollection = 'senior3_statistics';
+
+        }
+
+
+
+        if (!$targetCollection) {
+
+            echo json_encode(['success' => false, 'message' => 'Invalid subject or grade (' . $grade . ' / ' . $subject . ')']);
+
+            return;
+
+        }
+
+
+        // Generate phone variations
+        $phoneVariations = [
+            $phone,
+            normalizePhoneNumber($phone),
+            convertTo20Format($phone),
+        ];
+        $phoneVariations = array_values(array_unique(array_filter($phoneVariations)));
+
+        // 1. Find the student in the target collection
+        $query = new MongoDB\Driver\Query(['phone' => ['$in' => $phoneVariations], 'isActive' => true]);
+        $cursor = $client->executeQuery("$databaseName.$targetCollection", $query);
+
+        $student = current($cursor->toArray());
+
+
+
+        if (!$student) {
+
+            echo json_encode(['success' => false, 'message' => 'You are not enrolled in this (' . $subject . ') subject for ' . $grade . '. Please contact support.']);
+
+            return;
+
+        }
+
+
+
+        // 2. Check balance and cost
+
+        $balance = isset($student->balance) ? (float)$student->balance : 0;
+
+        $cost = (isset($student->paymentAmount) && (float)$student->paymentAmount > 0) ? (float)$student->paymentAmount : 80;
+
+
+
+        if ($balance < $cost) {
+
+            echo json_encode([
+
+                'success' => false, 
+
+                'message' => 'Insufficient balance. You need ' . $cost . ' EGP but only have ' . $balance . ' EGP.',
+
+                'balance' => $balance,
+
+                'cost' => $cost
+
+            ]);
+
+            return;
+
+        }
+
+
+
+        $sessionKey = 'session_' . $sessionNumber;
+
+        
+
+        // 3. Perform the purchase (Deduct balance and Grant access)
+
+        $bulk = new MongoDB\Driver\BulkWrite();
+
+        $bulk->update(
+
+            ['_id' => $student->_id],
+
+            ['$inc' => ['balance' => -$cost], '$set' => [
+
+                $sessionKey . '.online_session' => true,
+
+                $sessionKey . '.purchased_at' => date('Y-m-d\TH:i:s.v\Z'),
+
+                $sessionKey . '.attendanceStatus' => 'absence'
+
+            ]],
+
+            ['multi' => false]
+
+        );
+
+        $client->executeBulkWrite("$databaseName.$targetCollection", $bulk);
+
+
+
+        // 4. Record Transaction
+
+        $transactionBulk = new MongoDB\Driver\BulkWrite();
+
+        $transactionBulk->insert([
+
+            'studentId' => $student->studentId ?? null,
+
+            'studentName' => $student->studentName ?? 'Student',
+
+            'subject' => $subject . ' (' . $grade . ')',
+
+            'type' => 'online_purchase',
+
+            'amount' => $cost,
+
+            'previousBalance' => $balance,
+
+            'newBalance' => $balance - $cost,
+
+            'note' => 'Automatic purchase for Session #' . $sessionNumber . ' (Online)',
+
+            'recordedBy' => 'system_online_purchase',
+
+            'createdAt' => new MongoDB\BSON\UTCDateTime(time() * 1000)
+
+        ]);
+
+        $client->executeBulkWrite("$databaseName.transactions", $transactionBulk);
+
+
+
+        // 5. Sync to students collection
+        $syncBulk = new MongoDB\Driver\BulkWrite();
+        $syncBulk->update(
+            ['phone' => ['$in' => $phoneVariations], 'subject' => ['$regex' => $subject, '$options' => 'i']],
+            ['$inc' => ['balance' => -$cost], '$set' => [
+                $sessionKey . '.online_session' => true,
+                $sessionKey . '.purchased_at' => date('Y-m-d\TH:i:s.v\Z'),
+                $sessionKey . '.attendanceStatus' => 'absence'
+            ]],
+            ['multi' => false]
+        );
+
+        $client->executeBulkWrite("$databaseName.students", $syncBulk);
+
+
+
+        echo json_encode([
+
+            'success' => true,
+
+            'message' => 'Session purchased successfully!',
+
+            'newBalance' => $balance - $cost
+
+        ]);
+
+
+
+    } catch (Throwable $e) {
+        echo json_encode(['success' => false, 'message' => 'Purchase error: ' . $e->getMessage()]);
     }
 }
 ?>

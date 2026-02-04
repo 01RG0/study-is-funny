@@ -38,6 +38,54 @@ $videoUrl = $session->video_url ?? null;
 $sessionNumber = $session->sessionNumber ?? $session->session_number ?? null;
 $accessControl = $session->accessControl ?? 'free'; // 'restricted' or 'free'
 $requiredGrade = $session->grade ?? 'senior2';
+$requiredSubject = $session->subject ?? 'mathematics';
+$targetCollection = 'senior2_pure_math';
+
+// Update online_attendance for restricted sessions
+if ($accessControl === 'restricted' && $sessionNumber) {
+    $studentPhone = $_GET['student_phone'] ?? null;
+    
+    if ($studentPhone) {
+        try {
+            // Normalize phone number for consistent matching
+            $phoneVariations = [
+                $studentPhone,
+                preg_replace('/^0/', '+20', $studentPhone),
+                preg_replace('/^\+20/', '0', $studentPhone),
+                preg_replace('/^20/', '+20', $studentPhone),
+                preg_replace('/^\+/', '', $studentPhone)
+            ];
+            $phoneVariations = array_unique($phoneVariations);
+            $sessionKey = 'session_' . $sessionNumber;
+            
+            $updated = false;
+            // Target ONLY the correct collection for this subject
+            $resultCount = $db->update($targetCollection, 
+                [
+                    'phone' => ['$in' => $phoneVariations],
+                    $sessionKey . '.online_session' => true,
+                    $sessionKey . '.online_attendance' => false
+                ],
+                ['$set' => [
+                    $sessionKey . '.online_attendance' => true,
+                    $sessionKey . '.online_attendance_completed_at' => date('Y-m-d\TH:i:s.v\Z')
+                ]],
+                ['multi' => false]
+            );
+            
+            if ($resultCount > 0) {
+                $updated = true;
+                error_log("SUCCESS: Online attendance marked for $studentPhone in $targetCollection session $sessionNumber");
+            }
+            
+            $logMsg = $updated ? "Attendance Marked: Success" : "Attendance Check: Already marked or Student not found";
+            echo "<script>console.log('PHP Info: $logMsg');</script>";
+            
+        } catch (Exception $e) {
+            error_log('Attendance Update error: ' . $e->getMessage());
+        }
+    }
+}
 
 // Process videos array for multi-video support
 $videos = [];
@@ -51,19 +99,20 @@ if (isset($session->videos)) {
             $videoData = [];
             $videoId = null;
             $videoSource = null;
-            $videoUrl = null;
+            $vUrl = null;
+            $filePath = null;
             
             if (is_object($video)) {
                 $videoId = $video->video_id ?? null;
                 $videoSource = $video->source ?? null;
-                $videoUrl = $video->url ?? null;
+                $vUrl = $video->url ?? null;
                 $filePath = $video->file_path ?? null;
                 $videoData['title'] = $video->title ?? 'Video';
                 $videoData['description'] = $video->description ?? '';
             } elseif (is_array($video)) {
                 $videoId = $video['video_id'] ?? null;
                 $videoSource = $video['source'] ?? null;
-                $videoUrl = $video['url'] ?? null;
+                $vUrl = $video['url'] ?? null;
                 $filePath = $video['file_path'] ?? null;
                 $videoData['title'] = $video['title'] ?? 'Video';
                 $videoData['description'] = $video['description'] ?? '';
@@ -71,31 +120,26 @@ if (isset($session->videos)) {
             
             // If source is "upload" and we have a file_path, use it directly
             if ($videoSource === 'upload' && isset($filePath) && $filePath) {
-                $videoUrl = '../../../uploads/videos/' . ltrim($filePath, '/');
+                $vUrl = '../../../uploads/videos/' . ltrim($filePath, '/');
             }
             // Fallback: Try to fetch from database using video_id
-            elseif ($videoSource === 'upload' && $videoId && !$videoUrl) {
+            elseif ($videoSource === 'upload' && $videoId && !$vUrl) {
                 try {
                     $videoRecord = $videoManager->getById($videoId);
                     if ($videoRecord && isset($videoRecord->video_file_path)) {
-                        $videoUrl = '../../../uploads/videos/' . ltrim($videoRecord->video_file_path, '/');
+                        $vUrl = '../../../uploads/videos/' . ltrim($videoRecord->video_file_path, '/');
                     }
                 } catch (Exception $e) {
                     error_log("Error fetching video record: " . $e->getMessage());
                 }
                 
                 // Last fallback: Direct ID-based path
-                if (!$videoUrl) {
-                    $videoUrl = '../../../uploads/videos/' . $videoId . '.mp4';
+                if (!$vUrl) {
+                    $vUrl = '../../../uploads/videos/' . $videoId . '.mp4';
                 }
             }
             
-            // Ensure upload files have proper URL if not already set
-            if ($videoSource === 'upload' && !$videoUrl && $videoId) {
-                $videoUrl = '../../../uploads/videos/' . $videoId . '.mp4';
-            }
-            
-            $videoData['url'] = $videoUrl;
+            $videoData['url'] = $vUrl;
             $videoData['source'] = $videoSource;
             $videoData['video_id'] = $videoId;
             $videos[] = $videoData;
@@ -129,402 +173,158 @@ if ($currentVideo && isset($currentVideo['url'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($title) ?></title>
-    <link rel="icon" class="circular-icon" type="image/png" href="../../../images/logo.png">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #ffffff;
-            min-height: 100vh;
-        }
-
-        h1 {
-            font-size: 28px;
-            text-align: center;
-            margin-top: 20px;
-            color: #008080;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-        }
-
-        .video-container {
-            max-width: 800px;
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            overflow: hidden;
-            margin: 20px auto;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            position: relative;
-        }
-
-        .video-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .video-container video {
-            width: 100%;
-            height: 100%;
-            background: #000;
-        }
-
-        .video-placeholder {
-            width: 100%;
-            height: 100%;
-            background: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 18px;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-
-        .controls button {
-            padding: 8px 16px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            background-color: #008080;
-            color: #FFFFE0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s, background-color 0.3s;
-        }
-
-        .controls button:hover {
-            background-color: #006666;
-            transform: scale(1.05);
-        }
-
-        .question-box {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: #008080;
-            color: #FFFFE0;
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.3s;
-        }
-
-        .question-box:hover {
-            background-color: #006666;
-            transform: scale(1.05);
-        }
-
-        .info-box {
-            max-width: 800px;
-            margin: 10px auto;
-            padding: 15px;
-            background-color: #fff3cd;
-            color: #856404;
-            text-align: center;
-            font-size: 16px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .description-box {
-            max-width: 800px;
-            margin: 10px auto 30px;
-            padding: 15px;
-            background-color: white;
-            color: #333;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            line-height: 1.6;
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 20px;
-                margin-top: 15px;
-            }
-
-            .controls {
-                gap: 10px;
-            }
-
-            .controls button {
-                padding: 6px 12px;
-                font-size: 14px;
-            }
-        }
-
-        /* Custom Video Player Styles */
-        .custom-player {
-            max-width: 300px;
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            overflow: hidden;
-            margin: 30px auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 128, 128, 0.3);
-            background: #000;
-            position: relative;
-        }
-
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background: #000;
-        }
-
-        .video-wrapper video,
-        .video-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100% !important;
-            height: 100% !important;
-            border: none;
-        }
-
-        .player-controls {
-            background: #1a1a1a;
-            padding: 15px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .player-controls button {
-            padding: 8px 16px;
-            background: #008080;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .player-controls button:hover {
-            background: #006666;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(0, 128, 128, 0.3);
-        }
-
-        .player-controls button:active {
-            transform: translateY(0);
-        }
-
-        .video-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-left: 4px solid #008080;
-        }
-
-        .video-info p {
-            margin: 5px 0;
-            font-size: 14px;
-            color: #555;
-        }
-
-        .video-info strong {
-            color: #008080;
-        }
-
-        .video-nav-buttons {
-            max-width: 900px;
-            margin: 20px auto;
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .nav-button {
-            padding: 10px 20px;
-            font-size: 14px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            background-color: #008080;
-            color: white;
-            text-decoration: none;
-            display: inline-block;
-            transition: background-color 0.3s;
-            text-align: center;
-            flex: 1;
-        }
-
-        .nav-button:hover:not(:disabled) {
-            background-color: #006666;
-        }
-
-        .nav-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .video-title {
-            font-size: 32px;
-            font-weight: bold;
-            color: #008080;
-            text-align: center;
-            margin: 20px auto;
-            max-width: 800px;
-            padding: 0 15px;
-        }
-    </style>
+    <title><?= htmlspecialchars($title) ?> | Study is Funny</title>
+    
+    <!-- Premium Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="../../../css/session-detail.css">
+    <link rel="icon" type="image/png" href="../../../images/logo.png">
+    
     <script src="../../../js/api-config.js"></script>
 </head>
 <body>
-    <h1><?= htmlspecialchars($title) ?></h1>
-    
-    <?php if (!empty($videos) && isset($videos[$currentVideoIndex]['title'])): ?>
-    <div class="video-title">
-        <?= htmlspecialchars($videos[$currentVideoIndex]['title']) ?>
-    </div>
-    <?php endif; ?>
-        <div class="video-wrapper">
-            <?php if ($videoUrl): ?>
-                <?php 
-                    // Check if it's an iframe-based URL (like YouTube, Vimeo, etc.)
-                    $isIframe = strpos($videoUrl, 'youtube') !== false || 
-                               strpos($videoUrl, 'youtu.be') !== false ||
-                               strpos($videoUrl, 'vimeo') !== false || 
-                               strpos($videoUrl, 'mediadelivery') !== false ||
-                               strpos($videoUrl, 'embed') !== false ||
-                               strpos($videoUrl, 'iframe') !== false;
-                    
-                    // If it's a YouTube short URL, convert to embed format
-                    if (strpos($videoUrl, 'youtu.be') !== false) {
-                        preg_match('/youtu\.be\/([a-zA-Z0-9_-]{11})/', $videoUrl, $matches);
-                        if ($matches[1]) {
-                            $videoUrl = 'https://www.youtube.com/embed/' . $matches[1] . '?rel=0&modestbranding=1';
-                        }
+    <!-- Premium Header -->
+    <header class="hero-header">
+        <div class="logo-group">
+            <img src="../../../images/logo.png" alt="Logo">
+            <h2>Study is Funny</h2>
+        </div>
+        <div class="header-actions">
+            <a href="https://wa.me/201558145450" target="_blank" class="btn-premium btn-ghost header-btn" title="Get Help">
+                <i class="fab fa-whatsapp"></i> <span>Support</span>
+            </a>
+            <a href="../" class="btn-premium btn-primary header-btn">
+                <i class="fas fa-arrow-left"></i> <span>Back</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="app-container">
+        <!-- Content Area -->
+        <div class="player-section animate-fade">
+            <!-- Professional Video Container -->
+            <div class="modern-player-container">
+                <?php
+                // Standardized Embed Logic
+                $embedUrl = ($currentVideo && $currentVideo['url']) ? $currentVideo['url'] : '';
+                $isYouTube = false;
+                if (!empty($embedUrl)) {
+                    if (strpos($embedUrl, 'youtu.be') !== false) {
+                        preg_match('/youtu\.be\/([a-zA-Z0-9_-]{11})/', $embedUrl, $matches);
+                        $embedUrl = !empty($matches[1]) ? 'https://www.youtube.com/embed/' . $matches[1] . '?rel=0&modestbranding=1&autoplay=1' : $embedUrl;
+                        $isYouTube = true;
+                    } elseif (preg_match('/v=([a-zA-Z0-9_-]{11})/', $embedUrl, $matches)) {
+                        $embedUrl = 'https://www.youtube.com/embed/' . $matches[1] . '?rel=0&modestbranding=1&autoplay=1';
+                        $isYouTube = true;
+                    } elseif (strpos($embedUrl, 'youtube.com/embed') !== false) {
+                        $isYouTube = true;
                     }
-                    // If it's a YouTube watch URL, convert to embed format
-                    elseif (strpos($videoUrl, 'youtube.com') !== false && strpos($videoUrl, '/watch') !== false) {
-                        preg_match('/v=([a-zA-Z0-9_-]{11})/', $videoUrl, $matches);
-                        if ($matches[1]) {
-                            $videoUrl = 'https://www.youtube.com/embed/' . $matches[1] . '?rel=0&modestbranding=1';
-                        }
-                    }
+                }
                 ?>
-                <?php if ($isIframe): ?>
-                    <iframe id="videoFrame" src="<?= htmlspecialchars($videoUrl) ?>" 
-                            allowfullscreen="" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
-                    </iframe>
-                <?php else: ?>
+
+                <?php if ($isYouTube && !empty($embedUrl)): ?>
+                    <iframe src="<?= htmlspecialchars($embedUrl) ?>" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                <?php elseif ($currentVideo && $currentVideo['url']): ?>
                     <video id="videoPlayer" controls controlsList="nodownload" playsinline>
-                        <source src="<?= htmlspecialchars($videoUrl) ?>" type="video/mp4">
-                        Your browser does not support the video tag.
+                        <source src="<?= htmlspecialchars($currentVideo['url']) ?>" type="video/mp4">
+                        Your browser doesn't support HTML5 video.
                     </video>
-                <?php endif; ?>
-            <?php else: ?>
-                <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #1a1a1a;">
-                    <div style="text-align: center; color: white;">
-                        <div style="font-size: 48px; margin-bottom: 20px;">🎬</div>
-                        <div>Session video coming soon</div>
+                <?php else: ?>
+                    <div class="video-placeholder">
+                        <div style="text-align: center;">
+                            <i class="fas fa-play-circle" style="font-size: 4rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                            <h3>Lecture Content Restricted</h3>
+                            <p>Please ensure you are subscribed to this session.</p>
+                        </div>
                     </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- Player Quick Controls -->
+            <div class="player-actions">
+                <?php if ($meetingLink): ?>
+                    <a href="<?= htmlspecialchars($meetingLink) ?>" target="_blank" class="btn-premium btn-ghost">
+                        <i class="fas fa-video"></i> Live Meeting
+                    </a>
+                <?php endif; ?>
+                <button class="btn-premium btn-ghost" onclick="toggleFullscreen()">
+                    <i class="fas fa-expand"></i> Theater Mode
+                </button>
+            </div>
+
+            <!-- Content Details Card -->
+            <div class="content-card">
+                <span class="badge <?= $accessControl === 'free' ? 'badge-free' : 'badge-vip' ?>">
+                    <i class="fas <?= $accessControl === 'free' ? 'fa-unlock' : 'fa-star' ?>"></i> 
+                    <?= $accessControl === 'free' ? 'Free Access' : 'Premium Session' ?>
+                </span>
+                <h1 style="margin-top: 1rem;"><?= htmlspecialchars($currentVideo['title'] ?? $title) ?></h1>
+                
+                <div class="meta-info">
+                    <span><i class="fas fa-calendar-alt"></i> <?= date('F j, Y') ?></span>
+                    <span><i class="fas fa-layer-group"></i> <?= strtoupper($requiredGrade) ?> Mathematics</span>
+                    <?php if ($sessionNumber): ?>
+                        <span><i class="fas fa-hashtag"></i> Session #<?= $sessionNumber ?></span>
+                    <?php endif; ?>
                 </div>
-            <?php endif; ?>
+
+                <?php if (!empty($description)): ?>
+                <div class="description-text">
+                    <p><?= nl2br(htmlspecialchars($description)) ?></p>
+                </div>
+                <?php endif; ?>
+            </div>
         </div>
 
-        <?php if ($videoUrl): ?>
-        <div class="player-controls">
-            <button onclick="toggleFullscreen(document.querySelector('.custom-player'))">
-                <span>📺</span> Fullscreen
-            </button>
-            <?php if ($meetingLink): ?>
-            <button onclick="window.open('<?= htmlspecialchars($meetingLink) ?>', '_blank')">
-                <span>🎥</span> Join Meeting
-            </button>
-            <?php endif; ?>
-        </div>
-        <?php endif; ?>
-    </div>
-    
-    <?php if (count($videos) > 1): ?>
-    <div class="video-nav-buttons">
-        <a href="?id=<?= urlencode($sessionId) ?>&video=<?= $currentVideoIndex - 1 ?>" 
-           class="nav-button" 
-           <?php if ($currentVideoIndex == 0): ?>style="opacity: 0.5; pointer-events: none;"<?php endif; ?>>
-            ← Previous Video
-        </a>
-        <a href="?id=<?= urlencode($sessionId) ?>&video=<?= $currentVideoIndex + 1 ?>" 
-           class="nav-button"
-           <?php if ($currentVideoIndex == count($videos) - 1): ?>style="opacity: 0.5; pointer-events: none;"<?php endif; ?>>
-            Next Video →
-        </a>
-    </div>
-    <?php endif; ?>
+        <!-- Professional Sidebar Playlist -->
+        <aside class="playlist-sidebar animate-fade" style="animation-delay: 0.2s;">
+            <div class="playlist-card">
+                <div class="playlist-header">
+                    <h4><i class="fas fa-list-ul"></i> Session Playlist</h4>
+                    <small><?= count($videos) ?> Videos Available</small>
+                </div>
+                <div class="playlist-items">
+                    <?php if (empty($videos)): ?>
+                        <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                            No videos found in this session.
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($videos as $index => $video): ?>
+                            <a href="?id=<?= htmlspecialchars($sessionId) ?>&video=<?= $index ?>" 
+                               class="playlist-item <?= ($index === $currentVideoIndex) ? 'active' : '' ?>">
+                                <div class="video-thumb">
+                                    <i class="fas <?= ($index === $currentVideoIndex) ? 'fa-play' : 'fa-lock' ?>"></i>
+                                </div>
+                                <div class="video-meta">
+                                    <h4><?= htmlspecialchars($video['title']) ?></h4>
+                                    <p>Part <?= $index + 1 ?></p>
+                                </div>
+                            </a>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </aside>
+    </main>
 
-    <!-- Access Control Overlay -->
-    <div id="accessLoadingOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Segoe UI', Arial, sans-serif;">
-        <div style="width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #008080; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-        <p style="margin-top: 20px; color: #008080; font-weight: 500; font-size: 18px;">Verifying Access...</p>
+    <!-- Refined Access Control Overlay -->
+    <div id="accessLoadingOverlay" class="access-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div style="width: 60px; height: 60px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+        <p style="margin-top: 1.5rem; color: var(--primary); font-weight: 600; letter-spacing: 1px;">AUTHENTICATING ACCESS...</p>
     </div>
-
-    <style>
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .access-denied-card {
-            background: white;
-            padding: 50px 30px;
-            border-radius: 20px;
-            max-width: 550px;
-            width: 90%;
-            margin: auto;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            text-align: center;
-            border-top: 5px solid #ff4757;
-            animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .denied-icon {
-            font-size: 80px;
-            color: #ff4757;
-            margin-bottom: 25px;
-            animation: pulse-red 2s infinite;
-        }
-        
-        @keyframes pulse-red {
-            0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 71, 87, 0)); }
-            70% { transform: scale(1.1); filter: drop-shadow(0 0 15px rgba(255, 71, 87, 0.4)); }
-            100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 71, 87, 0)); }
-        }
-    </style>
 
     <script>
-        // Check user access before displaying content
+        // Check user access
         async function checkUserAccess() {
             const overlay = document.getElementById('accessLoadingOverlay');
             const userPhone = localStorage.getItem('userPhone');
             const sessionNumber = <?= $sessionNumber ? $sessionNumber : 'null' ?>;
             const accessControl = '<?= htmlspecialchars($accessControl) ?>';
-            
-            console.log('=== Access Control Check ===');
             
             if (!userPhone) {
                 window.location.href = '/login/index.html';
@@ -532,48 +332,121 @@ if ($currentVideo && isset($currentVideo['url'])) {
             }
             
             if (accessControl === 'free') {
-                if (overlay) overlay.style.display = 'none';
+                fadeOutOverlay();
                 return;
             }
             
             if (accessControl === 'restricted' && sessionNumber) {
                 try {
-                    const response = await fetch(`${window.API_BASE_URL}sessions.php?action=check-access&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}`);
+                    const grade = '<?= $requiredGrade ?>';
+                    const subject = '<?= $requiredSubject ?>';
+                    const response = await fetch(`${window.API_BASE_URL}sessions.php?action=check-access&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(subject)}`);
                     const data = await response.json();
                     
                     if (data.success && data.hasAccess) {
-                        if (overlay) overlay.style.display = 'none';
-                        return;
+                        fadeOutOverlay();
+                    } else if (data.success) {
+                        showAccessDenied(data.message || "Your subscription has expired or is invalid for this session.", data.student);
                     } else {
-                        showAccessDenied(data.message || "You don't have access to this session.");
+                        showAccessDenied(data.message || "Error checking access.");
                     }
                 } catch (error) {
-                    console.error('Error checking access:', error);
-                    if (overlay) overlay.style.display = 'none'; 
+                    console.error('Access check failed:', error);
+                    showAccessDenied("Failed to verify access. Please check your internet connection and try again.");
                 }
             } else {
-                if (overlay) overlay.style.display = 'none';
+                fadeOutOverlay();
             }
         }
         
-        function showAccessDenied(message) {
-            const backLink = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-            document.body.style.background = '#f1f2f6';
+        async function purchaseSession() {
+            const userPhone = localStorage.getItem('userPhone');
+            const sessionNumber = <?= $sessionNumber ? $sessionNumber : 'null' ?>;
+            const grade = '<?= $requiredGrade ?>';
+            const subject = '<?= $requiredSubject ?>';
+            
+            const btn = document.getElementById('purchaseBtn');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span class="loading-spinner"></span> Processing...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${window.API_BASE_URL}sessions.php?action=purchase-session&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(subject)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Session purchased successfully! Page will reload.');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Purchase failed.');
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                alert('An error occurred during purchase. Please try again or contact support.');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }
+        }
+
+        function fadeOutOverlay() {
+            const overlay = document.getElementById('accessLoadingOverlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                overlay.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => overlay.style.display = 'none', 500);
+            }
+        }
+        
+        function showAccessDenied(message, student = null) {
+            let purchaseSection = '';
+            
+            if (student) {
+                const balance = parseFloat(student.balance || 0);
+                const cost = parseFloat(student.paymentAmount || 80);
+                
+                if (balance >= cost) {
+                    purchaseSection = `
+                        <div style="background: rgba(0, 128, 128, 0.05); border: 2px dashed #008080; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem;">
+                            <div style="color: #008080; font-weight: bold; font-size: 1.2rem; margin-bottom: 0.5rem;">Quick Unlock</div>
+                            <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                                Your Balance: <b>${balance} EGP</b><br>
+                                Session Cost: <b>${cost} EGP</b>
+                            </div>
+                            <button id="purchaseBtn" onclick="if(confirm('Spend ${cost} EGP to unlock this session?')) purchaseSession()" class="btn-premium btn-primary" style="width: 100%; justify-content: center;">
+                                Purchase & Watch Now
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    purchaseSection = `
+                        <div style="background: rgba(214, 48, 49, 0.05); border: 2px dashed #d63031; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem;">
+                            <div style="color: #d63031; font-weight: bold; font-size: 1.2rem; margin-bottom: 0.5rem;">Insufficient Balance</div>
+                            <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                                Your Balance: <b>${balance} EGP</b><br>
+                                Session Cost: <b>${cost} EGP</b>
+                            </div>
+                            <p style="color: #d63031; font-weight: 500; font-size: 0.9rem;">Please top up your balance to unlock this session.</p>
+                        </div>
+                    `;
+                }
+            }
+
             document.body.innerHTML = `
-                <div style="display: flex; min-height: 100vh; align-items: center; justify-content: center; padding: 20px;">
-                    <div class="access-denied-card">
-                        <div class="denied-icon">🚫</div>
-                        <h1 style="color: #2f3542; margin-bottom: 15px; font-size: 28px;">الدخول غير مصرح به</h1>
-                        <p style="color: #57606f; font-size: 18px; margin-bottom: 30px; line-height: 1.6;">
-                            نعتذر، هذه المحاضرة مخصصة للمشتركين فقط.<br>
-                            <span style="font-weight: bold; color: #ff4757;">${message}</span>
+                <div style="display: flex; min-height: 100vh; align-items: center; justify-content: center; padding: 20px; background: #f8f9fa;">
+                    <div class="content-card premium-denied animate-fade" style="max-width: 500px; text-align: center; padding: 2.5rem;">
+                        <div style="font-size: 4rem; margin-bottom: 1.5rem;">🔒</div>
+                        <h1 style="font-size: 1.8rem; color: #2d3436; margin-bottom: 1rem;">Content Restricted</h1>
+                        <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1rem; line-height: 1.6;">
+                            ${message}
                         </p>
-                        <div style="display: flex; gap: 15px; justify-content: center;">
-                            <a href="${backLink}" style="padding: 12px 25px; background: #008080; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; transition: 0.3s; box-shadow: 0 4px 12px rgba(0, 128, 128, 0.2);">
-                                العودة للمحاضرات
-                            </a>
-                            <a href="https://wa.me/201558145450" target="_blank" style="padding: 12px 25px; background: #25D366; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; transition: 0.3s; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);">
-                                تواصل معنا
+                        
+                        ${purchaseSection}
+
+                        <div style="display: flex; gap: 1rem; justify-content: center;">
+                            <a href="../" class="btn-premium btn-ghost" style="flex: 1; justify-content: center;">Back</a>
+                            <a href="https://wa.me/201558145450" class="btn-premium btn-primary" style="flex: 1; justify-content: center; background: #25D366; border-color: #25D366;">
+                                Support
                             </a>
                         </div>
                     </div>
@@ -581,24 +454,18 @@ if ($currentVideo && isset($currentVideo['url'])) {
             `;
         }
         
-        function toggleFullscreen(element) {
-            const customPlayer = element || document.querySelector('.custom-player');
-            const videoPlayer = document.getElementById('videoPlayer');
-            
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
+        function toggleFullscreen() {
+            const container = document.querySelector('.modern-player-container');
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
             } else {
-                if (customPlayer && customPlayer.requestFullscreen) {
-                    customPlayer.requestFullscreen().catch(err => {
-                        console.log('Fullscreen request failed:', err);
-                    });
-                } else if (videoPlayer && videoPlayer.requestFullscreen) {
-                    videoPlayer.requestFullscreen();
-                }
+                document.exitFullscreen();
             }
         }
 
-        // Keyboard shortcuts for video player
+        // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             const videoPlayer = document.getElementById('videoPlayer');
             if (!videoPlayer) return;
@@ -606,11 +473,7 @@ if ($currentVideo && isset($currentVideo['url'])) {
             switch(e.key.toLowerCase()) {
                 case ' ':
                     e.preventDefault();
-                    if (videoPlayer.paused) {
-                        videoPlayer.play();
-                    } else {
-                        videoPlayer.pause();
-                    }
+                    videoPlayer.paused ? videoPlayer.play() : videoPlayer.pause();
                     break;
                 case 'f':
                     toggleFullscreen();
@@ -627,7 +490,24 @@ if ($currentVideo && isset($currentVideo['url'])) {
             }
         });
 
-        checkUserAccess();
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            const userPhone = localStorage.getItem('userPhone');
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (userPhone && !urlParams.has('student_phone')) {
+                urlParams.set('student_phone', userPhone);
+                const newUrl = window.location.pathname + '?' + urlParams.toString();
+                window.location.href = newUrl;
+                return;
+            }
+            
+            checkUserAccess();
+        });
     </script>
+
+    <style>
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </body>
 </html>

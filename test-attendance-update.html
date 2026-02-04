@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Online Attendance Update</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧪 Test Online Attendance Update</h1>
+
+        <div class="form-group">
+            <label for="phone">Student Phone Number:</label>
+            <input type="text" id="phone" placeholder="e.g., 01280912031" value="01280912031">
+        </div>
+
+        <div class="form-group">
+            <label for="sessionNumber">Session Number:</label>
+            <input type="number" id="sessionNumber" placeholder="e.g., 13" value="13">
+        </div>
+
+        <button onclick="testAttendanceUpdate()">Test Access & Update</button>
+        <button onclick="clearResults()" style="background: #999;">Clear Results</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin + '/api/';
+
+        async function testAttendanceUpdate() {
+            const phone = document.getElementById('phone').value;
+            const sessionNumber = document.getElementById('sessionNumber').value;
+            const resultDiv = document.getElementById('result');
+
+            if (!phone || !sessionNumber) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Please enter both phone number and session number.';
+                return;
+            }
+
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Testing attendance update...\n\n';
+
+            try {
+                // Call the check-access API
+                const url = `${API_BASE}sessions.php?action=check-access&phone=${encodeURIComponent(phone)}&sessionNumber=${sessionNumber}`;
+                resultDiv.textContent += `Calling: ${url}\n\n`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                resultDiv.textContent += 'API Response:\n';
+                resultDiv.textContent += JSON.stringify(data, null, 2);
+
+                if (data.success && data.hasAccess) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent += '\n\n✅ Access granted! Check the server logs to see if online_attendance was updated.';
+                    resultDiv.textContent += '\n\nTo verify the update:';
+                    resultDiv.textContent += '\n1. Check the PHP error log for "Updating online_attendance to true"';
+                    resultDiv.textContent += '\n2. Query the database to verify the field changed to true';
+                    resultDiv.textContent += '\n3. Call this API again - it should NOT update a second time (already true)';
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent += '\n\n❌ Access denied or student not found.';
+                }
+
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('result').textContent = '';
+            document.getElementById('result').className = '';
+        }
+    </script>
+</body>
+
+</html>

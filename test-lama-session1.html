@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Direct API Test - Lama Mohamed</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        pre {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Test Lama Mohamed - Session 1</h1>
+        <p><strong>Student:</strong> Lama Mohamed</p>
+        <p><strong>Phone:</strong> +201274856549 / 01274856549</p>
+        <p><strong>Session:</strong> 1</p>
+        <p><strong>Subject:</strong> S3 Physics</p>
+
+        <button onclick="testWithPlus()">Test with +201274856549</button>
+        <button onclick="testWithout()">Test with 01274856549</button>
+        <button onclick="testWithSessionNumber()">Test with sessionNumber param</button>
+
+        <h3>Results:</h3>
+        <pre id="results"></pre>
+    </div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+
+        async function testWithPlus() {
+            resultsDiv.textContent = 'Testing with +201274856549...\n\n';
+            await testAPI('+201274856549', 'session_number');
+        }
+
+        async function testWithout() {
+            resultsDiv.textContent = 'Testing with 01274856549...\n\n';
+            await testAPI('01274856549', 'session_number');
+        }
+
+        async function testWithSessionNumber() {
+            resultsDiv.textContent = 'Testing with sessionNumber param...\n\n';
+            await testAPI('01274856549', 'sessionNumber');
+        }
+
+        async function testAPI(phone, paramName) {
+            try {
+                const url = `/api/sessions.php?action=check-access&phone=${encodeURIComponent(phone)}&${paramName}=1`;
+                resultsDiv.textContent += `URL: ${url}\n\n`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                resultsDiv.textContent += 'Response:\n';
+                resultsDiv.textContent += JSON.stringify(data, null, 2);
+
+                if (data.success && data.hasAccess) {
+                    resultsDiv.textContent += '\n\n✅ SUCCESS - Access granted!';
+                    resultsDiv.textContent += '\n\nCheck server logs for "Updating online_attendance to true"';
+                    resultsDiv.textContent += '\nThen check database to verify online_attendance changed to true';
+                } else {
+                    resultsDiv.textContent += '\n\n❌ FAILED - ' + (data.message || 'Unknown error');
+                }
+            } catch (error) {
+                resultsDiv.textContent += '\n\n❌ ERROR: ' + error.message;
+            }
+        }
+    </script>
+</body>
+
+</html>
