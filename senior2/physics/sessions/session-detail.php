@@ -159,12 +159,15 @@ if (isset($session->videos)) {
 
 // Fallback to single video URL if no videos array
 if (empty($videos) && !empty($videoUrl)) {
+    // Normalize the fallback URL properly
+    $normalized = VideoUtils::normalizeVideoUrl($videoUrl, null);
     $videos[] = [
-        'url' => $videoUrl,
+        'url' => $normalized['url'],
         'title' => $title ?? 'Video',
         'description' => '',
-        'source' => 'link',
-        'video_id' => null
+        'source' => $normalized['source'],
+        'video_id' => $normalized['video_id'],
+        'embed_type' => $normalized['embed_type'] ?? 'video'
     ];
 }
 
@@ -502,12 +505,11 @@ if ($currentVideo && isset($currentVideo['url'])) {
         }
         
         function initializePlayer() {
-            const playerScript = `<?= $playerScript ?>`;
-            if (playerScript) {
-                // Wait for player to be ready
+            if (window.sessionVideoData) {
+                // Wait for player to be ready, then load video using universal method
                 setTimeout(() => {
-                    if (window.customPlayer) {
-                        eval(playerScript);
+                    if (window.customPlayer && window.sessionVideoData) {
+                        window.customPlayer.load(window.sessionVideoData);
                     }
                 }, 100);
             } else {

@@ -478,12 +478,11 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
         }
         
         function initializePlayer() {
-            const playerScript = `<?= $playerScript ?>`;
-            if (playerScript) {
-                // Wait for player to be ready
+            if (window.sessionVideoData) {
+                // Wait for player to be ready, then load video using universal method
                 setTimeout(() => {
-                    if (window.customPlayer) {
-                        eval(playerScript);
+                    if (window.customPlayer && window.sessionVideoData) {
+                        window.customPlayer.load(window.sessionVideoData);
                     }
                 }, 100);
             } else {
