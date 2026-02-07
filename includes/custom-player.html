@@ -1,0 +1,508 @@
+<!-- Custom Video Player Component -->
+<div id="customVideoPlayer" class="custom-player-wrapper" data-video-source="" data-video-id="">
+    <div class="player-container">
+        <div class="player-iframe-container">
+            <div id="playerContent"></div>
+        </div>
+        <div class="player-controls">
+            <button class="player-btn" id="playPauseBtn" title="Play/Pause">
+                <i class="fas fa-play"></i>
+            </button>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <div class="player-time">
+                <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+            </div>
+            <button class="player-btn" id="volumeBtn" title="Mute">
+                <i class="fas fa-volume-up"></i>
+            </button>
+            <input type="range" class="volume-slider" min="0" max="100" value="100">
+            <button class="player-btn" id="theaterBtn" title="Theater Mode">
+                <i class="fas fa-expand"></i>
+            </button>
+            <button class="player-btn" id="fullscreenBtn" title="Fullscreen">
+                <i class="fas fa-share-square"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .custom-player-wrapper {
+        width: 100%;
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .player-container {
+        position: relative;
+        width: 100%;
+        background: #000;
+        aspect-ratio: 16 / 9;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .player-iframe-container {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .player-iframe-container iframe,
+    .player-iframe-container video {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: block;
+    }
+
+    .player-controls {
+        background: linear-gradient(to top, #000, transparent);
+        padding: 20px 15px 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #fff;
+        font-size: 0.85rem;
+    }
+
+    .player-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: all 0.2s;
+        font-size: 1rem;
+    }
+
+    .player-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(1.1);
+    }
+
+    .player-btn:active {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .progress-bar {
+        flex: 1;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+        cursor: pointer;
+        position: relative;
+        overflow: visible;
+    }
+
+    .progress-bar:hover .progress-fill::after {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #00d4ff, #0099cc);
+        border-radius: 2px;
+        position: relative;
+        transition: width 0.1s linear;
+    }
+
+    .progress-fill::after {
+        content: '';
+        position: absolute;
+        right: -6px;
+        top: 50%;
+        transform: translateY(-50%) scale(0.7);
+        width: 12px;
+        height: 12px;
+        background: #00d4ff;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .player-time {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.8rem;
+        min-width: 70px;
+        text-align: right;
+    }
+
+    .volume-slider {
+        width: 80px;
+        height: 4px;
+        cursor: pointer;
+        appearance: none;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+        outline: none;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+        appearance: none;
+        width: 12px;
+        height: 12px;
+        background: #00d4ff;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .volume-slider:hover::-webkit-slider-thumb {
+        background: #00ff00;
+        transform: scale(1.2);
+    }
+
+    .volume-slider::-moz-range-thumb {
+        width: 12px;
+        height: 12px;
+        background: #00d4ff;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+        .player-controls {
+            padding: 15px 10px 10px;
+            gap: 8px;
+            font-size: 0.75rem;
+        }
+
+        .player-btn {
+            padding: 6px;
+            font-size: 0.9rem;
+        }
+
+        .volume-slider {
+            display: none;
+        }
+
+        .player-time {
+            min-width: 60px;
+        }
+    }
+
+    /* Theater Mode */
+    .custom-player-wrapper.theater-mode {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        z-index: 9999;
+    }
+
+    /* Fullscreen Mode */
+    .custom-player-wrapper:fullscreen {
+        width: 100vw;
+        height: 100vh;
+    }
+
+    .custom-player-wrapper:fullscreen .player-container {
+        aspect-ratio: unset;
+        height: 100vh;
+    }
+</style>
+
+<script>
+    class CustomVideoPlayer {
+        constructor(wrapperId = 'customVideoPlayer') {
+            this.wrapper = document.getElementById(wrapperId);
+            this.playerContent = document.getElementById('playerContent');
+            this.playPauseBtn = this.wrapper.querySelector('#playPauseBtn');
+            this.volumeBtn = this.wrapper.querySelector('#volumeBtn');
+            this.fullscreenBtn = this.wrapper.querySelector('#fullscreenBtn');
+            this.theaterBtn = this.wrapper.querySelector('#theaterBtn');
+            this.progressFill = this.wrapper.querySelector('.progress-fill');
+            this.progressBar = this.wrapper.querySelector('.progress-bar');
+            this.currentTimeSpan = this.wrapper.querySelector('#currentTime');
+            this.durationSpan = this.wrapper.querySelector('#duration');
+            this.volumeSlider = this.wrapper.querySelector('.volume-slider');
+            
+            this.currentPlayer = null; // 'iframe', 'video', or null
+            this.videoElement = null;
+            this.isPlaying = false;
+            this.isTheaterMode = false;
+            
+            this.initEventListeners();
+        }
+        
+        initEventListeners() {
+            this.playPauseBtn.addEventListener('click', () => this.togglePlay());
+            this.fullscreenBtn.addEventListener('click', () => this.requestFullscreen());
+            this.theaterBtn.addEventListener('click', () => this.toggleTheaterMode());
+            this.volumeBtn.addEventListener('click', () => this.toggleMute());
+            this.progressBar.addEventListener('click', (e) => this.seek(e));
+            this.volumeSlider.addEventListener('input', (e) => this.setVolume(e.target.value));
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+        }
+        
+        loadVimeo(videoId) {
+            this.playerContent.innerHTML = `
+                <iframe 
+                    src="https://player.vimeo.com/video/${videoId}?badge=0&autopause=0&player_id=0&app_id=58479" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen
+                    style="width: 100%; height: 100%; border: none;">
+                </iframe>
+            `;
+            this.currentPlayer = 'iframe';
+            this.videoElement = null;
+            this.updatePlayPauseButton();
+        }
+        
+        loadYouTube(videoId) {
+            this.playerContent.innerHTML = `
+                <iframe 
+                    src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen
+                    style="width: 100%; height: 100%; border: none;">
+                </iframe>
+            `;
+            this.currentPlayer = 'iframe';
+            this.videoElement = null;
+            this.updatePlayPauseButton();
+        }
+        
+        loadGenericIframe(url) {
+            // Load any iframe-able URL (CDN with iframe support, etc.)
+            this.playerContent.innerHTML = `
+                <iframe 
+                    src="${url}" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen
+                    style="width: 100%; height: 100%; border: none;">
+                </iframe>
+            `;
+            this.currentPlayer = 'iframe';
+            this.videoElement = null;
+            this.updatePlayPauseButton();
+        }
+        
+        loadLocalVideo(url) {
+            this.playerContent.innerHTML = `
+                <video id="videoElement" controls style="width: 100%; height: 100%;">
+                    <source src="${url}" type="video/mp4">
+                    Your browser doesn't support HTML5 video.
+                </video>
+            `;
+            this.currentPlayer = 'video';
+            this.videoElement = document.getElementById('videoElement');
+            
+            // Setup video element events
+            this.videoElement.addEventListener('timeupdate', () => this.updateProgress());
+            this.videoElement.addEventListener('loadedmetadata', () => this.updateDuration());
+            this.videoElement.addEventListener('play', () => {
+                this.isPlaying = true;
+                this.updatePlayPauseButton();
+            });
+            this.videoElement.addEventListener('pause', () => {
+                this.isPlaying = false;
+                this.updatePlayPauseButton();
+            });
+            this.videoElement.addEventListener('volumechange', () => this.updateVolumeButton());
+            
+            this.updatePlayPauseButton();
+        }
+        
+        /**
+         * Universal load method for normalized video data from VideoUtils
+         * @param {Object} videoData - Object with { url, source, video_id, embed_type }
+         */
+        load(videoData) {
+            if (!videoData || !videoData.source) {
+                console.error('Invalid video data:', videoData);
+                return;
+            }
+            
+            // Route based on source and embed_type
+            switch (videoData.source) {
+                case 'vimeo':
+                    if (videoData.video_id) {
+                        this.loadVimeo(videoData.video_id);
+                    } else {
+                        console.error('Vimeo source missing video_id');
+                    }
+                    break;
+                    
+                case 'youtube':
+                    if (videoData.video_id) {
+                        this.loadYouTube(videoData.video_id);
+                    } else {
+                        console.error('YouTube source missing video_id');
+                    }
+                    break;
+                    
+                case 'local':
+                    if (videoData.url) {
+                        this.loadLocalVideo(videoData.url);
+                    } else {
+                        console.error('Local source missing URL');
+                    }
+                    break;
+                    
+                case 'cdn':
+                    if (videoData.url) {
+                        if (videoData.embed_type === 'iframe') {
+                            // CDN URL that supports iframe embedding
+                            this.loadGenericIframe(videoData.url);
+                        } else {
+                            // CDN URL as direct video source
+                            this.loadLocalVideo(videoData.url);
+                        }
+                    } else {
+                        console.error('CDN source missing URL');
+                    }
+                    break;
+                    
+                case 'iframe':
+                    // Raw iframe HTML or already extracted iframe URL
+                    if (videoData.url) {
+                        this.loadGenericIframe(videoData.url);
+                    } else {
+                        console.error('iframe source missing URL');
+                    }
+                    break;
+                    
+                default:
+                    console.error('Unknown video source:', videoData.source);
+            }
+        }
+        
+        togglePlay() {
+            if (this.currentPlayer === 'video' && this.videoElement) {
+                this.videoElement.paused ? this.videoElement.play() : this.videoElement.pause();
+            }
+        }
+        
+        toggleMute() {
+            if (this.currentPlayer === 'video' && this.videoElement) {
+                this.videoElement.muted = !this.videoElement.muted;
+                this.updateVolumeButton();
+            }
+        }
+        
+        setVolume(value) {
+            if (this.currentPlayer === 'video' && this.videoElement) {
+                this.videoElement.volume = value / 100;
+            }
+        }
+        
+        seek(event) {
+            if (this.currentPlayer !== 'video' || !this.videoElement) return;
+            
+            const rect = this.progressBar.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const percentage = x / rect.width;
+            this.videoElement.currentTime = percentage * this.videoElement.duration;
+        }
+        
+        updateProgress() {
+            if (!this.videoElement) return;
+            
+            const percentage = (this.videoElement.currentTime / this.videoElement.duration) * 100;
+            this.progressFill.style.width = percentage + '%';
+            this.currentTimeSpan.textContent = this.formatTime(this.videoElement.currentTime);
+        }
+        
+        updateDuration() {
+            if (!this.videoElement) return;
+            this.durationSpan.textContent = this.formatTime(this.videoElement.duration);
+        }
+        
+        formatTime(seconds) {
+            if (!isFinite(seconds)) return '0:00';
+            
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            
+            if (hours > 0) {
+                return `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+            return `${minutes}:${String(secs).padStart(2, '0')}`;
+        }
+        
+        updatePlayPauseButton() {
+            const icon = this.currentPlayer === 'video' 
+                ? (this.videoElement?.paused ? 'fa-play' : 'fa-pause')
+                : 'fa-play';
+            this.playPauseBtn.innerHTML = `<i class="fas ${icon}"></i>`;
+        }
+        
+        updateVolumeButton() {
+            if (!this.videoElement) return;
+            
+            const icon = this.videoElement.muted ? 'fa-volume-mute' : 'fa-volume-up';
+            this.volumeBtn.innerHTML = `<i class="fas ${icon}"></i>`;
+            this.volumeSlider.value = this.videoElement.muted ? 0 : (this.videoElement.volume * 100);
+        }
+        
+        toggleTheaterMode() {
+            this.isTheaterMode = !this.isTheaterMode;
+            this.wrapper.classList.toggle('theater-mode', this.isTheaterMode);
+            
+            if (this.isTheaterMode) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+        
+        requestFullscreen() {
+            if (!this.wrapper.fullscreenElement) {
+                this.wrapper.requestFullscreen().catch(err => {
+                    console.error(`Error attempting fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        handleKeyboard(e) {
+            if (this.currentPlayer !== 'video' || !this.videoElement) return;
+            if (e.target.tagName === 'INPUT') return;
+            
+            switch(e.key.toLowerCase()) {
+                case ' ':
+                    e.preventDefault();
+                    this.togglePlay();
+                    break;
+                case 'f':
+                    this.requestFullscreen();
+                    break;
+                case 'ArrowRight':
+                    this.videoElement.currentTime += 5;
+                    break;
+                case 'ArrowLeft':
+                    this.videoElement.currentTime -= 5;
+                    break;
+                case 'm':
+                    this.toggleMute();
+                    break;
+                case 't':
+                    this.toggleTheaterMode();
+                    break;
+            }
+        }
+    }
+    
+    // Initialize player when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        window.customPlayer = new CustomVideoPlayer();
+    });
+</script>

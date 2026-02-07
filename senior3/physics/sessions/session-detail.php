@@ -2,6 +2,7 @@
 require_once '../../../config/config.php';
 require_once '../../../classes/DatabaseMongo.php';
 require_once '../../../classes/Video.php';
+require_once '../../../includes/video-utils.php';
 
 // Get session ID from URL parameter
 $sessionId = $_GET['id'] ?? '';
@@ -133,6 +134,14 @@ if (isset($session->videos) && is_array($session->videos)) {
             }
         }
         
+        // Normalize the video URL (handles Vimeo, YouTube, etc.)
+        if ($videoData['url']) {
+            $normalized = VideoUtils::normalizeVideoUrl($videoData['url'], $videoData['source']);
+            $videoData['url'] = $normalized['url'];
+            $videoData['source'] = $normalized['source'];
+            $videoData['video_id'] = $normalized['video_id'];
+        }
+        
         $videos[] = $videoData;
     }
 }
@@ -184,42 +193,32 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
     <main class="app-container">
         <!-- Content Area -->
         <div class="player-section animate-fade">
-            <!-- Professional Video Container -->
+            <!-- Professional Video Container with Custom Player -->
             <div class="modern-player-container">
                 <?php
-                // YouTube Embed Logic
-                $embedUrl = ($currentVideo && $currentVideo['url']) ? $currentVideo['url'] : '';
-                $isYouTube = false;
-                if (!empty($embedUrl)) {
-                    if (strpos($embedUrl, 'youtu.be') !== false) {
-                        preg_match('/youtu\.be\/([a-zA-Z0-9_-]{11})/', $embedUrl, $matches);
-                        $embedUrl = !empty($matches[1]) ? 'https://www.youtube.com/embed/' . $matches[1] . '?rel=0&modestbranding=1&autoplay=1' : $embedUrl;
-                        $isYouTube = true;
-                    } elseif (preg_match('/v=([a-zA-Z0-9_-]{11})/', $embedUrl, $matches)) {
-                        $embedUrl = 'https://www.youtube.com/embed/' . $matches[1] . '?rel=0&modestbranding=1&autoplay=1';
-                        $isYouTube = true;
-                    } elseif (strpos($embedUrl, 'youtube.com/embed') !== false) {
-                        $isYouTube = true;
-                    }
+                // Prepare video data for the custom player using universal load() method
+                $playerData = null;
+                $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
+                
+                if ($currentVideo && $currentVideo['url']) {
+                    // Create normalized video data object for the player
+                    $playerData = [
+                        'url' => $currentVideo['url'],
+                        'source' => $currentVideo['source'],
+                        'video_id' => $currentVideo['video_id'],
+                        'embed_type' => $currentVideo['embed_type'] ?? 'video'
+                    ];
                 }
+                $playerDataJson = $playerData ? json_encode($playerData, JSON_HEX_QUOT | JSON_HEX_TAG) : 'null';
                 ?>
-
-                <?php if ($isYouTube && !empty($embedUrl)): ?>
-                    <iframe src="<?= htmlspecialchars($embedUrl) ?>" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                <?php elseif ($currentVideo && $currentVideo['url']): ?>
-                    <video id="videoPlayer" controls controlsList="nodownload">
-                        <source src="<?= htmlspecialchars($currentVideo['url']) ?>" type="video/mp4">
-                        Your browser doesn't support HTML5 video.
-                    </video>
-                <?php else: ?>
-                    <div class="video-placeholder">
-                        <div style="text-align: center;">
-                            <i class="fas fa-play-circle" style="font-size: 4rem; color: var(--primary); margin-bottom: 1rem;"></i>
-                            <h3>Lecture Content Restricted</h3>
-                            <p>Please ensure you are subscribed to this session.</p>
-                        </div>
-                    </div>
-                <?php endif; ?>
+                
+                <!-- Include custom player HTML -->
+                <?php include '../../../includes/custom-player.html'; ?>
+                
+                <!-- Store player data in window for initialization -->
+                <script>
+                    window.sessionVideoData = <?= $playerDataJson ?>;
+                </script>
             </div>
 
             <!-- Player Quick Controls -->
@@ -229,9 +228,6 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
                         <i class="fas fa-video"></i> Live Meeting
                     </a>
                 <?php endif; ?>
-                <button class="btn-premium btn-ghost" onclick="toggleFullscreen()">
-                    <i class="fas fa-expand"></i> Theater Mode
-                </button>
             </div>
 
             <!-- Content Details Card -->
@@ -431,70 +427,90 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
             `;
         }
         
-        function toggleFullscreen() {
-            const container = document.querySelector('.modern-player-container');
-            if (!document.fullscreenElement) {
-                container.requestFullscreen().catch(err => {
-                    alert(`Error attempting to enable full-screen mode: ${err.message}`);
-                });
+        async function checkUserAccess() {
+            return new Promise((resolve, reject) => {
+                const overlay = document.getElementById('accessLoadingOverlay');
+                const userPhone = localStorage.getItem('userPhone');
+                const sessionNumber = <?= $sessionNumber ? $sessionNumber : 'null' ?>;
+                const accessControl = '<?= htmlspecialchars($accessControl) ?>';
+                
+                if (!userPhone) {
+                    window.location.href = '/login/index.html';
+                    reject('No user phone');
+                    return;
+                }
+                
+                if (accessControl === 'free') {
+                    fadeOutOverlay();
+                    resolve();
+                    return;
+                }
+                
+                if (accessControl === 'restricted' && sessionNumber) {
+                    (async () => {
+                        try {
+                            const grade = '<?= $requiredGrade ?>';
+                            const subject = '<?= $requiredSubject ?>';
+                            const response = await fetch(`${window.API_BASE_URL}sessions.php?action=check-access&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(subject)}`);
+                            const data = await response.json();
+                            
+                            if (data.success && data.hasAccess) {
+                                fadeOutOverlay();
+                                resolve();
+                            } else if (data.success) {
+                                showAccessDenied(data.message || "Your subscription has expired or is invalid for this session.", data.student);
+                                reject('Access denied');
+                            } else {
+                                showAccessDenied(data.message || "Error checking access.");
+                                reject('Access check failed');
+                            }
+                        } catch (error) {
+                            console.error('Access check failed:', error);
+                            showAccessDenied("Failed to verify access. Please check your internet connection and try again.");
+                            reject(error);
+                        }
+                    })();
+                } else {
+                    fadeOutOverlay();
+                    resolve();
+                }
+            });
+        }
+        
+        function initializePlayer() {
+            const playerScript = `<?= $playerScript ?>`;
+            if (playerScript) {
+                // Wait for player to be ready
+                setTimeout(() => {
+                    if (window.customPlayer) {
+                        eval(playerScript);
+                    }
+                }, 100);
             } else {
-                document.exitFullscreen();
+                // No video to play
+                console.log('No video content available');
             }
         }
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            const videoPlayer = document.getElementById('videoPlayer');
-            if (!videoPlayer) return;
-            
-            switch(e.key.toLowerCase()) {
-                case ' ':
-                    e.preventDefault();
-                    videoPlayer.paused ? videoPlayer.play() : videoPlayer.pause();
-                    break;
-                case 'f':
-                    toggleFullscreen();
-                    break;
-                case 'arrowright':
-                    videoPlayer.currentTime += 5;
-                    break;
-                case 'arrowleft':
-                    videoPlayer.currentTime -= 5;
-                    break;
-                case 'm':
-                    videoPlayer.muted = !videoPlayer.muted;
-                    break;
-            }
-        });
-
+    
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('=== SESSION DETAIL PAGE LOADED ===');
-            
             // Add student phone to URL if not already present
             const userPhone = localStorage.getItem('userPhone');
             const urlParams = new URLSearchParams(window.location.search);
             
-            console.log('User Phone from localStorage:', userPhone);
-            console.log('Current URL params:', window.location.search);
-            console.log('Has student_phone param?', urlParams.has('student_phone'));
-            
             if (userPhone && !urlParams.has('student_phone')) {
-                console.log('Adding student_phone to URL and reloading...');
                 urlParams.set('student_phone', userPhone);
                 const newUrl = window.location.pathname + '?' + urlParams.toString();
-                console.log('Redirecting to:', newUrl);
-                // Reload the page with the new URL
                 window.location.href = newUrl;
-                return; // Stop execution
-            } else if (!userPhone) {
-                console.warn('⚠️ No userPhone in localStorage!');
-            } else {
-                console.log('✓ student_phone already in URL');
+                return;
             }
             
-            console.log('Calling checkUserAccess()...');
-            checkUserAccess();
+            // Check access and initialize player after access is verified
+            checkUserAccess().then(() => {
+                initializePlayer();
+            }).catch(() => {
+                console.error('Failed to verify access');
+            });
         });
     </script>
 
