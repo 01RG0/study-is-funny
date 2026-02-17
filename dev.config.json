@@ -1,0 +1,28 @@
+{
+  "development": {
+    "port": 8000,
+    "host": "localhost",
+    "autoOpen": true,
+    "browser": "default"
+  },
+  "mongodb": {
+    "configured": false,
+    "fallback": "localStorage",
+    "demoData": true
+  },
+  "features": {
+    "qrScanner": true,
+    "adminDashboard": true,
+    "studentPortal": true,
+    "multiLanguage": true
+  },
+  "paths": {
+    "main": "/",
+    "admin": "/admin/dashboard.html",
+    "student": "/student/index.html",
+    "qr": "/qr-scanner.html",
+    "login": "/login/index.html",
+    "senior1": "/senior1/index.html",
+    "senior2": "/senior2/index.html"
+  }
+}

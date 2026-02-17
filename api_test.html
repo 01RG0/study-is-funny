@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test Results</title>
+    <script src="js/api-config.js"></script>
+</head>
+<body>
+    <h2>Local API Test Results</h2>
+    
+    <div id="results"></div>
+
+    <script>
+    async function testAPI() {
+        const results = document.getElementById('results');
+        const testPhone = "01000733148";
+        const testGrade = "senior2";
+        const testSubject = "mathematics";
+        
+        results.innerHTML += '<h3>API Configuration:</h3>';
+        results.innerHTML += '<p>API Base URL: ' + window.API_BASE_URL + '</p>';
+        results.innerHTML += '<p>Base URL: ' + window.BASE_URL + '</p>';
+        
+        // Test Session 1 Access (should fail)
+        results.innerHTML += '<h3>1. Testing Session 1 Access (should be denied):</h3>';
+        try {
+            const url1 = `${window.API_BASE_URL}sessions.php?action=check-access&session_number=1&phone=${encodeURIComponent(testPhone)}&grade=${encodeURIComponent(testGrade)}&subject=${encodeURIComponent(testSubject)}`;
+            results.innerHTML += '<p>URL: ' + url1 + '</p>';
+            
+            const response1 = await fetch(url1);
+            const data1 = await response1.json();
+            results.innerHTML += '<pre>Result: ' + JSON.stringify(data1, null, 2) + '</pre>';
+        } catch (error) {
+            results.innerHTML += '<p style="color:red">Error: ' + error.message + '</p>';
+        }
+
+        // Test Session 2 Access (should succeed)
+        results.innerHTML += '<h3>2. Testing Session 2 Access (should be granted):</h3>';
+        try {
+            const url2 = `${window.API_BASE_URL}sessions.php?action=check-access&session_number=2&phone=${encodeURIComponent(testPhone)}&grade=${encodeURIComponent(testGrade)}&subject=${encodeURIComponent(testSubject)}`;
+            results.innerHTML += '<p>URL: ' + url2 + '</p>';
+            
+            const response2 = await fetch(url2);
+            const data2 = await response2.json();
+            results.innerHTML += '<pre>Result: ' + JSON.stringify(data2, null, 2) + '</pre>';
+        } catch (error) {
+            results.innerHTML += '<p style="color:red">Error: ' + error.message + '</p>';
+        }
+
+        // Test Purchase Session 1
+        results.innerHTML += '<h3>3. Testing Purchase Session 1:</h3>';
+        try {
+            const url3 = `${window.API_BASE_URL}sessions.php?action=purchase-session&sessionNumber=1&phone=${encodeURIComponent(testPhone)}&grade=${encodeURIComponent(testGrade)}&subject=${encodeURIComponent(testSubject)}`;
+            results.innerHTML += '<p>URL: ' + url3 + '</p>';
+            
+            const response3 = await fetch(url3);
+            const data3 = await response3.json();
+            results.innerHTML += '<pre>Result: ' + JSON.stringify(data3, null, 2) + '</pre>';
+        } catch (error) {
+            results.innerHTML += '<p style="color:red">Error: ' + error.message + '</p>';
+        }
+    }
+    
+    // Run tests when page loads
+    window.addEventListener('load', testAPI);
+    </script>
+</body>
+</html>

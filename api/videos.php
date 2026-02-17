@@ -5,6 +5,9 @@
  */
 
 header('Content-Type: application/json');
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
 require_once dirname(__DIR__) . '/includes/session_check.php';
 require_once dirname(__DIR__) . '/config/config.php';
 

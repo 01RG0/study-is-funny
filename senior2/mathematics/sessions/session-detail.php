@@ -319,46 +319,6 @@ if ($currentVideo && isset($currentVideo['url'])) {
     </div>
 
     <script>
-        // Check user access
-        async function checkUserAccess() {
-            const overlay = document.getElementById('accessLoadingOverlay');
-            const userPhone = localStorage.getItem('userPhone');
-            const sessionNumber = <?= $sessionNumber ? $sessionNumber : 'null' ?>;
-            const accessControl = '<?= htmlspecialchars($accessControl) ?>';
-            
-            if (!userPhone) {
-                window.location.href = '/login/index.html';
-                return;
-            }
-            
-            if (accessControl === 'free') {
-                fadeOutOverlay();
-                return;
-            }
-            
-            if (accessControl === 'restricted' && sessionNumber) {
-                try {
-                    const grade = '<?= $requiredGrade ?>';
-                    const subject = '<?= $requiredSubject ?>';
-                    const response = await fetch(`${window.API_BASE_URL}sessions.php?action=check-access&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(subject)}`);
-                    const data = await response.json();
-                    
-                    if (data.success && data.hasAccess) {
-                        fadeOutOverlay();
-                    } else if (data.success) {
-                        showAccessDenied(data.message || "Your subscription has expired or is invalid for this session.", data.student);
-                    } else {
-                        showAccessDenied(data.message || "Error checking access.");
-                    }
-                } catch (error) {
-                    console.error('Access check failed:', error);
-                    showAccessDenied("Failed to verify access. Please check your internet connection and try again.");
-                }
-            } else {
-                fadeOutOverlay();
-            }
-        }
-        
         async function purchaseSession() {
             const userPhone = localStorage.getItem('userPhone');
             const sessionNumber = <?= $sessionNumber ? $sessionNumber : 'null' ?>;
@@ -371,7 +331,7 @@ if ($currentVideo && isset($currentVideo['url'])) {
             btn.disabled = true;
 
             try {
-                const response = await fetch(`${window.API_BASE_URL}sessions.php?action=purchase-session&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(subject)}`);
+                const response = await fetch(`${window.API_BASE_URL}sessions.php?action=purchase-session&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(subject)}&t=${Date.now()}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -403,7 +363,7 @@ if ($currentVideo && isset($currentVideo['url'])) {
             
             if (student) {
                 const balance = parseFloat(student.balance || 0);
-                const cost = parseFloat(student.paymentAmount ?? 80);
+                const cost = student.paymentAmount !== undefined && student.paymentAmount !== null ? parseFloat(student.paymentAmount) : 80;
                 
                 if (balance >= cost) {
                     purchaseSection = `
@@ -458,55 +418,44 @@ if ($currentVideo && isset($currentVideo['url'])) {
             // Theater mode/fullscreen handled by custom player
         }
 
-        // Player initialization
+        // Check user access
         async function checkUserAccess() {
-            return new Promise((resolve, reject) => {
-                const overlay = document.getElementById('accessLoadingOverlay');
-                const userPhone = localStorage.getItem('userPhone');
-                const sessionNumber = <?= $sessionNumber ? $sessionNumber : 'null' ?>;
-                const accessControl = '<?= htmlspecialchars($accessControl) ?>';
-                
-                if (!userPhone) {
-                    window.location.href = '/login/index.html';
-                    reject('No user phone');
-                    return;
+            const overlay = document.getElementById('accessLoadingOverlay');
+            const userPhone = localStorage.getItem('userPhone');
+            const sessionNumber = <?= $sessionNumber ? $sessionNumber : 'null' ?>;
+            const accessControl = '<?= htmlspecialchars($accessControl) ?>';
+            
+            if (!userPhone) {
+                window.location.href = '/login/index.html';
+                return;
+            }
+            
+            if (accessControl === 'free') {
+                fadeOutOverlay();
+                return;
+            }
+            
+            if (accessControl === 'restricted' && sessionNumber) {
+                try {
+                    const grade = '<?= $requiredGrade ?>';
+                    const subject = '<?= $requiredSubject ?>';
+                    const response = await fetch(`${window.API_BASE_URL}sessions.php?action=check-access&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(subject)}&t=${Date.now()}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.hasAccess) {
+                        fadeOutOverlay();
+                    } else if (data.success) {
+                        showAccessDenied(data.message || "Your subscription has expired or is invalid for this session.", data.student);
+                    } else {
+                        showAccessDenied(data.message || "Error checking access.");
+                    }
+                } catch (error) {
+                    console.error('Access check failed:', error);
+                    showAccessDenied("Failed to verify access. Please check your internet connection and try again.");
                 }
-                
-                if (accessControl === 'free') {
-                    fadeOutOverlay();
-                    resolve();
-                    return;
-                }
-                
-                if (accessControl === 'restricted' && sessionNumber) {
-                    (async () => {
-                        try {
-                            const grade = '<?= $requiredGrade ?>';
-                            const subject = '<?= $requiredSubject ?>';
-                            const response = await fetch(`${window.API_BASE_URL}sessions.php?action=check-access&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(subject)}`);
-                            const data = await response.json();
-                            
-                            if (data.success && data.hasAccess) {
-                                fadeOutOverlay();
-                                resolve();
-                            } else if (data.success) {
-                                showAccessDenied(data.message || "Your subscription has expired or is invalid for this session.", data.student);
-                                reject('Access denied');
-                            } else {
-                                showAccessDenied(data.message || "Error checking access.");
-                                reject('Access check failed');
-                            }
-                        } catch (error) {
-                            console.error('Access check failed:', error);
-                            showAccessDenied("Failed to verify access. Please check your internet connection and try again.");
-                            reject(error);
-                        }
-                    })();
-                } else {
-                    fadeOutOverlay();
-                    resolve();
-                }
-            });
+            } else {
+                fadeOutOverlay();
+            }
         }
         
         function initializePlayer() {
@@ -524,7 +473,7 @@ if ($currentVideo && isset($currentVideo['url'])) {
         }
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             const userPhone = localStorage.getItem('userPhone');
             const urlParams = new URLSearchParams(window.location.search);
             
@@ -536,11 +485,12 @@ if ($currentVideo && isset($currentVideo['url'])) {
             }
             
             // Check access and initialize player after access is verified
-            checkUserAccess().then(() => {
+            try {
+                await checkUserAccess();
                 initializePlayer();
-            }).catch(() => {
-                console.error('Failed to verify access');
-            });
+            } catch (error) {
+                console.error('Failed to verify access:', error);
+            }
         });
     </script>
 

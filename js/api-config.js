@@ -2,29 +2,20 @@
  * API Configuration - Handles correct API path for both local and hosted environments
  * Works with:
  * - Local: http://localhost:8000/
- * - Hostinger: https://studyisfunny.online/study-is-funny/
+ * - Production: https://studyisfunny.online/study-is-funny/
  */
 
 // Detect the correct API base URL based on current location
 function getApiBaseUrl() {
     const protocol = window.location.protocol; // http: or https:
     const host = window.location.host; // localhost:8000 or studyisfunny.online
-    const pathname = window.location.pathname; // /study-is-funny/senior2/... or /senior2/...
     
-    // Handle production domain specifically
-    if (host === 'studyisfunny.online') {
+    // Production domain (deployed under /study-is-funny/)
+    if (host.includes('studyisfunny.online')) {
         return `${protocol}//${host}/study-is-funny/api/`;
     }
     
-    // Check if we're in a hosted subdirectory (contains 'study-is-funny')
-    if (pathname.includes('study-is-funny')) {
-        // Extract the base path up to and including the FIRST occurrence of 'study-is-funny'
-        const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);
-        const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
-        return `${protocol}//${host}${basePath}/api/`;
-    }
-    
-    // Local development or root path
+    // Local development
     return `${protocol}//${host}/api/`;
 }
 

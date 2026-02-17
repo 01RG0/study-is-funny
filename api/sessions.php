@@ -4,6 +4,9 @@
 @ini_set('log_errors', '1');
 
 header('Content-Type: application/json');
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
 
 // Catch any fatal errors
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
@@ -980,14 +983,9 @@ function checkStudentSessionAccess() {
                         $student = current($cursor->toArray());
                         
                         if ($student) {
-                            $sessionKey = 'session_' . $sessionNumber;
-                            if (isset($student->$sessionKey)) {
-                                $foundInCollection = $collection;
-                                error_log('  âœ“ Found student with session in: ' . $collection);
-                                break 2; 
-                            } else {
-                                $student = null; // Continue searching
-                            }
+                            $foundInCollection = $collection;
+                            error_log('Found student in: ' . $collection);
+                            break 2;
                         }
                     } catch (Exception $e) {
                         error_log('  Error querying ' . $collection . ': ' . $e->getMessage());
@@ -996,11 +994,11 @@ function checkStudentSessionAccess() {
             }
 
             if (!$student) {
-                error_log('âœ— Access Denied: Student or Session record not found');
+                error_log('Access Denied: Student not found in any collection');
                 echo json_encode([
                     'success' => false,
                     'hasAccess' => false,
-                    'message' => 'Student not found or not enrolled in this session'
+                    'message' => 'Student not found or not enrolled in this subject'
                 ]);
                 return;
             }
@@ -1034,7 +1032,7 @@ function checkStudentSessionAccess() {
                 }
             }
 
-            error_log('Access result: ' . ($hasAccess ? 'âœ“ GRANTED' : 'âœ— DENIED'));
+            error_log('Access result: ' . ($hasAccess ? 'âœ“ GRANTED' : ' DENIED'));
 
             // Update online_attendance if access is granted and it's currently false
             if ($hasAccess && $foundInCollection) {
@@ -1066,23 +1064,38 @@ function checkStudentSessionAccess() {
                     ];
                     
                     try {
-                        $bulk = new MongoDB\Driver\BulkWrite();
-                        $bulk->update(
-                            ['phone' => ['$in' => $phoneVariations]],
-                            ['$set' => $updateFields],
-                            ['multi' => false]
-                        );
-                        $client->executeBulkWrite("$databaseName." . $foundInCollection, $bulk);
-                        
-                        // Also update students collection
-                        if ($foundInCollection !== 'students') {
-                            $bulk2 = new MongoDB\Driver\BulkWrite();
-                            $bulk2->update(
+                        // Map to correct editable collection (don't update read-only views)
+                        $editableCollection = null; 
+                        if ($foundInCollection === 'all_students_view') {
+                            // For read-only view matches, determine the correct editable collection
+                            if ($targetCollection) {
+                                $editableCollection = $targetCollection;
+                            }
+                        } else {
+                            // Use the collection we found the student in
+                            $editableCollection = $foundInCollection;
+                        }
+
+                        if ($editableCollection) {
+                            $bulk = new MongoDB\Driver\BulkWrite();
+                            $bulk->update(
+                                ['phone' => ['$in' => $phoneVariations]],
+                                ['$set' => $updateFields],
+                                ['multi' => false]
+                            );
+                            $client->executeBulkWrite("$databaseName." . $editableCollection, $bulk);
+                            error_log('   Updated online_attendance in ' . $editableCollection);
+                            
+                            // Also sync to students collection
+                            $syncBulk = new MongoDB\Driver\BulkWrite();
+                            $syncBulk->update(
                                 ['phone' => ['$in' => $phoneVariations], 'subject' => $student->subject],
                                 ['$set' => $updateFields],
-                                ['multi' => true]
+                                ['multi' => false]
                             );
-                            $client->executeBulkWrite("$databaseName.students", $bulk2);
+                            $client->executeBulkWrite("$databaseName.students", $syncBulk);
+                        } else {
+                            error_log('  ⚠️ No editable collection found - cannot update attendance');
                         }
                     } catch (Exception $e) {
                         error_log('  âŒ Update error: ' . $e->getMessage());
@@ -1230,7 +1243,7 @@ function checkStudentSessionAccess() {
                 error_log('âœ“ Session found with isPublished=true');
                 $sessionContent = convertSessionToArray($session);
             } else {
-                error_log('âœ— Session NOT found. Query was: ' . $sessionQueryDebug);
+                error_log(' Session NOT found. Query was: ' . $sessionQueryDebug);
                 // Try again without isPublished filter for debugging
                 $sessionFilter2 = [
                     'subject' => $subject,
@@ -1455,9 +1468,10 @@ function purchaseStudentSession() {
 
         $cost = isset($student->paymentAmount) ? (float)$student->paymentAmount : 80;
 
+        // Free students (paymentAmount = 0) don't need to pay
+        $isFreeStudent = isset($student->paymentAmount) && (float)$student->paymentAmount === 0.0;
 
-
-        if ($balance < $cost) {
+        if (!$isFreeStudent && $balance < $cost) {
 
             echo json_encode([
 
@@ -1495,7 +1509,7 @@ function purchaseStudentSession() {
 
                 $sessionKey . '.purchased_at' => date('Y-m-d\TH:i:s.v\Z'),
 
-                $sessionKey . '.attendanceStatus' => 'absence'
+                $sessionKey . '.attendanceStatus' => 'absent'
 
             ]],
 
@@ -1546,7 +1560,7 @@ function purchaseStudentSession() {
             ['$inc' => ['balance' => -$cost], '$set' => [
                 $sessionKey . '.online_session' => true,
                 $sessionKey . '.purchased_at' => date('Y-m-d\TH:i:s.v\Z'),
-                $sessionKey . '.attendanceStatus' => 'absence'
+                $sessionKey . '.attendanceStatus' => 'absent'
             ]],
             ['multi' => false]
         );

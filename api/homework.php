@@ -9,6 +9,9 @@
 @ini_set('log_errors', '1');
 
 header('Content-Type: application/json');
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
 
 // Catch any fatal errors
 set_error_handler(function($errno, $errstr, $errfile, $errline) {

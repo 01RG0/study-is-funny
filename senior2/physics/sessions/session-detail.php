@@ -319,46 +319,6 @@ if ($currentVideo && isset($currentVideo['url'])) {
     </div>
 
     <script>
-        // Check user access
-        async function checkUserAccess() {
-            const overlay = document.getElementById('accessLoadingOverlay');
-            const userPhone = localStorage.getItem('userPhone');
-            const sessionNumber = <?= $sessionNumber ? $sessionNumber : 'null' ?>;
-            const accessControl = '<?= htmlspecialchars($accessControl) ?>';
-            
-            if (!userPhone) {
-                window.location.href = '/login/index.html';
-                return;
-            }
-            
-            if (accessControl === 'free') {
-                fadeOutOverlay();
-                return;
-            }
-            
-            if (accessControl === 'restricted' && sessionNumber) {
-                try {
-                    const grade = '<?= $requiredGrade ?>';
-                    const subject = '<?= $requiredSubject ?>';
-                    const response = await fetch(`${window.API_BASE_URL}sessions.php?action=check-access&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(subject)}`);
-                    const data = await response.json();
-                    
-                    if (data.success && data.hasAccess) {
-                        fadeOutOverlay();
-                    } else if (data.success) {
-                        showAccessDenied(data.message || "Your subscription has expired or is invalid for this session.", data.student);
-                    } else {
-                        showAccessDenied(data.message || "Error checking access.");
-                    }
-                } catch (error) {
-                    console.error('Access check failed:', error);
-                    showAccessDenied("Failed to verify access. Please check your internet connection and try again.");
-                }
-            } else {
-                fadeOutOverlay();
-            }
-        }
-        
         async function purchaseSession() {
             const userPhone = localStorage.getItem('userPhone');
             const sessionNumber = <?= $sessionNumber ? $sessionNumber : 'null' ?>;
@@ -371,7 +331,7 @@ if ($currentVideo && isset($currentVideo['url'])) {
             btn.disabled = true;
 
             try {
-                const response = await fetch(`${window.API_BASE_URL}sessions.php?action=purchase-session&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(subject)}`);
+                const response = await fetch(`${window.API_BASE_URL}sessions.php?action=purchase-session&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(subject)}&t=${Date.now()}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -403,7 +363,7 @@ if ($currentVideo && isset($currentVideo['url'])) {
             
             if (student) {
                 const balance = parseFloat(student.balance || 0);
-                const cost = parseFloat(student.paymentAmount ?? 80);
+                const cost = student.paymentAmount !== undefined && student.paymentAmount !== null ? parseFloat(student.paymentAmount) : 80;
                 
                 if (balance >= cost) {
                     purchaseSection = `
@@ -478,7 +438,7 @@ if ($currentVideo && isset($currentVideo['url'])) {
                         try {
                             const grade = '<?= $requiredGrade ?>';
                             const subject = '<?= $requiredSubject ?>';
-                            const response = await fetch(`${window.API_BASE_URL}sessions.php?action=check-access&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(subject)}`);
+                            const response = await fetch(`${window.API_BASE_URL}sessions.php?action=check-access&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeUrIComponent(subject)}&t=${Date.now()}`);
                             const data = await response.json();
                             
                             if (data.success && data.hasAccess) {

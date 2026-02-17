@@ -79,7 +79,7 @@ function purchaseStudentSession() {
             ['$inc' => ['balance' => -$cost], '$set' => [
                 $sessionKey . '.online_session' => true,
                 $sessionKey . '.purchased_at' => date('Y-m-d\TH:i:s.v\Z'),
-                $sessionKey . '.attendanceStatus' => 'absence'
+                `$sessionKey . '.attendanceStatus' => 'absent'
             ]],
             ['multi' => false]
         );
@@ -108,7 +108,7 @@ function purchaseStudentSession() {
             ['$inc' => ['balance' => -$cost], '$set' => [
                 $sessionKey . '.online_session' => true,
                 $sessionKey . '.purchased_at' => date('Y-m-d\TH:i:s.v\Z'),
-                $sessionKey . '.attendanceStatus' => 'absence'
+                $sessionKey . '.attendanceStatus' => 'absent'
             ]],
             ['multi' => false]
         );

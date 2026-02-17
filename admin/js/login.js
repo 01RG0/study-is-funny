@@ -41,7 +41,7 @@ async function handleLogin(e) {
     submitBtn.disabled = true;
 
     try {
-        const response = await fetch(`${API_BASE}/admin.php?action=login`, {
+        const response = await fetch(`${API_BASE}/admin.php?action=login&t=${Date.now()}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -81,7 +81,7 @@ async function handleLogin(e) {
 
 async function verifyToken(token) {
     try {
-        const response = await fetch(`${API_BASE}/admin.php?action=dashboard-stats`, {
+        const response = await fetch(`${API_BASE}/admin.php?action=dashboard-stats&t=${Date.now()}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

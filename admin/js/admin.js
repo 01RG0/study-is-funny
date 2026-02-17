@@ -373,7 +373,7 @@ async function createSession(sessionData) {
 async function getAllSessions(filters = {}) {
     try {
         const queryParams = new URLSearchParams(filters);
-        const response = await fetch(`${window.APP_BASE_URL}api/sessions.php?action=all&${queryParams}`);
+        const response = await fetch(`${window.APP_BASE_URL}api/sessions.php?action=all&${queryParams}&t=${Date.now()}`);
 
         const result = await response.json();
         return result;
@@ -457,7 +457,7 @@ async function unpublishSession(sessionId) {
 
 async function getSessionStats() {
     try {
-        const response = await fetch(`${window.APP_BASE_URL}api/sessions.php?action=stats`);
+        const response = await fetch(`${window.APP_BASE_URL}api/sessions.php?action=stats&t=${Date.now()}`);
         const result = await response.json();
         return result;
     } catch (error) {

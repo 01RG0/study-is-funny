@@ -1,5 +1,11 @@
 // Helper to get the base path of the application
+// Use API_BASE_URL from api-config.js if available, otherwise calculate it
 function getBasePath() {
+    // If api-config.js has already set window.BASE_URL, use it
+    if (typeof window.BASE_URL !== 'undefined' && window.BASE_URL) {
+        return window.BASE_URL;
+    }
+    
     // First try Hostinger subdirectory detection
     const protocol = window.location.protocol;
     const host = window.location.host;
@@ -21,9 +27,15 @@ function getBasePath() {
     return '';
 }
 
-const BASE_URL = getBasePath();
-window.APP_BASE_URL = BASE_URL;
-const API_BASE_URL = BASE_URL + 'api/';
+// Only declare if not already defined by api-config.js
+if (typeof BASE_URL === 'undefined') {
+    var BASE_URL = getBasePath();
+    window.APP_BASE_URL = BASE_URL;
+    var API_BASE_URL = BASE_URL + 'api/';
+} else {
+    // Use existing values from api-config.js
+    var API_BASE_URL = window.API_BASE_URL;
+}
 const DATABASE_NAME = 'attendance_system';
 const COLLECTION_USERS = 'users';
 const COLLECTION_CONTENT = 'content';
@@ -105,7 +117,7 @@ class MongoDB {
         try {
             if (endpoint.includes('findOne') && data.collection === 'users') {
                 const phone = data.filter.phone;
-                const response = await fetch(`${API_BASE_URL}students.php?action=get&phone=${encodeURIComponent(phone)}`);
+                const response = await fetch(`${API_BASE_URL}students.php?action=get&phone=${encodeURIComponent(phone)}&t=${Date.now()}`);
                 const text = await response.text();
                 if (text.includes('<?php')) return null;
 
@@ -141,7 +153,7 @@ window.getStudentData = async function (phone) {
     console.log(`🔗 API URL: ${API_BASE_URL}students.php?action=get&phone=${encodeURIComponent(phone)}`);
 
     try {
-        const response = await fetch(`${API_BASE_URL}students.php?action=get&phone=${encodeURIComponent(phone)}`);
+        const response = await fetch(`${API_BASE_URL}students.php?action=get&phone=${encodeURIComponent(phone)}&t=${Date.now()}`);
         console.log(`📡 Response status: ${response.status}`);
         const text = await response.text();
         console.log(`📄 Response text (first 200 chars):`, text.substring(0, 200));
@@ -195,7 +207,7 @@ window.createSession = async function (sessionData) {
 
 window.getSession = async function (sessionId) {
     try {
-        const response = await fetch(`${API_BASE_URL}sessions.php?action=get&id=${sessionId}`);
+        const response = await fetch(`${API_BASE_URL}sessions.php?action=get&id=${sessionId}&t=${Date.now()}`);
         const result = await response.json();
         return result;
     } catch (error) {
@@ -207,7 +219,7 @@ window.getSession = async function (sessionId) {
 window.getAllSessions = async function (filters = {}) {
     try {
         const queryParams = new URLSearchParams(filters);
-        const response = await fetch(`${API_BASE_URL}sessions.php?action=all&${queryParams}`);
+        const response = await fetch(`${API_BASE_URL}sessions.php?action=all&${queryParams}&t=${Date.now()}`);
         const result = await response.json();
         return result;
     } catch (error) {
@@ -290,7 +302,7 @@ window.unpublishSession = async function (sessionId) {
 
 window.getSessionStats = async function () {
     try {
-        const response = await fetch(`${API_BASE_URL}sessions.php?action=stats`);
+        const response = await fetch(`${API_BASE_URL}sessions.php?action=stats&t=${Date.now()}`);
         const result = await response.json();
         return result;
     } catch (error) {
@@ -301,7 +313,7 @@ window.getSessionStats = async function () {
 
 window.checkStudentSessionAccess = async function (studentId, sessionNumber, subject, grade) {
     try {
-        const response = await fetch(`${API_BASE_URL}sessions.php?action=check-access&studentId=${studentId}&sessionNumber=${sessionNumber}&subject=${subject}&grade=${grade}`);
+        const response = await fetch(`${API_BASE_URL}sessions.php?action=check-access&studentId=${studentId}&sessionNumber=${sessionNumber}&subject=${subject}&grade=${grade}&t=${Date.now()}`);
         const result = await response.json();
         return result;
     } catch (error) {

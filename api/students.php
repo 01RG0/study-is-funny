@@ -6,6 +6,9 @@
 error_reporting(E_ALL);
 
 header('Content-Type: application/json');
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
 
 function debug_log($msg) {
     $logFile = __DIR__ . '/../logs/debug_log.txt';
