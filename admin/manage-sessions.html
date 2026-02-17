@@ -110,6 +110,228 @@
             border-radius: 2px;
         }
 
+        /* Video Management Styles */
+        .tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid #e1e8ed;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            padding: 10px 16px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            color: #008080;
+            border-bottom-color: #008080;
+        }
+
+        .tab-button:hover {
+            color: #008080;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .videos-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e1e8ed;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+
+        .video-item {
+            padding: 12px;
+            border-bottom: 1px solid #e1e8ed;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: white;
+            margin: 0;
+        }
+
+        .video-item:last-child {
+            border-bottom: none;
+        }
+
+        .video-item:hover {
+            background: #f5f5f5;
+        }
+
+        .video-order-handle {
+            cursor: grab;
+            color: #999;
+            font-size: 18px;
+            padding: 0 5px;
+        }
+
+        .video-order-handle:active {
+            cursor: grabbing;
+        }
+
+        .video-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .video-title {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+            word-break: break-word;
+        }
+
+        .video-meta {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .video-item-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .video-item-actions button {
+            padding: 4px 8px;
+            font-size: 11px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .video-action-edit {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .video-action-edit:hover {
+            background: #1976d2;
+            color: white;
+        }
+
+        .video-action-delete {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .video-action-delete:hover {
+            background: #c62828;
+            color: white;
+        }
+
+        .add-video-section {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #e1e8ed;
+            margin-top: 12px;
+        }
+
+        .add-video-section label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .add-video-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .add-video-form input,
+        .add-video-form textarea {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .add-video-form textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .video-form-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .btn-add-video {
+            background: #4caf50;
+            color: white;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        .btn-add-video:hover {
+            background: #45a049;
+        }
+
+        .btn-cancel-video {
+            background: #f0f0f0;
+            color: #333;
+            padding: 8px 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .btn-cancel-video:hover {
+            background: #e0e0e0;
+        }
+
+        .empty-videos {
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+        }
+
+        /* Video Edit Modal */
+        .modal-lg .modal-content {
+            width: 700px;
+            max-height: 85vh;
+        }
+
+        .edit-video-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .form-group-horizontal {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
         .session-actions {
             display: flex;
             gap: 8px;
@@ -376,63 +598,201 @@
     </div>
 
     <!-- Edit Session Modal -->
-    <div id="editModal" class="modal">
+    <div id="editModal" class="modal modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Edit Session</h2>
                 <span class="close-modal" onclick="closeEditModal()">&times;</span>
             </div>
             <div class="modal-body">
-                <form id="editForm" onsubmit="saveSession(event)">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Title</label>
-                            <input type="text" id="editTitle" required>
+                <!-- Tab Navigation -->
+                <div class="tabs">
+                    <button class="tab-button active" onclick="switchTab('session-details')">
+                        <i class="fas fa-info-circle"></i> Session Details
+                    </button>
+                    <button class="tab-button" onclick="switchTab('video-management')">
+                        <i class="fas fa-video"></i> Videos (<span id="videoCount">0</span>)
+                    </button>
+                </div>
+
+                <!-- Session Details Tab -->
+                <div id="session-details" class="tab-content active">
+                    <form id="editForm" onsubmit="saveSession(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" id="editTitle" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Session Number</label>
+                                <input type="number" id="editSessionNumber" required min="1" max="999">
+                            </div>
                         </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Grade & Subject</label>
+                                <input type="text" id="editGradeSubject" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label>Access Control</label>
+                                <select id="editAccessControl" required>
+                                    <option value="free">Free for All</option>
+                                    <option value="restricted">Restricted</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="form-group">
-                            <label>Session Number</label>
-                            <input type="number" id="editSessionNumber" required min="1" max="999">
+                            <label>Description</label>
+                            <textarea id="editDescription"></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Max Views per Student</label>
+                                <input type="number" id="editMaxViews" min="1" placeholder="Unlimited">
+                            </div>
+                            <div class="form-group">
+                                <label>Publish Status</label>
+                                <select id="editPublishStatus" required>
+                                    <option value="draft">Save as Draft</option>
+                                    <option value="published">Publish Now</option>
+                                    <option value="scheduled">Schedule for Later</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="submit" class="submit-btn">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <button type="button" class="cancel-btn" onclick="closeEditModal()">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Video Management Tab -->
+                <div id="video-management" class="tab-content">
+                    <!-- Videos List -->
+                    <h3 style="margin-bottom: 12px; font-size: 14px; color: #333;">
+                        <i class="fas fa-list"></i> Session Videos
+                    </h3>
+                    <div id="videosList" class="videos-list">
+                        <div class="empty-videos">No videos in this session yet</div>
+                    </div>
+
+                    <!-- Add Video Section -->
+                    <div class="add-video-section">
+                        <label>
+                            <i class="fas fa-plus"></i> Add Video to Session
+                        </label>
+                        <div class="add-video-form">
+                            <input type="text" id="newVideoTitle" placeholder="Video Title" required>
+                            <textarea id="newVideoDescription" placeholder="Video Description (optional)"></textarea>
+                            
+                            <div class="form-group-horizontal">
+                                <input type="text" id="newVideoUrl" placeholder="Video URL or Path" required>
+                                <input type="number" id="newVideoDuration" placeholder="Duration (seconds)" min="0">
+                            </div>
+
+                            <div class="form-group-horizontal">
+                                <input type="text" id="newVideoThumbnail" placeholder="Thumbnail URL (optional)">
+                                <input type="text" id="newVideoQuality" placeholder="Quality (e.g., 1080p, 720p)">
+                            </div>
+
+                            <div class="video-form-buttons">
+                                <button type="button" class="btn-add-video" onclick="addVideoToSession()">
+                                    <i class="fas fa-check"></i> Add Video
+                                </button>
+                                <button type="button" class="btn-cancel-video" onclick="clearVideoForm()">
+                                    <i class="fas fa-times"></i> Clear
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Grade & Subject</label>
-                            <input type="text" id="editGradeSubject" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label>Access Control</label>
-                            <select id="editAccessControl" required>
-                                <option value="free">Free for All</option>
-                                <option value="restricted">Restricted</option>
-                            </select>
-                        </div>
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="button" class="submit-btn" onclick="saveVideos()">
+                            <i class="fas fa-save"></i> Save All Changes
+                        </button>
+                        <button type="button" class="cancel-btn" onclick="closeEditModal()">
+                            <i class="fas fa-times"></i> Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Video Modal -->
+    <div id="editVideoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Video</h2>
+                <span class="close-modal" onclick="closeEditVideoModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="editVideoForm" onsubmit="saveVideoEdit(event)">
+                    <div class="form-group">
+                        <label>Video Title</label>
+                        <input type="text" id="editVideoTitle" required>
                     </div>
 
                     <div class="form-group">
                         <label>Description</label>
-                        <textarea id="editDescription"></textarea>
+                        <textarea id="editVideoDescription" style="min-height: 80px;"></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Max Views per Student</label>
-                        <input type="number" id="editMaxViews" min="1" placeholder="Unlimited">
+                        <label>Video URL / Path</label>
+                        <input type="text" id="editVideoUrl" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Duration (seconds)</label>
+                            <input type="number" id="editVideoDuration" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Quality</label>
+                            <input type="text" id="editVideoQuality" placeholder="e.g., 1080p, 720p">
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Publish Status</label>
-                        <select id="editPublishStatus" required>
-                            <option value="draft">Save as Draft</option>
-                            <option value="published">Publish Now</option>
-                            <option value="scheduled">Schedule for Later</option>
-                        </select>
+                        <label>Thumbnail URL</label>
+                        <input type="text" id="editVideoThumbnail">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Video Type</label>
+                            <select id="editVideoType">
+                                <option value="lecture">Lecture</option>
+                                <option value="demo">Demonstration</option>
+                                <option value="exercise">Exercise</option>
+                                <option value="solution">Solution</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Accessibility</label>
+                            <select id="editVideoAccessible">
+                                <option value="public">Public</option>
+                                <option value="restricted">Restricted</option>
+                                <option value="private">Private</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div style="display: flex; gap: 10px; margin-top: 20px;">
                         <button type="submit" class="submit-btn">
-                            <i class="fas fa-save"></i> Save Changes
+                            <i class="fas fa-save"></i> Save Video
                         </button>
-                        <button type="button" class="cancel-btn" onclick="closeEditModal()">
+                        <button type="button" class="cancel-btn" onclick="closeEditVideoModal()">
                             <i class="fas fa-times"></i> Cancel
                         </button>
                     </div>
@@ -445,6 +805,9 @@
     <script>
         let allSessions = [];
         let currentEditId = null;
+        let currentSessionVideos = [];
+        let currentEditVideoId = null;
+        let videosModified = false;
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -569,9 +932,24 @@
 
         function openEditModal(sessionId) {
             const session = allSessions.find(s => s.id === sessionId);
-            if (!session) return;
+            if (!session) {
+                console.error('Session not found:', sessionId);
+                return;
+            }
 
             currentEditId = sessionId;
+            videosModified = false;
+            
+            // Deep copy videos array to avoid modifying the original
+            currentSessionVideos = session.videos && Array.isArray(session.videos) 
+                ? JSON.parse(JSON.stringify(session.videos)) 
+                : [];
+            
+            console.log('✓ Loaded session:', session.title);
+            console.log('✓ Loaded videos:', currentSessionVideos.length, 'videos');
+            console.log('Videos data:', currentSessionVideos);
+            
+            // Set session details
             document.getElementById('editTitle').value = session.title;
             document.getElementById('editSessionNumber').value = session.sessionNumber || '';
             document.getElementById('editGradeSubject').value = `${session.grade} - ${session.subject}`;
@@ -580,12 +958,218 @@
             document.getElementById('editMaxViews').value = session.maxViews || '';
             document.getElementById('editPublishStatus').value = session.isPublished ? 'published' : 'draft';
 
+            // Load and display videos
+            displaySessionVideos();
+            clearVideoForm();
+
             document.getElementById('editModal').style.display = 'block';
         }
 
         function closeEditModal() {
             document.getElementById('editModal').style.display = 'none';
             currentEditId = null;
+            currentSessionVideos = [];
+        }
+
+        // Tab Switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Deactivate all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab and activate button
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Video Management Functions
+        function displaySessionVideos() {
+            const videosList = document.getElementById('videosList');
+            const videoCount = currentSessionVideos.length;
+            document.getElementById('videoCount').textContent = videoCount;
+
+            console.log('📹 Displaying', videoCount, 'videos');
+
+            if (videoCount === 0) {
+                videosList.innerHTML = '<div class="empty-videos">No videos in this session yet</div>';
+                return;
+            }
+
+            const html = currentSessionVideos.map((video, index) => {
+                const title = video.title || `Video ${index + 1}`;
+                const duration = video.duration ? formatDuration(video.duration) : '';
+                const quality = video.quality || '';
+                const type = video.type || '';
+                
+                let metaInfo = [];
+                if (duration) metaInfo.push(`Duration: ${duration}`);
+                if (quality) metaInfo.push(`Quality: ${escapeHtml(quality)}`);
+                if (type) metaInfo.push(`Type: ${escapeHtml(type)}`);
+                
+                return `
+                <div class="video-item">
+                    <span class="video-order-handle" title="Drag to reorder">
+                        <i class="fas fa-grip-vertical"></i>
+                    </span>
+                    <div class="video-info">
+                        <div class="video-title">${escapeHtml(title)}</div>
+                        <div class="video-meta">${metaInfo.join(' | ')}</div>
+                    </div>
+                    <div class="video-item-actions">
+                        <button type="button" class="video-action-edit" onclick="openEditVideo(${index})" title="Edit Video">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="video-action-delete" onclick="deleteVideo(${index})" title="Delete Video">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+            videosList.innerHTML = html;
+        }
+
+        function addVideoToSession() {
+            const title = document.getElementById('newVideoTitle').value.trim();
+            const url = document.getElementById('newVideoUrl').value.trim();
+            const description = document.getElementById('newVideoDescription').value.trim();
+            const duration = document.getElementById('newVideoDuration').value;
+            const thumbnail = document.getElementById('newVideoThumbnail').value.trim();
+            const quality = document.getElementById('newVideoQuality').value.trim();
+
+            if (!title) {
+                alert('Video title is required');
+                return;
+            }
+
+            if (!url) {
+                alert('Video URL/Path is required');
+                return;
+            }
+
+            const newVideo = {
+                title: title,
+                description: description,
+                url: url,
+                duration: duration ? parseInt(duration) : null,
+                type: 'lecture',
+                source: 'link',
+                order: currentSessionVideos.length,
+                createdAt: new Date().toISOString()
+            };
+
+            currentSessionVideos.push(newVideo);
+            videosModified = true;
+            displaySessionVideos();
+            clearVideoForm();
+            alert('Video added successfully! Click "Save All Changes" to persist.');
+        }
+
+        function clearVideoForm() {
+            document.getElementById('newVideoTitle').value = '';
+            document.getElementById('newVideoUrl').value = '';
+            document.getElementById('newVideoDescription').value = '';
+            document.getElementById('newVideoDuration').value = '';
+            document.getElementById('newVideoThumbnail').value = '';
+            document.getElementById('newVideoQuality').value = '';
+        }
+
+        function openEditVideo(index) {
+            const video = currentSessionVideos[index];
+            if (!video) {
+                console.error('Video not found at index:', index);
+                console.log('Available videos:', currentSessionVideos);
+                return;
+            }
+
+            console.log('Opening video for edit:', video);
+            currentEditVideoId = index;
+            
+            // Set all fields with proper fallbacks
+            document.getElementById('editVideoTitle').value = video.title || '';
+            document.getElementById('editVideoDescription').value = video.description || '';
+            document.getElementById('editVideoUrl').value = video.url || '';
+            document.getElementById('editVideoDuration').value = video.duration && video.duration > 0 ? video.duration : '';
+            document.getElementById('editVideoQuality').value = video.quality || '';
+            document.getElementById('editVideoThumbnail').value = video.thumbnail || '';
+            document.getElementById('editVideoType').value = video.type || 'lecture';
+            document.getElementById('editVideoAccessible').value = video.source || 'link';
+
+            console.log('Form populated - showing modal');
+            document.getElementById('editVideoModal').style.display = 'block';
+        }
+
+        function closeEditVideoModal() {
+            document.getElementById('editVideoModal').style.display = 'none';
+            currentEditVideoId = null;
+        }
+
+        function saveVideoEdit(event) {
+            event.preventDefault();
+
+            if (currentEditVideoId === null) {
+                alert('✗ Invalid video selection');
+                return;
+            }
+
+            if (currentEditVideoId < 0 || currentEditVideoId >= currentSessionVideos.length) {
+                alert('✗ Video index out of range');
+                return;
+            }
+
+            const title = document.getElementById('editVideoTitle').value.trim();
+            if (!title) {
+                alert('✗ Video title is required');
+                return;
+            }
+
+            const url = document.getElementById('editVideoUrl').value.trim();
+            if (!url) {
+                alert('✗ Video URL/Path is required');
+                return;
+            }
+
+            const video = currentSessionVideos[currentEditVideoId];
+            const durationValue = document.getElementById('editVideoDuration').value;
+            
+            // Update video with new values
+            video.title = title;
+            video.description = document.getElementById('editVideoDescription').value.trim();
+            video.url = url;
+            video.duration = durationValue ? parseInt(durationValue) : null;
+            video.quality = document.getElementById('editVideoQuality').value.trim() || null;
+            video.thumbnail = document.getElementById('editVideoThumbnail').value.trim() || null;
+            video.type = document.getElementById('editVideoType').value;
+            video.source = document.getElementById('editVideoAccessible').value;
+            video.updatedAt = new Date().toISOString();
+
+            console.log('✓ Video updated:', video);
+
+            videosModified = true;
+            closeEditVideoModal();
+            displaySessionVideos();
+            alert('✓ Video updated! Click "Save All Changes" to persist to database.');
+        }
+
+        function deleteVideo(index) {
+            if (!confirm('Delete this video from the session?')) return;
+
+            currentSessionVideos.splice(index, 1);
+            videosModified = true;
+            displaySessionVideos();
+            alert('Video removed! Click "Save All Changes" to persist.');
+        }
+
+        function formatDuration(seconds) {
+            if (!seconds) return '';
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
         }
 
         async function saveSession(event) {
@@ -634,6 +1218,56 @@
             }
         }
 
+        async function saveVideos() {
+            if (!videosModified) {
+                alert('No changes to save');
+                return;
+            }
+
+            try {
+                // Get the full session data to preserve other fields
+                const session = allSessions.find(s => s.id === currentEditId);
+                if (!session) {
+                    alert('Session not found');
+                    return;
+                }
+
+                // Update videos in the session data
+                const updateData = {
+                    id: currentEditId,
+                    videos: currentSessionVideos.map((video, index) => ({
+                        ...video,
+                        order: index  // Ensure order is set
+                    }))
+                };
+
+                console.log('Saving videos with updateSession action:', updateData);
+
+                const response = await fetch('../api/sessions.php?action=updateSession&id=' + currentEditId, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('Response:', result);
+
+                if (result.success) {
+                    alert('✓ Videos updated successfully!');
+                    videosModified = false;
+                    loadSessions();
+                    closeEditModal();
+                } else {
+                    alert('✗ ' + (result.message || 'Failed to update videos'));
+                    console.error('API Error:', result);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('✗ An error occurred while saving videos: ' + error.message);
+            }
+        }
+
         async function deleteSession(sessionId) {
             if (!confirm('Are you sure you want to delete this session?')) return;
 
@@ -664,9 +1298,13 @@
 
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('editModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
+            const editModal = document.getElementById('editModal');
+            const editVideoModal = document.getElementById('editVideoModal');
+            if (event.target === editModal) {
+                editModal.style.display = 'none';
+            }
+            if (event.target === editVideoModal) {
+                editVideoModal.style.display = 'none';
             }
         }
     </script>

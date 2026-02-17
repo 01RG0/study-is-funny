@@ -209,10 +209,19 @@
           return;
         }
 
-        // Filter sessions to only homework content (status: 'homework')
-        const homeworkSessions = (data.sessions || []).filter(session => 
-          session.status === 'homework' || (session.type && session.type.includes('homework'))
-        );
+        // Filter sessions to only homework content for THIS GRADE/SUBJECT
+        const homeworkSessions = (data.sessions || []).filter(session => {
+          const isHomework = session.status === 'homework';
+          const sessionGrade = (session.grade || '').toLowerCase().trim();
+          const sessionSubject = (session.subject || '').toLowerCase().trim();
+          const targetGrade = grade.toLowerCase().trim();
+          const targetSubject = subject.toLowerCase().trim();
+          
+          const matchesGrade = sessionGrade === targetGrade;
+          const matchesSubject = sessionSubject === targetSubject;
+          
+          return isHomework && matchesGrade && matchesSubject;
+        });
 
         if (!homeworkSessions || homeworkSessions.length === 0) {
           document.getElementById('empty-state').style.display = 'block';

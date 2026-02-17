@@ -229,10 +229,24 @@
           return;
         }
 
-        // Filter sessions to only homework content (contentType: 'homework')
-        const homeworkSessions = (data.sessions || []).filter(session => 
-          session.status === 'homework' || (session.type && session.type.includes('homework'))
-        );
+        // Filter sessions to only homework content for THIS GRADE/SUBJECT
+        const homeworkSessions = (data.sessions || []).filter(session => {
+          const isHomework = session.status === 'homework';
+          const sessionGrade = (session.grade || '').toLowerCase().trim();
+          const sessionSubject = (session.subject || '').toLowerCase().trim();
+          const targetGrade = grade.toLowerCase().trim();
+          const targetSubject = subject.toLowerCase().trim();
+          
+          const matchesGrade = sessionGrade === targetGrade;
+          const matchesSubject = sessionSubject === targetSubject;
+          
+          // Debug
+          if (session.status === 'homework') {
+            console.log(`HW: "${session.title}" | Grade: ${sessionGrade}===${targetGrade}? ${matchesGrade} | Subject: ${sessionSubject}===${targetSubject}? ${matchesSubject}`);
+          }
+          
+          return isHomework && matchesGrade && matchesSubject;
+        });
 
         if (!homeworkSessions || homeworkSessions.length === 0) {
           console.log('No homework found');
@@ -326,24 +340,5 @@
     // Load homework on page load
     loadHomework();
   </script>
-</body>
-    </div>
-        <div class="link-box lecture13" onclick="location.href='t1/HW13.html'">
-      <div class="link-title">Lecture 13</div>
-      <div class="link-sub">Sign of a function</div>
-    </div>
-        <div class="link-box lecture14" onclick="location.href='t1/HW14.html'">
-      <div class="link-title">Lecture 14</div>
-      <div class="link-sub">Quadratic inequalities in one variable & Parallel lines and proportional parts</div>
-    </div>
-        <div class="link-box lecture15" onclick="location.href='t1/HW15.html'">
-      <div class="link-title">Lecture 15</div>
-      <div class="link-sub">Finding the measure of an angle given the value of one of its trigonometric ratios & Tali's theorem</div>
-    </div>
-        <div class="link-box lecture16" onclick="location.href='t1/HW16.html'">
-      <div class="link-title">Lecture 16</div>
-      <div class="link-sub">Angle bisector and proportional parts</div>
-    </div>
-  </div>
 </body>
 </html>

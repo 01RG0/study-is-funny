@@ -273,14 +273,20 @@
                 const videoItem = document.createElement('div');
                 videoItem.className = 'video-item';
 
+                // Handle both field name variations
+                const videoTitle = video.title || video.video_title || `Video ${index + 1}`;
+                const videoUrl = video.url || video.video_file_path || '';
+                const videoDescription = video.description || 'No description available';
+                const videoDuration = video.duration || 0;
+
                 videoItem.innerHTML = `
-                    <h4>${video.title}</h4>
-                    <p>${video.description || 'No description available'}</p>
+                    <h4>${videoTitle}</h4>
+                    <p>${videoDescription}</p>
                     <div class="video-controls">
-                        <button class="play-btn" onclick="playVideo('${video.file?.filename || ''}', ${index})">
+                        <button class="play-btn" onclick="playVideo('${videoUrl}', ${index})" ${!videoUrl ? 'disabled' : ''}>
                             <i class="fas fa-play"></i> Play Video
                         </button>
-                        <span class="duration">${video.duration || 0} min</span>
+                        <span class="duration">${videoDuration} min</span>
                     </div>
                 `;
 

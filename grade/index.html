@@ -634,7 +634,7 @@
             <input type="checkbox" id="darkModeToggleCheckbox">
             <span class="slider"></span>
         </label>
-        <a href="https://wa.me/201558145450?text=Hello" target="_blank" class="whatsapp-button">
+        <a href="https://wa.me/201000733148?text=Hello" target="_blank" class="whatsapp-button">
             <i class="fab fa-whatsapp"></i> WhatsApp
         </a>
     </header>
@@ -698,8 +698,17 @@
         </div>
     </div>
 
+    <script src="../js/api-config.js"></script>
     <script src="../js/database.js?v=20260118"></script>
     <script>
+        // Debug API configuration
+        console.log('🔗 API Configuration Debug:');
+        console.log('  - BASE_URL:', BASE_URL);
+        console.log('  - API_BASE_URL:', API_BASE_URL);
+        console.log('  - window.API_BASE_URL:', window.API_BASE_URL);
+        console.log('  - window.APP_BASE_URL:', window.APP_BASE_URL);
+        console.log('  - Current URL:', window.location.href);
+        
         // Get the dark mode toggle checkbox element
         const darkModeToggle = document.getElementById('darkModeToggleCheckbox');
 
@@ -728,13 +737,29 @@
                 console.error('⚠️ QRCode library failed to load from CDN. Check internet connection.');
             }
 
-            // Check if student is logged in
+            // Debug authentication state
             const isLoggedIn = localStorage.getItem('accessGranted');
             const userPhone = localStorage.getItem('userPhone');
+            
+            console.log('🔐 Debug authentication state:');
+            console.log('  - accessGranted:', isLoggedIn);
+            console.log('  - userPhone:', userPhone);
+            console.log('  - localStorage keys:', Object.keys(localStorage));
+            console.log('  - localStorage contents:', JSON.stringify(localStorage, null, 2));
 
             if (!isLoggedIn || !userPhone) {
-                // Redirect to login if not authenticated
-                window.location.href = '../login';
+                console.warn('⚠️ User not authenticated, redirecting to login');
+                // For debugging, let's not redirect immediately
+                const container = document.getElementById('qrCodesContainer');
+                container.innerHTML = `
+                    <div class="qr-error">
+                        <h3>Authentication Debug Info:</h3>
+                        <p>accessGranted: ${isLoggedIn}</p>
+                        <p>userPhone: ${userPhone}</p>
+                        <p>All localStorage keys: ${Object.keys(localStorage).join(', ')}</p>
+                        <button onclick="window.location.href = '../login'">Go to Login</button>
+                    </div>
+                `;
                 return;
             }
 
@@ -744,6 +769,9 @@
         async function loadStudentQRCodes() {
             const container = document.getElementById('qrCodesContainer');
             const userPhone = localStorage.getItem('userPhone');
+
+            console.log('🔍 Debug - userPhone from localStorage:', userPhone);
+            console.log('🔍 Debug - all localStorage keys:', Object.keys(localStorage));
 
             if (!userPhone) {
                 container.innerHTML = '<div class="qr-error">يرجى تسجيل الدخول أولاً</div>';
@@ -755,13 +783,33 @@
 
             try {
                 console.log('🔍 Loading QR codes for student:', userPhone);
-                // Get student data from MongoDB
-                const studentData = await getStudentData(userPhone);
-                console.log('👤 Student data received:', studentData);
-                if (studentData && studentData.subjects && studentData.subjects.length > 0) {
-                    displayStudentQRCodes(studentData);
+                
+                // Direct API call to debug
+                const apiUrl = `${window.API_BASE_URL}students.php?action=get&phone=${encodeURIComponent(userPhone)}`;
+                console.log('📡 API URL:', apiUrl);
+                
+                const response = await fetch(apiUrl);
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response headers:', [...response.headers.entries()]);
+                
+                const text = await response.text();
+                console.log('📄 Raw response text (first 500 chars):', text.substring(0, 500));
+                
+                let studentData;
+                try {
+                    studentData = JSON.parse(text);
+                    console.log('✅ Parsed JSON successfully:', studentData);
+                } catch (parseError) {
+                    console.error('❌ JSON parse error:', parseError);
+                    console.error('❌ Full response text:', text);
+                    throw new Error('Server returned invalid JSON: ' + text.substring(0, 100));
+                }
+                
+                if (studentData && studentData.success && studentData.student) {
+                    console.log('👤 Student data received:', studentData.student);
+                    displayStudentQRCodes(studentData.student);
                 } else {
-                    console.warn('⚠️ No subjects found for student');
+                    console.warn('⚠️ API returned unsuccessful response:', studentData);
                     container.innerHTML = '<div class="qr-error">لم يتم العثور على بيانات الطالب أو لا توجد مواد مسجلة</div>';
                 }
             } catch (error) {

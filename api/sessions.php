@@ -139,6 +139,9 @@ function handleGet($action) {
         case 'purchase-session':
             purchaseStudentSession();
             break;
+        case 'diagnose':
+            runDiagnostics();
+            break;
         default:
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Invalid action']);
@@ -1308,16 +1311,26 @@ function convertSessionToArray($session) {
 
 function convertVideoToArray($video) {
     if (is_array($video)) {
-        return $video;
+        // Ensure array has correct field names
+        return [
+            'video_id' => $video['video_id'] ?? null,
+            'title' => $video['title'] ?? $video['video_title'] ?? '',
+            'type' => $video['type'] ?? 'lecture',
+            'description' => $video['description'] ?? '',
+            'duration' => $video['duration'] ?? null,
+            'url' => $video['url'] ?? $video['video_file_path'] ?? null,
+            'source' => $video['source'] ?? 'upload'
+        ];
     }
     
+    // Handle object (from MongoDB)
     return [
         'video_id' => $video->video_id ?? null,
-        'title' => $video->title ?? '',
+        'title' => $video->title ?? $video->video_title ?? '',
         'type' => $video->type ?? 'lecture',
         'description' => $video->description ?? '',
         'duration' => $video->duration ?? null,
-        'url' => $video->url ?? null,
+        'url' => $video->url ?? $video->video_file_path ?? null,
         'source' => $video->source ?? 'upload'
     ];
 }
@@ -1440,7 +1453,7 @@ function purchaseStudentSession() {
 
         $balance = isset($student->balance) ? (float)$student->balance : 0;
 
-        $cost = (isset($student->paymentAmount) && (float)$student->paymentAmount > 0) ? (float)$student->paymentAmount : 80;
+        $cost = isset($student->paymentAmount) ? (float)$student->paymentAmount : 80;
 
 
 
@@ -1557,5 +1570,59 @@ function purchaseStudentSession() {
     } catch (Throwable $e) {
         echo json_encode(['success' => false, 'message' => 'Purchase error: ' . $e->getMessage()]);
     }
+}
+
+/**
+ * Diagnostic function to check system status
+ */
+function runDiagnostics() {
+    $diagnostics = [
+        'timestamp' => date('Y-m-d H:i:s'),
+        'php_version' => phpversion(),
+        'mongodb_extension' => extension_loaded('mongodb') ? 'Loaded' : 'Not Loaded',
+        'mongodb_driver_found' => class_exists('MongoDB\\Driver\\Manager') ? 'Yes' : 'No',
+        'global_mongo_client' => $GLOBALS['mongoClient'] ? 'Connected' : 'Not Connected',
+        'database_name' => $GLOBALS['databaseName'] ?? 'Not Set',
+        'config_file_exists' => file_exists(dirname(__DIR__) . '/config/config.php') ? 'Yes' : 'No',
+        'classes_exist' => [
+            'DatabaseMongo' => class_exists('DatabaseMongo') ? 'Yes' : 'No',
+            'Video' => class_exists('Video') ? 'Yes' : 'No',
+            'SessionManager' => class_exists('SessionManager') ? 'Yes' : 'No'
+        ]
+    ];
+    
+    // Try to test MongoDB connection directly
+    if (extension_loaded('mongodb') && class_exists('MongoDB\\Driver\\Manager')) {
+        try {
+            $testClient = new MongoDB\Driver\Manager(MONGO_URI);
+            $command = new MongoDB\Driver\Command(['ping' => 1]);
+            $testClient->executeCommand('admin', $command);
+            $diagnostics['mongodb_direct_test'] = 'Success';
+        } catch (Exception $e) {
+            $diagnostics['mongodb_direct_test'] = 'Failed: ' . $e->getMessage();
+        }
+    }
+    
+    // Try to list sessions to verify database access
+    if ($GLOBALS['mongoClient']) {
+        try {
+            $query = new MongoDB\Driver\Query(['isActive' => true], ['limit' => 1]);
+            $cursor = $GLOBALS['mongoClient']->executeQuery($GLOBALS['databaseName'] . '.online_sessions', $query);
+            $sessionCount = count($cursor->toArray());
+            $diagnostics['database_access'] = "Success (found $sessionCount active sessions)";
+        } catch (Exception $e) {
+            $diagnostics['database_access'] = 'Failed: ' . $e->getMessage();
+        }
+    } else {
+        $diagnostics['database_access'] = 'MongoDB client not available';
+    }
+    
+    // Check required directories
+    $diagnostics['directories'] = [
+        'uploads' => is_writable(__DIR__ . '/../uploads') ? 'Writable' : 'Not Writable',
+        'logs' => is_writable(__DIR__ . '/../logs') ? 'Writable' : 'Not Writable'
+    ];
+    
+    echo json_encode($diagnostics, JSON_PRETTY_PRINT);
 }
 ?>

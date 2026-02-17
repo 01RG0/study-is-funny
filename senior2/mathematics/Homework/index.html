@@ -199,9 +199,8 @@
   </div>
 
   <script>
-    // Get subject from URL path or default
-    const pathParts = window.location.pathname.split('/');
-    const subject = 'S2 Math'; // Can be dynamic based on folder
+    const subject = 'mathematics'
+    const grade = 'senior2';
 
     // Load homework from API
     async function loadHomework() {
@@ -233,10 +232,24 @@
           return;
         }
 
-        // Filter sessions to only homework content (contentType: 'homework')
-        const homeworkSessions = (data.sessions || []).filter(session => 
-          session.status === 'homework' || (session.type && session.type.includes('homework'))
-        );
+        // Filter sessions to only homework content for THIS GRADE/SUBJECT
+        const homeworkSessions = (data.sessions || []).filter(session => {
+          const isHomework = session.status === 'homework';
+          const sessionGrade = (session.grade || '').toLowerCase().trim();
+          const sessionSubject = (session.subject || '').toLowerCase().trim();
+          const targetGrade = grade.toLowerCase().trim();
+          const targetSubject = subject.toLowerCase().trim();
+          
+          const matchesGrade = sessionGrade === targetGrade;
+          const matchesSubject = sessionSubject === targetSubject;
+          
+          // Debug
+          if (session.status === 'homework') {
+            console.log(`HW: "${session.title}" | Grade: ${sessionGrade}===${targetGrade}? ${matchesGrade} | Subject: ${sessionSubject}===${targetSubject}? ${matchesSubject}`);
+          }
+          
+          return isHomework && matchesGrade && matchesSubject;
+        });
 
         if (!homeworkSessions || homeworkSessions.length === 0) {
           console.log('No homework found');

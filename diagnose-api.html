@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Diagnostic Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .diagnostic-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+        }
+        .diagnostic-section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        .test-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: background 0.3s;
+        }
+        .test-button:hover {
+            background: #2980b9;
+        }
+        .test-button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .loading {
+            color: #3498db;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Study is Funny - API Diagnostic Tool</h1>
+        
+        <div class="diagnostic-section">
+            <h2>1. API Base URL Detection</h2>
+            <button class="test-button" onclick="testApiUrl()">Test URL Detection</button>
+            <div id="urlResult" class="result info" style="display:none;"></div>
+        </div>
+
+        <div class="diagnostic-section">
+            <h2>2. API Health Check</h2>
+            <button class="test-button" onclick="testApiHealth()">Run Health Check</button>
+            <div id="healthResult" class="result info" style="display:none;"></div>
+        </div>
+
+        <div class="diagnostic-section">
+            <h2>3. Database Diagnostics</h2>
+            <button class="test-button" onclick="testDatabaseDiag()">Check Database Status</button>
+            <div id="dbResult" class="result info" style="display:none;"></div>
+        </div>
+
+        <div class="diagnostic-section">
+            <h2>4. Sessions Fetch Test</h2>
+            <button class="test-button" onclick="testSessionsFetch()">Fetch Sessions (Senior 2, Physics)</button>
+            <div id="sessionsResult" class="result info" style="display:none;"></div>
+        </div>
+
+        <div class="diagnostic-section">
+            <h2>5. Network Analysis</h2>
+            <button class="test-button" onclick="testNetworkDetails()">Show Network Details</button>
+            <div id="networkResult" class="result info" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration - Same as in session pages
+        function getApiBaseUrl() {
+            const protocol = window.location.protocol;
+            const host = window.location.host;
+            const pathname = window.location.pathname;
+            
+            // Check if we're in a hosted subdirectory (contains 'study-is-funny')
+            if (pathname.includes('study-is-funny')) {
+                const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);
+                const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
+                return `${protocol}//${host}${basePath}/api/`;
+            }
+            
+            // Local development or root path
+            return `${protocol}//${host}/api/`;
+        }
+
+        function displayResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+
+        function testApiUrl() {
+            const url = getApiBaseUrl();
+            displayResult('urlResult', 
+                `✓ API Base URL Detected:\n${url}\n\nPage Location:\n${window.location.href}`,
+                'success'
+            );
+        }
+
+        async function testApiHealth() {
+            const resultDiv = document.getElementById('healthResult');
+            resultDiv.textContent = 'Testing API health...';
+            resultDiv.className = 'result loading';
+            resultDiv.style.display = 'block';
+
+            try {
+                const url = getApiBaseUrl() + 'sessions.php?action=diagnose';
+                const response = await fetch(url);
+                const text = await response.text();
+                
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    displayResult('healthResult', 
+                        `❌ API returned invalid JSON\n\nStatus: ${response.status}\nContent-Type: ${response.headers.get('content-type')}\n\nResponse:\n${text.substring(0, 500)}`,
+                        'error'
+                    );
+                    return;
+                }
+
+                displayResult('healthResult',
+                    `✓ API Health Check Complete\n\n${JSON.stringify(data, null, 2)}`,
+                    'success'
+                );
+            } catch (error) {
+                displayResult('healthResult',
+                    `❌ Failed to reach API\n\nError: ${error.message}\n\nMake sure the server is running at: ${getApiBaseUrl()}`,
+                    'error'
+                );
+            }
+        }
+
+        async function testDatabaseDiag() {
+            const resultDiv = document.getElementById('dbResult');
+            resultDiv.textContent = 'Running database diagnostics...';
+            resultDiv.className = 'result loading';
+            resultDiv.style.display = 'block';
+
+            try {
+                const url = getApiBaseUrl() + 'sessions.php?action=diagnose';
+                const response = await fetch(url);
+                const data = await response.json();
+
+                let message = '✓ Database Diagnostics:\n\n';
+                for (const [key, value] of Object.entries(data)) {
+                    if (typeof value === 'object') {
+                        message += `${key}:\n`;
+                        for (const [k, v] of Object.entries(value)) {
+                            message += `  ${k}: ${v}\n`;
+                        }
+                    } else {
+                        message += `${key}: ${value}\n`;
+                    }
+                }
+
+                const hasIssues = 
+                    data.mongodb_extension === 'Not Loaded' ||
+                    data.mongodb_driver_found === 'No' ||
+                    data.global_mongo_client === 'Not Connected';
+
+                displayResult('dbResult', message, hasIssues ? 'error' : 'success');
+            } catch (error) {
+                displayResult('dbResult',
+                    `❌ Database diagnostics failed\n\nError: ${error.message}`,
+                    'error'
+                );
+            }
+        }
+
+        async function testSessionsFetch() {
+            const resultDiv = document.getElementById('sessionsResult');
+            resultDiv.textContent = 'Fetching sessions...';
+            resultDiv.className = 'result loading';
+            resultDiv.style.display = 'block';
+
+            try {
+                const url = getApiBaseUrl() + 'sessions.php?action=list&subject=physics&grade=senior2';
+                console.log('Fetching from:', url);
+                
+                const response = await fetch(url);
+                const text = await response.text();
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    displayResult('sessionsResult',
+                        `❌ Failed to parse sessions response\n\nStatus: ${response.status}\nContent-Type: ${response.headers.get('content-type')}\n\nResponse:\n${text.substring(0, 800)}`,
+                        'error'
+                    );
+                    return;
+                }
+
+                if (data.success) {
+                    displayResult('sessionsResult',
+                        `✓ Successfully fetched ${data.count || 0} sessions\n\n${JSON.stringify(data, null, 2)}`,
+                        'success'
+                    );
+                } else {
+                    displayResult('sessionsResult',
+                        `⚠ API returned error\n\n${JSON.stringify(data, null, 2)}`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                displayResult('sessionsResult',
+                    `❌ Fetch failed\n\nError: ${error.message}`,
+                    'error'
+                );
+            }
+        }
+
+        async function testNetworkDetails() {
+            const resultDiv = document.getElementById('networkResult');
+            resultDiv.textContent = 'Analyzing network...';
+            resultDiv.className = 'result loading';
+            resultDiv.style.display = 'block';
+
+            let message = `Network Analysis Report\n`;
+            message += `====================================\n\n`;
+            message += `Browser Info:\n`;
+            message += `  User Agent: ${navigator.userAgent}\n`;
+            message += `  Online: ${navigator.onLine ? 'Yes' : 'No'}\n\n`;
+            message += `Current Page:\n`;
+            message += `  Protocol: ${window.location.protocol}\n`;
+            message += `  Host: ${window.location.host}\n`;
+            message += `  Pathname: ${window.location.pathname}\n`;
+            message += `  Full URL: ${window.location.href}\n\n`;
+            message += `API Configuration:\n`;
+            message += `  Base URL: ${getApiBaseUrl()}\n`;
+            message += `  Sessions Endpoint: ${getApiBaseUrl()}sessions.php\n\n`;
+
+            displayResult('networkResult', message, 'info');
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            testApiUrl();
+        });
+    </script>
+</body>
+</html>

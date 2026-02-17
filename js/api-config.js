@@ -11,9 +11,14 @@ function getApiBaseUrl() {
     const host = window.location.host; // localhost:8000 or studyisfunny.online
     const pathname = window.location.pathname; // /study-is-funny/senior2/... or /senior2/...
     
+    // Handle production domain specifically
+    if (host === 'studyisfunny.online') {
+        return `${protocol}//${host}/study-is-funny/api/`;
+    }
+    
     // Check if we're in a hosted subdirectory (contains 'study-is-funny')
     if (pathname.includes('study-is-funny')) {
-        // Extract the base path up to and including 'study-is-funny'
+        // Extract the base path up to and including the FIRST occurrence of 'study-is-funny'
         const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);
         const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
         return `${protocol}//${host}${basePath}/api/`;
@@ -26,6 +31,16 @@ function getApiBaseUrl() {
 // Global API base URL
 window.API_BASE_URL = getApiBaseUrl();
 
+// Set additional variables for compatibility
+window.BASE_URL = window.API_BASE_URL.replace('/api/', '/');
+window.APP_BASE_URL = window.BASE_URL;
+
+// Also expose them as global variables (without window prefix) for legacy compatibility
+var BASE_URL = window.BASE_URL;
+var API_BASE_URL = window.API_BASE_URL;
+var APP_BASE_URL = window.APP_BASE_URL;
+
 // Log for debugging
 console.log('✓ API Base URL:', window.API_BASE_URL);
+console.log('✓ Base URL:', window.BASE_URL);
 console.log('✓ Current Location:', window.location.href);

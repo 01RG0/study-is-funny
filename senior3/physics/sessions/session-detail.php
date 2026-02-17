@@ -181,7 +181,7 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
             <h2>Study is Funny</h2>
         </div>
         <div class="header-actions">
-            <a href="https://wa.me/201558145450" target="_blank" class="btn-premium btn-ghost header-btn" title="Get Help">
+            <a href="https://wa.me/201000733148" target="_blank" class="btn-premium btn-ghost header-btn" title="Get Help">
                 <i class="fab fa-whatsapp"></i> <span>Support</span>
             </a>
             <a href="../" class="btn-premium btn-primary header-btn">
@@ -376,7 +376,7 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
             
             if (student) {
                 const balance = parseFloat(student.balance || 0);
-                const cost = parseFloat(student.paymentAmount || 80);
+                const cost = parseFloat(student.paymentAmount ?? 80);
                 
                 if (balance >= cost) {
                     purchaseSection = `
@@ -418,7 +418,7 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
 
                         <div style="display: flex; gap: 1rem; justify-content: center;">
                             <a href="../" class="btn-premium btn-ghost" style="flex: 1; justify-content: center;">Back</a>
-                            <a href="https://wa.me/201558145450" class="btn-premium btn-primary" style="flex: 1; justify-content: center; background: #25D366; border-color: #25D366;">
+                            <a href="https://wa.me/201000733148" class="btn-premium btn-primary" style="flex: 1; justify-content: center; background: #25D366; border-color: #25D366;">
                                 Support
                             </a>
                         </div>
