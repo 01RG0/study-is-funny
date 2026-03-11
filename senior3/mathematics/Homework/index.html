@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homework Mathematics Senior 3</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #e3f2fd, #ffffff);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 40px 0 20px;
+            font-size: 2.5rem;
+            color: #2c3e50;
+            font-weight: 700;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #ef5350;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .homework-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-left: 8px solid #42a5f5;
+        }
+
+        .homework-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .homework-card.overdue {
+            border-left-color: #ef5350;
+        }
+
+        .homework-card.upcoming {
+            border-left-color: #66bb6a;
+        }
+
+        .homework-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .homework-description {
+            font-size: 0.95rem;
+            color: #555;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .homework-meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: #777;
+            margin-top: 12px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-closed {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .homework-card:nth-child(6n+1) {
+            border-left-color: #42a5f5;
+        }
+
+        .homework-card:nth-child(6n+2) {
+            border-left-color: #66bb6a;
+        }
+
+        .homework-card:nth-child(6n+3) {
+            border-left-color: #ffa726;
+        }
+
+        .homework-card:nth-child(6n+4) {
+            border-left-color: #ab47bc;
+        }
+
+        .homework-card:nth-child(6n+5) {
+            border-left-color: #ef5350;
+        }
+
+        .homework-card:nth-child(6n+6) {
+            border-left-color: #26c6da;
+        }
+
+        .back-button {
+            text-align: center;
+            margin-top: 40px;
+            grid-column: 1 / -1;
+        }
+
+        .back-button a {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #008080;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button a:hover {
+            background: #006666;
+            transform: scale(1.05);
+        }
+    </style>
+    <script>
+        // API Configuration - Handles correct API path for both local and hosted environments
+        function getApiBaseUrl() {
+            const protocol = window.location.protocol;
+            const host = window.location.host;
+            const pathname = window.location.pathname;
+
+            if (pathname.includes('study-is-funny')) {
+                const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//); const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
+                return `${protocol}//${host}${basePath}/api/`;
+            }
+
+            return `${protocol}//${host}/api/`;
+        }
+
+        window.API_BASE_URL = getApiBaseUrl();
+    </script>
+</head>
+
+<body>
+
+    <h1>📚 Homework Assignments</h1>
+
+    <div id="loading" class="loading">Loading homework assignments...</div>
+    <div id="error" class="error" style="display:none;"></div>
+    <div id="homework-container" class="container" style="display:none;"></div>
+    <div id="empty-state" class="empty-state" style="display:none;">
+        <h2>📭 No Homework Assignments</h2>
+        <p>There are no homework assignments available at the moment.</p>
+        <p>Check back later or contact your instructor.</p>
+    </div>
+
+    <script>
+        const subject = 'mathematics';
+        const grade = 'senior3';
+
+        async function loadHomework() {
+            try {
+                const url = `${window.API_BASE_URL}sessions.php?action=all`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (!data.success) {
+                    showError(data.message || 'Failed to load homework');
+                    return;
+                }
+
+                const homeworkSessions = (data.sessions || []).filter(session => {
+                    const isHomework = session.status === 'homework';
+                    const sessionGrade = (session.grade || '').toLowerCase().trim();
+                    const sessionSubject = (session.subject || '').toLowerCase().trim();
+                    const targetGrade = grade.toLowerCase().trim();
+                    const targetSubject = subject.toLowerCase().trim();
+
+                    return isHomework && sessionGrade === targetGrade && sessionSubject === targetSubject;
+                });
+
+                if (!homeworkSessions || homeworkSessions.length === 0) {
+                    document.getElementById('empty-state').style.display = 'block';
+                    return;
+                }
+
+                displayHomework(homeworkSessions);
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                showError('Failed to connect to server: ' + error.message);
+            }
+        }
+
+        function displayHomework(homeworks) {
+            const container = document.getElementById('homework-container');
+            container.style.display = 'grid';
+            container.innerHTML = '';
+            homeworks.forEach(hw => {
+                const card = createHomeworkCard(hw);
+                container.appendChild(card);
+            });
+        }
+
+        function createHomeworkCard(hw) {
+            const card = document.createElement('div');
+            card.className = 'homework-card';
+            const dueDate = new Date(hw.due_date);
+            if (dueDate < new Date() && hw.status === 'active') {
+                card.classList.add('overdue');
+            } else if (hw.status === 'active') {
+                card.classList.add('upcoming');
+            }
+
+            card.innerHTML = `
+        <div class="homework-title">${escapeHtml(hw.title)}</div>
+        <div class="homework-description">${escapeHtml(hw.description || 'No description')}</div>
+        <div class="homework-meta">
+          <div class="meta-item">📅 Due: ${formatDate(hw.due_date)}</div>
+          <div class="meta-item">🎯 Max Score: ${hw.max_score || 100}</div>
+          <div class="meta-item"><span class="status-badge status-${hw.status}">${hw.status}</span></div>
+        </div>
+      `;
+
+            card.onclick = () => window.location.href = `../sessions/session-detail.php?id=${hw._id}`;
+            return card;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'No due date';
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showError(message) {
+            document.getElementById('error').textContent = '❌ ' + message;
+            document.getElementById('error').style.display = 'block';
+        }
+
+        loadHomework();
+    </script>
+
+    <div class="back-button">
+        <a href="../">← Back to Senior 3</a>
+    </div>
+
+</body>
+
+</html>

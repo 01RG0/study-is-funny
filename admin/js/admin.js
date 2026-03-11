@@ -569,6 +569,7 @@ function getSelectedStudentTypes(formData) {
     if (allTypes.includes('registered')) studentTypes.push('registered');
     if (allTypes.includes('senior1')) studentTypes.push('senior1');
     if (allTypes.includes('senior2')) studentTypes.push('senior2');
+    if (allTypes.includes('senior3')) studentTypes.push('senior3');
 
     return studentTypes.length > 0 ? studentTypes : ['all'];
 }

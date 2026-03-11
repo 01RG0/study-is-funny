@@ -910,9 +910,10 @@ function checkStudentSessionAccess() {
         $subject = $_GET['subject'] ?? '';
         $grade = $_GET['grade'] ?? '';
 
-        error_log('=== checkStudentSessionAccess ===');
-        error_log('Phone: ' . $phone);
-        error_log('Session Number: ' . $sessionNumber);
+        error_log('=== checkStudentSessionAccess DEBUG ===');
+        error_log('Raw parameters: phone=' . $phone . ', sessionNumber=' . $sessionNumber . ', subject=' . $subject . ', grade=' . $grade);
+        error_log('Phone is empty: ' . ($phone ? 'NO' : 'YES'));
+        error_log('SessionNumber is 0: ' . ($sessionNumber ? 'NO' : 'YES'));
 
         // Case 1: Check by session_number (e.g., Session 13)
         if ($sessionNumber && $phone) {
@@ -1032,7 +1033,7 @@ function checkStudentSessionAccess() {
                 }
             }
 
-            error_log('Access result: ' . ($hasAccess ? 'âœ“ GRANTED' : ' DENIED'));
+            error_log('Access result: ' . ($hasAccess ? 'GRANTED' : 'DENIED'));
 
             // Update online_attendance if access is granted and it's currently false
             if ($hasAccess && $foundInCollection) {
@@ -1493,31 +1494,60 @@ function purchaseStudentSession() {
 
         $sessionKey = 'session_' . $sessionNumber;
 
-        
-
         // 3. Perform the purchase (Deduct balance and Grant access)
 
+        $now = new DateTime('now', new DateTimeZone('UTC'));
+        $purchaseTimestamp = $now->format('Y-m-d\TH:i:s.v\Z');
+        $currentTime = $now->format('H:i:s');
+        
+        error_log('Purchase Debug:');
+        error_log('  sessionKey: ' . $sessionKey);
+        error_log('  purchaseTimestamp: ' . $purchaseTimestamp);
+        error_log('  cost: ' . $cost);
+        error_log('  targetCollection: ' . $targetCollection);
+
         $bulk = new MongoDB\Driver\BulkWrite();
+
+        $sessionData = [
+            'online_session' => true,
+            'purchased_at' => $purchaseTimestamp,
+            'online_session_assistant' => null,
+            'online_session_completed_at' => $purchaseTimestamp,
+            'attendanceStatus' => 'absent',
+            'date' => date('Y-m-d'),
+            'homeworkStatus' => null,
+            'examMark' => null,
+            'centerAttendance' => null,
+            'paidAmount' => $cost,
+            'books' => 0,
+            'comment' => 'Online session purchased',
+            'recordedBy' => null,
+            'time' => $currentTime,
+            'source' => 'online-purchase',
+            'online_attendance' => false,
+            'online_attendance_assistant' => null,
+            'online_attendance_completed_at' => null
+        ];
+
+        // Build the $set array with session key prefixes
+        $setArray = [];
+        foreach ($sessionData as $key => $value) {
+            $setArray[$sessionKey . '.' . $key] = $value;
+        }
 
         $bulk->update(
 
             ['_id' => $student->_id],
 
-            ['$inc' => ['balance' => -$cost], '$set' => [
-
-                $sessionKey . '.online_session' => true,
-
-                $sessionKey . '.purchased_at' => date('Y-m-d\TH:i:s.v\Z'),
-
-                $sessionKey . '.attendanceStatus' => 'absent'
-
-            ]],
+            ['$inc' => ['balance' => -$cost], '$set' => $setArray],
 
             ['multi' => false]
 
         );
 
-        $client->executeBulkWrite("$databaseName.$targetCollection", $bulk);
+        error_log('About to execute bulk write to collection: ' . $targetCollection);
+        $result = $client->executeBulkWrite("$databaseName.$targetCollection", $bulk);
+        error_log('Bulk write completed. Modified count: ' . $result->getModifiedCount());
 
 
 

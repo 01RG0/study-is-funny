@@ -199,6 +199,20 @@ if ($currentVideo && isset($currentVideo['url'])) {
     <link rel="icon" type="image/png" href="../../../images/logo.png">
     
     <script src="../../../js/api-config.js"></script>
+    
+    <style>
+        /* Make URLs in description blue and clickable */
+        .description-text p a {
+            color: #2196F3 !important;
+            text-decoration: underline !important;
+            cursor: pointer !important;
+            font-weight: normal !important;
+        }
+        .description-text p a:hover {
+            color: #1976D2 !important;
+            text-decoration: underline !important;
+        }
+    </style>
 </head>
 <body>
     <!-- Premium Header -->
@@ -331,7 +345,7 @@ if ($currentVideo && isset($currentVideo['url'])) {
             btn.disabled = true;
 
             try {
-                const response = await fetch(`${window.API_BASE_URL}sessions.php?action=purchase-session&session_number=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(subject)}&t=${Date.now()}`);
+                const response = await fetch(`${window.API_BASE_URL}sessions.php?action=purchase-session&sessionNumber=${sessionNumber}&phone=${encodeURIComponent(userPhone)}&grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(subject)}&t=${Date.now()}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -418,6 +432,33 @@ if ($currentVideo && isset($currentVideo['url'])) {
             // Theater mode/fullscreen handled by custom player
         }
 
+        // Function to convert URLs in text to clickable links
+        function convertUrlsToLinks(text) {
+            if (!text) return text;
+            
+            // Comprehensive URL regex that handles complex URLs with parameters
+            const urlRegex = /(https?:\/\/[^\s<>"'{}|\\^`\[\]]+)/gi;
+            
+            return text.replace(urlRegex, function(url) {
+                // Clean up any trailing punctuation that might not be part of the URL
+                const cleanUrl = url.replace(/[.,;!?]+$/, '');
+                return `<a href="${cleanUrl}" target="_blank" style="color: #2196F3 !important; text-decoration: underline !important;">${cleanUrl}</a>`;
+            });
+        }
+
+        // Function to process description text and make URLs clickable
+        function processDescriptionLinks() {
+            const descriptionElement = document.querySelector('.description-text p');
+            if (descriptionElement) {
+                const originalText = descriptionElement.textContent;
+                const processedText = convertUrlsToLinks(originalText);
+                if (processedText !== originalText) {
+                    descriptionElement.innerHTML = processedText;
+                    console.log('Description URLs processed successfully');
+                }
+            }
+        }
+
         // Player initialization
         async function checkUserAccess() {
             return new Promise((resolve, reject) => {
@@ -499,6 +540,9 @@ if ($currentVideo && isset($currentVideo['url'])) {
             // Check access and initialize player after access is verified
             checkUserAccess().then(() => {
                 initializePlayer();
+                
+                // Process description links to make URLs clickable
+                processDescriptionLinks();
             }).catch(() => {
                 console.error('Failed to verify access');
             });

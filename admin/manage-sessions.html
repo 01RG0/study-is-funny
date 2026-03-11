@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,16 +14,16 @@
             const protocol = window.location.protocol;
             const host = window.location.host;
             const pathname = window.location.pathname;
-            
+
             if (pathname.includes('study-is-funny')) {
                 const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);
                 const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
                 return `${protocol}//${host}${basePath}/api/`;
             }
-            
+
             return `${protocol}//${host}/api/`;
         }
-        
+
         window.APP_BASE_URL = getApiBaseUrl().replace('/api/', '/');
         console.log('✓ Admin API Base URL:', getApiBaseUrl());
         console.log('✓ Manage Sessions Location:', window.location.href);
@@ -522,6 +523,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
@@ -576,6 +578,7 @@
                     <option value="">All Grades</option>
                     <option value="senior1">Senior 1</option>
                     <option value="senior2">Senior 2</option>
+                    <option value="senior3">Senior 3</option>
                 </select>
             </div>
 
@@ -692,7 +695,7 @@
                         <div class="add-video-form">
                             <input type="text" id="newVideoTitle" placeholder="Video Title" required>
                             <textarea id="newVideoDescription" placeholder="Video Description (optional)"></textarea>
-                            
+
                             <div class="form-group-horizontal">
                                 <input type="text" id="newVideoUrl" placeholder="Video URL or Path" required>
                                 <input type="number" id="newVideoDuration" placeholder="Duration (seconds)" min="0">
@@ -810,7 +813,7 @@
         let videosModified = false;
 
         // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadSessions();
 
             // Event listeners
@@ -831,7 +834,7 @@
                 console.log('Fetching sessions from:', url);
                 const response = await fetch(url);
                 console.log('Response status:', response.status);
-                
+
                 const result = await response.json();
                 console.log('API Response:', result);
 
@@ -859,7 +862,7 @@
         function filterAndDisplay() {
             console.log('🔍 filterAndDisplay called');
             console.log('👥 Total allSessions:', allSessions.length);
-            
+
             const searchTerm = document.getElementById('sessionSearch').value.toLowerCase();
             const gradeFilter = document.getElementById('filterGrade').value;
             const accessFilter = document.getElementById('filterAccess').value;
@@ -878,7 +881,7 @@
 
             console.log('📊 Filtered sessions count:', filtered.length);
             console.log('📋 Filtered data:', filtered);
-            
+
             displaySessions(filtered);
         }
 
@@ -939,16 +942,16 @@
 
             currentEditId = sessionId;
             videosModified = false;
-            
+
             // Deep copy videos array to avoid modifying the original
-            currentSessionVideos = session.videos && Array.isArray(session.videos) 
-                ? JSON.parse(JSON.stringify(session.videos)) 
+            currentSessionVideos = session.videos && Array.isArray(session.videos)
+                ? JSON.parse(JSON.stringify(session.videos))
                 : [];
-            
+
             console.log('✓ Loaded session:', session.title);
             console.log('✓ Loaded videos:', currentSessionVideos.length, 'videos');
             console.log('Videos data:', currentSessionVideos);
-            
+
             // Set session details
             document.getElementById('editTitle').value = session.title;
             document.getElementById('editSessionNumber').value = session.sessionNumber || '';
@@ -976,11 +979,11 @@
             // Hide all tabs
             const tabs = document.querySelectorAll('.tab-content');
             tabs.forEach(tab => tab.classList.remove('active'));
-            
+
             // Deactivate all buttons
             const buttons = document.querySelectorAll('.tab-button');
             buttons.forEach(btn => btn.classList.remove('active'));
-            
+
             // Show selected tab and activate button
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
@@ -1004,12 +1007,12 @@
                 const duration = video.duration ? formatDuration(video.duration) : '';
                 const quality = video.quality || '';
                 const type = video.type || '';
-                
+
                 let metaInfo = [];
                 if (duration) metaInfo.push(`Duration: ${duration}`);
                 if (quality) metaInfo.push(`Quality: ${escapeHtml(quality)}`);
                 if (type) metaInfo.push(`Type: ${escapeHtml(type)}`);
-                
+
                 return `
                 <div class="video-item">
                     <span class="video-order-handle" title="Drag to reorder">
@@ -1089,7 +1092,7 @@
 
             console.log('Opening video for edit:', video);
             currentEditVideoId = index;
-            
+
             // Set all fields with proper fallbacks
             document.getElementById('editVideoTitle').value = video.title || '';
             document.getElementById('editVideoDescription').value = video.description || '';
@@ -1136,7 +1139,7 @@
 
             const video = currentSessionVideos[currentEditVideoId];
             const durationValue = document.getElementById('editVideoDuration').value;
-            
+
             // Update video with new values
             video.title = title;
             video.description = document.getElementById('editVideoDescription').value.trim();
@@ -1192,7 +1195,7 @@
                 isPublished: document.getElementById('editPublishStatus').value === 'published'
             };
 
-            console.log('Saving session:', {id: currentEditId, data: data});
+            console.log('Saving session:', { id: currentEditId, data: data });
 
             try {
                 const response = await fetch('../api/sessions.php?action=updateSession&id=' + currentEditId, {
@@ -1297,7 +1300,7 @@
         }
 
         // Close modal when clicking outside
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             const editModal = document.getElementById('editModal');
             const editVideoModal = document.getElementById('editVideoModal');
             if (event.target === editModal) {
@@ -1309,4 +1312,5 @@
         }
     </script>
 </body>
+
 </html>

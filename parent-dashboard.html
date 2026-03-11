@@ -289,6 +289,21 @@
             color: #721c24;
         }
 
+        .status-late {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-excused {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-no-status {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
         .student-card-footer {
             padding: 15px 20px;
             background: #fafafa;
@@ -719,6 +734,31 @@
             }
         }
 
+        // Format attendance status with robust handling
+        function formatAttendance(status) {
+            if (!status || status === 'No Status' || status === '-') {
+                return `<span class="status-badge status-no-status"><i class="fas fa-question-circle"></i> -</span>`;
+            }
+
+            const s = status.toString().trim().toLowerCase();
+
+            if (s === 'present' || s === 'presence' || s === 'p' || s === 'true' || s === 'yes' || s === 'حضرة' || s === 'حاضر') {
+                return `<span class="status-badge status-present"><i class="fas fa-check-circle"></i> Present</span>`;
+            }
+            if (s === 'absent' || s === 'absence' || s === 'a' || s === 'false' || s === 'no' || s === 'غائب' || s === 'غياب') {
+                return `<span class="status-badge status-absent"><i class="fas fa-times-circle"></i> Absent</span>`;
+            }
+            if (s === 'late' || s === 'l' || s === 'تأخير' || s === 'متأخر') {
+                return `<span class="status-badge status-late"><i class="fas fa-clock"></i> Late</span>`;
+            }
+            if (s === 'excused' || s === 'e' || s === 'عذر' || s === 'معذور') {
+                return `<span class="status-badge status-excused"><i class="fas fa-file-alt"></i> Excused</span>`;
+            }
+
+            const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
+            return `<span class="status-badge status-no-status"><i class="fas fa-info-circle"></i> ${displayStatus}</span>`;
+        }
+
         // Get recent sessions info for preview
         function getRecentSessionsInfo(student) {
             let html = '';
@@ -733,11 +773,11 @@
             recentSessions.forEach(key => {
                 const sessionNum = key.split('_')[1];
                 const session = student[key] || {};
-                const status = session.attendanceStatus || 'No Status';
-                const statusBadgeClass = status === 'Present' ? 'status-present' : 'status-absent';
-                const statusText = status === 'Present' ? '✓ Present' : status === 'Absent' ? '✗ Absent' : status;
-                const onlineText = session.online_attendance === true ? '<span class="status-badge status-present" style="font-size: 0.8em;"><i class="fas fa-globe"></i> Online</span>' :
-                    session.online_attendance === false ? '<span class="status-badge status-absent" style="font-size: 0.8em;"><i class="fas fa-door-closed"></i> Center</span>' : '';
+                const attendanceStatus = session.attendanceStatus || 'No Status';
+                const onlineText = (session.online_attendance === true || session.online_attendance === 'true' || session.online_attendance === 1 || session.online_attendance === '1') ?
+                    '<span class="status-badge status-present" style="font-size: 0.8em;"><i class="fas fa-globe"></i> Online</span>' :
+                    (session.online_attendance === false || session.online_attendance === 'false' || session.online_attendance === 0 || session.online_attendance === '0') ?
+                        '<span class="status-badge status-absent" style="font-size: 0.8em;"><i class="fas fa-door-closed"></i> Center</span>' : '';
 
                 html += `
                     <div class="session-item">
@@ -745,7 +785,7 @@
                         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
                             <div class="session-status">
                                 ${onlineText}
-                                <span class="status-badge ${statusBadgeClass}">${statusText}</span>
+                                ${formatAttendance(attendanceStatus)}
                             </div>
                             <span style="color: #999; font-size: 0.8em;">${session.date || ''}</span>
                         </div>

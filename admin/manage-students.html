@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,21 +14,22 @@
             const protocol = window.location.protocol;
             const host = window.location.host;
             const pathname = window.location.pathname;
-            
+
             if (pathname.includes('study-is-funny')) {
-                const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);  
+                const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);
                 const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
                 return `${protocol}//${host}${basePath}/api/`;
             }
-            
+
             return `${protocol}//${host}/api/`;
         }
-        
+
         window.APP_BASE_URL = getApiBaseUrl().replace('/api/', '/');
         console.log('✓ Admin API Base URL:', getApiBaseUrl());
         console.log('✓ Manage Students Location:', window.location.href);
     </script>
 </head>
+
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
@@ -116,7 +118,8 @@
         <!-- Filters and Search -->
         <div class="filters">
             <div class="filter-group">
-                <input type="text" id="studentSearch" placeholder="Search students..." style="padding: 8px 12px; border: 1px solid #e1e8ed; border-radius: 6px; width: 250px;">
+                <input type="text" id="studentSearch" placeholder="Search students..."
+                    style="padding: 8px 12px; border: 1px solid #e1e8ed; border-radius: 6px; width: 250px;">
             </div>
 
             <div class="filter-group">
@@ -125,6 +128,7 @@
                     <option value="">All Grades</option>
                     <option value="senior1">Senior 1</option>
                     <option value="senior2">Senior 2</option>
+                    <option value="senior3">Senior 3</option>
                 </select>
             </div>
 
@@ -181,11 +185,11 @@
     <script src="js/admin.js"></script>
     <script>
         // Load students data
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadStudentsTable();
 
             // Search functionality
-            document.getElementById('studentSearch').addEventListener('input', function() {
+            document.getElementById('studentSearch').addEventListener('input', function () {
                 filterStudents(this.value);
             });
 
@@ -402,7 +406,7 @@
         }
 
         // Close modal functionality
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const modal = document.getElementById('studentModal');
             if (e.target.classList.contains('close-modal') || e.target === modal) {
                 modal.style.display = 'none';
@@ -410,4 +414,5 @@
         });
     </script>
 </body>
+
 </html>

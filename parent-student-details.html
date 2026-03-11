@@ -384,15 +384,35 @@
 
         // Format attendance status with better icons
         function formatAttendance(status) {
-            const statuses = {
-                'Present': { class: 'status-present', text: '✓ Present', icon: 'check-circle' },
-                'Absent': { class: 'status-absent', text: '✗ Absent', icon: 'times-circle' },
-                'Late': { class: 'status-late', text: '⏰ Late', icon: 'clock' },
-                'Excused': { class: 'status-excused', text: '📄 Excused', icon: 'file-alt' }
-            };
+            if (!status || status === 'No Status' || status === '-') {
+                return `<span class="status-badge status-no-status"><i class="fas fa-question-circle"></i> -</span>`;
+            }
 
-            const statusObj = statuses[status] || { class: 'status-no-status', text: '-', icon: 'question-circle' };
-            return `<span class="status-badge ${statusObj.class}"><i class="fas fa-${statusObj.icon}"></i> ${statusObj.text}</span>`;
+            const s = status.toString().trim().toLowerCase();
+
+            // Present Variations
+            if (s === 'present' || s === 'presence' || s === 'p' || s === 'true' || s === 'yes' || s === 'حضرة' || s === 'حاضر') {
+                return `<span class="status-badge status-present"><i class="fas fa-check-circle"></i> ✓ Present</span>`;
+            }
+
+            // Absent Variations
+            if (s === 'absent' || s === 'absence' || s === 'a' || s === 'false' || s === 'no' || s === 'غائب' || s === 'غياب') {
+                return `<span class="status-badge status-absent"><i class="fas fa-times-circle"></i> ✗ Absent</span>`;
+            }
+
+            // Late Variations
+            if (s === 'late' || s === 'l' || s === 'تأخير' || s === 'متأخر') {
+                return `<span class="status-badge status-late"><i class="fas fa-clock"></i> ⏰ Late</span>`;
+            }
+
+            // Excused Variations
+            if (s === 'excused' || s === 'e' || s === 'عذر' || s === 'معذور') {
+                return `<span class="status-badge status-excused"><i class="fas fa-file-alt"></i> 📄 Excused</span>`;
+            }
+
+            // Fallback for custom statuses
+            const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
+            return `<span class="status-badge status-no-status"><i class="fas fa-info-circle"></i> ${displayStatus}</span>`;
         }
 
         (async function () {
@@ -585,12 +605,18 @@
                                 <td style="text-align: center;">${date}</td>
                                 <td style="text-align: center;">${formatAttendance(attendanceStatus)}</td>
                                 <td style="text-align: center;">
-                                    ${s.online_attendance === true ? '<span class="status-badge status-present"><i class="fas fa-check-circle"></i> Yes</span>' :
-                                    s.online_attendance === false ? '<span class="status-badge status-absent"><i class="fas fa-times-circle"></i> No</span>' :
+                                    ${(s.online_attendance === true || s.online_attendance === 'true' || s.online_attendance === 1 || s.online_attendance === '1') ?
+                                    '<span class="status-badge status-present"><i class="fas fa-check-circle"></i> Yes</span>' :
+                                    (s.online_attendance === false || s.online_attendance === 'false' || s.online_attendance === 0 || s.online_attendance === '0') ?
+                                        '<span class="status-badge status-absent"><i class="fas fa-times-circle"></i> No</span>' :
                                         '<span class="status-badge status-no-status">-</span>'}
                                 </td>
                                 <td style="text-align: center;">
-                                    ${homeworkStatus === 'Complete' ? '<span style="color: #4CAF50; font-weight: bold;">✓ Complete</span>' : homeworkStatus === 'Pending' ? '<span style="color: #FF9800; font-weight: bold;">⟳ Pending</span>' : homeworkStatus}
+                                    ${(homeworkStatus && (homeworkStatus.toLowerCase() === 'complete' || homeworkStatus.toLowerCase() === 'done')) ?
+                                    '<span style="color: #4CAF50; font-weight: bold;">✓ Complete</span>' :
+                                    (homeworkStatus && (homeworkStatus.toLowerCase() === 'pending' || homeworkStatus.toLowerCase() === 'waiting')) ?
+                                        '<span style="color: #FF9800; font-weight: bold;">⟳ Pending</span>' :
+                                        homeworkStatus}
                                 </td>
                                 <td style="text-align: center; font-weight: bold; color: #008080;">${examMark}</td>
                                 <td>${comment}</td>

@@ -39,15 +39,8 @@ $videoUrl = $session->video_url ?? null;
 $sessionNumber = $session->sessionNumber ?? $session->session_number ?? null;
 $accessControl = $session->accessControl ?? 'free'; // 'restricted' or 'free'
 $requiredGrade = $session->grade ?? 'senior3';
-$requiredSubject = $session->subject ?? 'physics';
-$targetCollection = 'senior3_physics';
-
-// Debug output (visible in page source)
-echo "<!-- DEBUG INFO:\n";
-echo "Access Control: " . $accessControl . "\n";
-echo "Session Number: " . ($sessionNumber ?? 'NULL') . "\n";
-echo "Student Phone (GET): " . ($_GET['student_phone'] ?? 'NULL') . "\n";
-echo "-->\n";
+$requiredSubject = $session->subject ?? 'mathematics';
+$targetCollection = 'senior3_math';
 
 // Update online_attendance for restricted sessions
 if ($accessControl === 'restricted' && $sessionNumber) {
@@ -86,7 +79,6 @@ if ($accessControl === 'restricted' && $sessionNumber) {
                 error_log("SUCCESS: Online attendance marked for $studentPhone in $targetCollection session $sessionNumber");
             }
             
-            // Helpful JS console log for real-time debugging
             $logMsg = $updated ? "Attendance Marked: Success" : "Attendance Check: Already marked or Student not found";
             echo "<script>console.log('PHP Info: $logMsg');</script>";
             
@@ -96,63 +88,98 @@ if ($accessControl === 'restricted' && $sessionNumber) {
     }
 }
 
-
-// Get all videos from the session
+// Process videos array for multi-video support
 $videos = [];
-if (isset($session->videos) && is_array($session->videos)) {
-    foreach ($session->videos as $video) {
-        $videoData = [];
-        if (is_object($video)) {
-            $videoData['video_id'] = $video->video_id ?? null;
-            $videoData['title'] = $video->title ?? 'Video';
-            $videoData['description'] = $video->description ?? '';
-            $videoData['source'] = $video->source ?? 'upload';
-            $videoData['url'] = $video->url ?? null;
-            $videoData['file_path'] = $video->file_path ?? null;
-        } elseif (is_array($video)) {
-            $videoData = $video;
-        }
-        
-        // If source is "upload" and we have a file_path, use it directly
-        if ($videoData['source'] === 'upload' && isset($videoData['file_path']) && $videoData['file_path']) {
-            $videoData['url'] = '../../../uploads/videos/' . ltrim($videoData['file_path'], '/');
-        }
-        // Fallback: Try to fetch from database using video_id
-        elseif ($videoData['source'] === 'upload' && isset($videoData['video_id']) && $videoData['video_id']) {
-            try {
-                $videoRecord = $videoManager->getById($videoData['video_id']);
-                if ($videoRecord && isset($videoRecord->video_file_path)) {
-                    $videoData['url'] = '../../../uploads/videos/' . ltrim($videoRecord->video_file_path, '/');
-                }
-            } catch (Exception $e) {
-                error_log("Error fetching video record: " . $e->getMessage());
+if (isset($session->videos)) {
+    $videosArray = $session->videos;
+    if (is_object($videosArray)) {
+        $videosArray = (array)$videosArray;
+    }
+    if (is_array($videosArray) && count($videosArray) > 0) {
+        foreach ($videosArray as $video) {
+            $videoData = [];
+            $videoId = null;
+            $videoSource = null;
+            $videoUrlVal = null;
+            $filePath = null;
+            
+            if (is_object($video)) {
+                $videoId = $video->video_id ?? null;
+                $videoSource = $video->source ?? null;
+                $videoUrlVal = $video->url ?? null;
+                $filePath = $video->file_path ?? null;
+                $videoData['title'] = $video->title ?? 'Video';
+                $videoData['description'] = $video->description ?? '';
+            } elseif (is_array($video)) {
+                $videoId = $video['video_id'] ?? null;
+                $videoSource = $video['source'] ?? null;
+                $videoUrlVal = $video['url'] ?? null;
+                $filePath = $video['file_path'] ?? null;
+                $videoData['title'] = $video['title'] ?? 'Video';
+                $videoData['description'] = $video['description'] ?? '';
             }
             
-            // Last fallback: Direct ID-based path
-            if (!$videoData['url']) {
-                $videoData['url'] = '../../../uploads/videos/' . $videoData['video_id'] . '.mp4';
+            // If source is "upload" and we have a file_path, use it directly
+            if ($videoSource === 'upload' && isset($filePath) && $filePath) {
+                $videoUrlVal = '../../../uploads/videos/' . ltrim($filePath, '/');
             }
+            // Fallback: Try to fetch from database using video_id
+            elseif ($videoSource === 'upload' && $videoId && !$videoUrlVal) {
+                try {
+                    $videoRecord = $videoManager->getById($videoId);
+                    if ($videoRecord && isset($videoRecord->video_file_path)) {
+                        $videoUrlVal = '../../../uploads/videos/' . ltrim($videoRecord->video_file_path, '/');
+                    }
+                } catch (Exception $e) {
+                    error_log("Error fetching video record: " . $e->getMessage());
+                }
+                
+                // Last fallback: Direct ID-based path
+                if (!$videoUrlVal) {
+                    $videoUrlVal = '../../../uploads/videos/' . $videoId . '.mp4';
+                }
+            }
+            
+            // Normalize the video URL (handles Vimeo, YouTube, etc.)
+            if ($videoUrlVal) {
+                $normalized = VideoUtils::normalizeVideoUrl($videoUrlVal, $videoSource);
+                $videoData['url'] = $normalized['url'];
+                $videoData['source'] = $normalized['source'];
+                $videoData['video_id'] = $normalized['video_id'];
+            } else {
+                $videoData['url'] = null;
+                $videoData['source'] = 'unknown';
+                $videoData['video_id'] = null;
+            }
+            
+            $videos[] = $videoData;
         }
-        
-        // Normalize the video URL (handles Vimeo, YouTube, etc.)
-        if ($videoData['url']) {
-            $normalized = VideoUtils::normalizeVideoUrl($videoData['url'], $videoData['source']);
-            $videoData['url'] = $normalized['url'];
-            $videoData['source'] = $normalized['source'];
-            $videoData['video_id'] = $normalized['video_id'];
-        }
-        
-        $videos[] = $videoData;
     }
 }
 
-// Get current video index from URL or default to 0
-$currentVideoIndex = isset($_GET['video']) ? (int)$_GET['video'] : 0;
-if ($currentVideoIndex < 0 || $currentVideoIndex >= count($videos)) {
-    $currentVideoIndex = 0;
+// Fallback to single video URL if no videos array
+if (empty($videos) && !empty($videoUrl)) {
+    // Normalize the fallback URL properly
+    $normalized = VideoUtils::normalizeVideoUrl($videoUrl, null);
+    $videos[] = [
+        'url' => $normalized['url'],
+        'title' => $title ?? 'Video',
+        'description' => '',
+        'source' => $normalized['source'],
+        'video_id' => $normalized['video_id'],
+        'embed_type' => $normalized['embed_type'] ?? 'video'
+    ];
 }
 
+// Get current video index from URL parameter
+$currentVideoIndex = isset($_GET['video']) ? (int)$_GET['video'] : 0;
+$currentVideoIndex = max(0, min($currentVideoIndex, count($videos) - 1));
 $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
+
+// Set video URL from current video
+if ($currentVideo && isset($currentVideo['url'])) {
+    $videoUrl = $currentVideo['url'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -254,7 +281,7 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
                 
                 <div class="meta-info">
                     <span><i class="fas fa-calendar-alt"></i> <?= date('F j, Y') ?></span>
-                    <span><i class="fas fa-layer-group"></i> <?= strtoupper($requiredGrade) ?> Physics</span>
+                    <span><i class="fas fa-layer-group"></i> <?= strtoupper($requiredGrade) ?> Mathematics</span>
                     <?php if ($sessionNumber): ?>
                         <span><i class="fas fa-hashtag"></i> Session #<?= $sessionNumber ?></span>
                     <?php endif; ?>
@@ -404,12 +431,8 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
         // Function to convert URLs in text to clickable links
         function convertUrlsToLinks(text) {
             if (!text) return text;
-            
-            // Comprehensive URL regex that handles complex URLs with parameters
             const urlRegex = /(https?:\/\/[^\s<>"'{}|\\^`\[\]]+)/gi;
-            
             return text.replace(urlRegex, function(url) {
-                // Clean up any trailing punctuation that might not be part of the URL
                 const cleanUrl = url.replace(/[.,;!?]+$/, '');
                 return `<a href="${cleanUrl}" target="_blank" style="color: #2196F3 !important; text-decoration: underline !important;">${cleanUrl}</a>`;
             });
@@ -480,21 +503,16 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
         
         function initializePlayer() {
             if (window.sessionVideoData) {
-                // Wait for player to be ready, then load video using universal method
                 setTimeout(() => {
                     if (window.customPlayer && window.sessionVideoData) {
                         window.customPlayer.load(window.sessionVideoData);
                     }
                 }, 100);
-            } else {
-                // No video to play
-                console.log('No video content available');
             }
         }
     
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // Add student phone to URL if not already present
             const userPhone = localStorage.getItem('userPhone');
             const urlParams = new URLSearchParams(window.location.search);
             
@@ -505,11 +523,8 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
                 return;
             }
             
-            // Check access and initialize player after access is verified
             checkUserAccess().then(() => {
                 initializePlayer();
-                
-                // Process description links to make URLs clickable
                 processDescriptionLinks();
             }).catch(() => {
                 console.error('Failed to verify access');

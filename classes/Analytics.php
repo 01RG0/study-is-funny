@@ -171,11 +171,28 @@ class Analytics {
         $sessionKey = 'session_' . $sessionNumber;
         
         foreach ($students as $student) {
-            if (isset($student->$sessionKey) && isset($student->$sessionKey->attendance)) {
-                if ($student->$sessionKey->attendance === 'present') {
+            $attendance = null;
+            if (isset($student->$sessionKey)) {
+                $session = $student->$sessionKey;
+                // Check multiple possible property names
+                if (isset($session->attendance)) {
+                    $attendance = $session->attendance;
+                } elseif (isset($session->attendanceStatus)) {
+                    $attendance = $session->attendanceStatus;
+                }
+            }
+
+            if ($attendance !== null) {
+                $s = strtolower(trim((string)$attendance));
+                // Robust Present check
+                if (in_array($s, ['present', 'presence', 'p', 'true', 'yes', 'حضرة', 'حاضر', '1'])) {
                     $report['present']++;
-                } elseif ($student->$sessionKey->attendance === 'absent') {
+                } 
+                // Robust Absent check
+                elseif (in_array($s, ['absent', 'absence', 'a', 'false', 'no', 'غائب', 'غياب', '0'])) {
                     $report['absent']++;
+                } else {
+                    $report['not_recorded']++;
                 }
             } else {
                 $report['not_recorded']++;

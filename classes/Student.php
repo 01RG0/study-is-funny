@@ -214,18 +214,30 @@ class Student {
             if (strpos($key, 'session_') === 0 && is_object($value)) {
                 $stats['total_sessions']++;
                 
-                if (isset($value->attendance)) {
-                    if ($value->attendance === 'present') {
+                // Handle Attendance Variations
+                $attendance = $value->attendance ?? $value->attendanceStatus ?? null;
+                if ($attendance !== null) {
+                    $att = strtolower(trim((string)$attendance));
+                    // Robust Present check
+                    if (in_array($att, ['present', 'presence', 'p', 'true', 'yes', 'حضرة', 'حاضر', '1'])) {
                         $stats['attended']++;
-                    } elseif ($value->attendance === 'absent') {
+                    } 
+                    // Robust Absent check
+                    elseif (in_array($att, ['absent', 'absence', 'a', 'false', 'no', 'غائب', 'غياب', '0'])) {
                         $stats['absent']++;
                     }
                 }
                 
-                if (isset($value->homework)) {
-                    if ($value->homework === 'done') {
+                // Handle Homework Variations
+                $homework = $value->homework ?? $value->homeworkStatus ?? null;
+                if ($homework !== null) {
+                    $hw = strtolower(trim((string)$homework));
+                    // Robust Done check
+                    if (in_array($hw, ['done', 'complete', 'yes', 'finish', 'تم', 'حل'])) {
                         $stats['homework_done']++;
-                    } else {
+                    } 
+                    // Robust Pending check
+                    elseif (in_array($hw, ['pending', 'waiting', 'no', 'لم يتم', 'باقي'])) {
                         $stats['homework_pending']++;
                     }
                 }

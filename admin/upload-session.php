@@ -110,6 +110,7 @@
                                 </optgroup>
                                 <optgroup label="Senior 3">
                                     <option value="senior3-physics">Senior 3 - Physics</option>
+                                    <option value="senior3-mathematics">Senior 3 - Mathematics</option>
                                     <option value="senior3-statistics">Senior 3 - Statistics</option>
                                 </optgroup>
                             </select>

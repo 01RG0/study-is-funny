@@ -7,6 +7,21 @@
     <link rel="stylesheet" href="css/student.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
+    <style>
+        /* Ensure links in video descriptions are blue and clickable */
+        .video-item p a,
+        .video-description-link {
+            color: #2196F3 !important;
+            text-decoration: underline !important;
+            cursor: pointer !important;
+            font-weight: normal !important;
+        }
+        .video-item p a:hover,
+        .video-description-link:hover {
+            color: #1976D2 !important;
+            text-decoration: underline !important;
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -260,6 +275,35 @@
             loadMaterials(session.pdfFiles);
         }
 
+        // Test function to verify URL detection works
+        function testUrlConversion() {
+            const testUrl = "https://timer.addonforge.com/timer/1FAIpQLSf9eiSJkr17GTGGFnzwkdy4lU_hIRuB52PgDBTqNrS7CHtgAw";
+            const result = convertUrlsToLinks(testUrl);
+            console.log('Test URL conversion result:', result);
+            return result;
+        }
+
+        // Function to convert URLs in text to clickable links
+        function convertUrlsToLinks(text) {
+            if (!text) return text;
+            
+            console.log('Processing text for URLs:', text);
+            
+            // Comprehensive URL regex that handles the specific timer URL format
+            const urlRegex = /(https?:\/\/[^\s<>"'{}|\\^`\[\]]+[A-Za-z0-9_\-])/gi;
+            
+            const result = text.replace(urlRegex, function(url) {
+                console.log('Found URL:', url);
+                // Clean up any trailing punctuation that might not be part of the URL
+                const cleanUrl = url.replace(/[.,;!?]+$/, '');
+                console.log('Clean URL:', cleanUrl);
+                return `<a href="${cleanUrl}" target="_blank" class="video-description-link" style="color: #2196F3 !important; text-decoration: underline !important;">${cleanUrl}</a>`;
+            });
+            
+            console.log('Result after URL processing:', result);
+            return result;
+        }
+
         function loadVideoContent(videos) {
             const videoPlayer = document.getElementById('videoPlayer');
             videoPlayer.innerHTML = '';
@@ -276,7 +320,8 @@
                 // Handle both field name variations
                 const videoTitle = video.title || video.video_title || `Video ${index + 1}`;
                 const videoUrl = video.url || video.video_file_path || '';
-                const videoDescription = video.description || 'No description available';
+                const rawDescription = video.description || 'No description available';
+                const videoDescription = convertUrlsToLinks(rawDescription);
                 const videoDuration = video.duration || 0;
 
                 videoItem.innerHTML = `
