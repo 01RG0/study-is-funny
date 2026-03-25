@@ -125,6 +125,14 @@
                         <textarea id="description" name="description" rows="4"
                             placeholder="Brief description of the session content..."></textarea>
                     </div>
+
+                    <div class="form-group">
+                        <label for="type">Session Type *</label>
+                        <select id="type" name="type" required onchange="toggleSessionType(this.value)">
+                            <option value="normal" selected>Normal Session (Subscription Based)</option>
+                            <option value="revision">Revision Video (Google Sheet Based)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Lecture or Homework Selection -->
@@ -146,14 +154,26 @@
                 </div>
 
                 <!-- Access Control -->
-                <div class="form-section">
+                <div class="form-section" id="accessControlSection">
                     <h3>Access Control</h3>
 
-                    <div class="form-group">
+                    <div class="form-group" id="sessionNumberGroup">
                         <label for="sessionNumber">Session Number *</label>
                         <input type="number" id="sessionNumber" name="sessionNumber" required min="1" max="999"
                             placeholder="e.g., 1">
                         <small class="file-info" id="sessionNumberHelp">This number is used for subscription restrictions (e.g., online_session = true for session_13)</small>
+                    </div>
+
+                    <div id="googleSheetGroup" style="display: none;">
+                        <div class="form-group">
+                            <label for="googleSheetLink">Google Sheet CSV Link *</label>
+                            <input type="url" id="googleSheetLink" name="googleSheetLink" 
+                                placeholder="e.g., https://docs.google.com/spreadsheets/d/.../export?format=csv">
+                            <small class="file-info">Make sure the sheet is public or 'Anyone with link can view' and use the <b>CSV export URL</b>.</small>
+                            <div style="margin-top: 5px;">
+                                <small style="color: #666;">How to get the CSV link: File > Share > Publish to web > Select Sheet and 'Comma-separated values (.csv)' > Copy link.</small>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -197,11 +217,11 @@
                                     <label>Video Source *</label>
                                     <div class="radio-group">
                                         <label class="radio-label">
-                                            <input type="radio" name="videoSource[0]" value="upload" checked
+                                            <input type="radio" name="videoSource[0]" value="upload"
                                                 onchange="toggleVideoInput(this)"> Upload File
                                         </label>
                                         <label class="radio-label">
-                                            <input type="radio" name="videoSource[0]" value="link"
+                                            <input type="radio" name="videoSource[0]" value="link" checked
                                                 onchange="toggleVideoInput(this)"> Video Link
                                         </label>
                                     </div>
@@ -209,15 +229,15 @@
                             </div>
 
                             <div class="form-row">
-                                <div class="form-group video-upload-group">
+                                <div class="form-group video-upload-group" style="display: none;">
                                     <label>Video File *</label>
-                                    <input type="file" name="videoFile[]" accept="video/*" required>
-                                    <small class="file-info">Supported formats: MP4, AVI, MOV (Max: 500MB)</small>
+                                    <input type="file" name="videoFile[]" accept="video/*" required disabled>
+                                    <small class="file-info">Supported formats: MP4, AVI, MOV (No app-level limit, server/PHP size limits still apply)</small>
                                 </div>
 
-                                <div class="form-group video-link-group" style="display: none;">
+                                <div class="form-group video-link-group" style="display: block;">
                                     <label>Video URL *</label>
-                                    <input type="url" name="videoLink[]"
+                                    <input type="url" name="videoLink[]" required
                                         placeholder="e.g., https://youtube.com/watch?v=... or direct video URL">
                                     <small class="file-info">YouTube, Vimeo, or direct video links supported</small>
                                 </div>
@@ -238,6 +258,16 @@
                     <button type="button" id="addVideoBtn" class="add-video-btn">
                         <i class="fas fa-plus"></i> Add Another Video
                     </button>
+                </div>
+
+                <!-- Materials Section -->
+                <div class="form-section">
+                    <h3>Materials & Files</h3>
+                    <div class="form-group">
+                        <label for="pdfFile">Upload PDFs / Materials</label>
+                        <input type="file" id="pdfFile" name="pdfFile[]" accept="application/pdf" multiple>
+                        <small class="file-info">You can select multiple PDF files. These will be available for students to download.</small>
+                    </div>
                 </div>
 
                 <!-- Schedule & Settings -->
@@ -276,6 +306,14 @@
                     <button type="submit" class="submit-btn">
                         <i class="fas fa-upload"></i> Upload Session
                     </button>
+                </div>
+
+                <!-- Upload Progress -->
+                <div id="uploadProgressContainer" style="display:none; margin-top: 1rem;">
+                    <div style="width:100%; background:#e0e0e0; border-radius: 8px; overflow:hidden; height:24px;">
+                        <div id="uploadProgressBar" style="width:0%; height:100%; background: #28a745; color:#fff; text-align:center; line-height:24px; font-weight:600;">0%</div>
+                    </div>
+                    <small id="uploadProgressText" style="display:block; margin-top:4px; color:#333;">0 MB / 0 MB (0%)</small>
                 </div>
             </form>
         </div>
@@ -317,6 +355,32 @@
             }
         });
 
+        // Toggle Session Type
+        function toggleSessionType(type) {
+            const sessionNumberGroup = document.getElementById('sessionNumberGroup');
+            const googleSheetGroup = document.getElementById('googleSheetGroup');
+            const sessionNumberInput = document.getElementById('sessionNumber');
+            const googleSheetInput = document.getElementById('googleSheetLink');
+            const accessControlRadios = document.querySelectorAll('input[name="accessControl"]');
+            
+            if (type === 'revision') {
+                sessionNumberGroup.style.display = 'none';
+                googleSheetGroup.style.display = 'block';
+                sessionNumberInput.required = false;
+                googleSheetInput.required = true;
+                
+                // For revision, force restricted access (handled by sheet)
+                document.querySelector('input[name="accessControl"][value="restricted"]').checked = true;
+                document.getElementById('accessControlHelp').parentElement.style.display = 'none';
+            } else {
+                sessionNumberGroup.style.display = 'block';
+                googleSheetGroup.style.display = 'none';
+                sessionNumberInput.required = true;
+                googleSheetInput.required = false;
+                document.getElementById('accessControlHelp').parentElement.style.display = 'block';
+            }
+        }
+
         // Toggle between video upload and link input
         function toggleVideoInput(radio) {
             const container = radio.closest('.video-upload-item');
@@ -352,103 +416,124 @@
             }
         }
 
-        // Handle form submission
-        document.getElementById('sessionUploadForm').addEventListener('submit', async function(e) {
+        // Handle form submission with progress
+        document.getElementById('sessionUploadForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             console.log('=== SESSION UPLOAD STARTED ===');
-            
-            const submitBtn = this.querySelector('.submit-btn');
+
+            const form = this;
+            const submitBtn = form.querySelector('.submit-btn');
             const originalText = submitBtn.innerHTML;
+            const progressContainer = document.getElementById('uploadProgressContainer');
+            const progressBar = document.getElementById('uploadProgressBar');
+            const progressText = document.getElementById('uploadProgressText');
+
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
             submitBtn.disabled = true;
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressBar.textContent = '0%';
+            progressText.textContent = '0 MB / 0 MB (0%)';
 
-            try {
-                const formData = new FormData(this);
-                
-                // Add contentType from selected radio button
-                const contentTypeRadio = document.querySelector('input[name="contentType"]:checked');
-                if (contentTypeRadio) {
-                    formData.append('contentType', contentTypeRadio.value);
-                }
-                
-                // Log form data
-                console.log('Form Data:');
-                for (let [key, value] of formData.entries()) {
-                    if (value instanceof File) {
-                        console.log(`  ${key}: ${value.name} (${value.size} bytes, type: ${value.type})`);
-                    } else {
-                        console.log(`  ${key}: ${value}`);
-                    }
-                }
-                
-                console.log('Sending request to: ' + window.API_BASE_URL + 'sessions.php?action=upload');
-                const response = await fetch(window.API_BASE_URL + 'sessions.php?action=upload', {
-                    method: 'POST',
-                    body: formData
-                });
+            const formData = new FormData(form);
 
-                console.log('Response Status:', response.status, response.statusText);
-                const responseText = await response.text();
-                console.log('Raw Response:', responseText);
-                
-                let result;
-                try {
-                    result = JSON.parse(responseText);
-                } catch (parseError) {
-                    console.error('Failed to parse JSON:', parseError);
-                    console.error('Response was:', responseText);
-                    throw new Error('Server returned invalid JSON');
-                }
-                
-                console.log('Parsed Result:', result);
+            // Add contentType from selected radio button
+            const contentTypeRadio = document.querySelector('input[name="contentType"]:checked');
+            if (contentTypeRadio) {
+                formData.append('contentType', contentTypeRadio.value);
+            }
 
-                if (result.success) {
-                    console.log('✅ Success! Session ID:', result.sessionId);
-                    if (typeof showMessage === 'function') {
-                        showMessage('Session created successfully!', 'success');
-                    } else {
-                        alert('✓ Session created successfully!');
-                    }
-                    // Reset form after successful upload
-                    document.getElementById('sessionUploadForm').reset();
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
+            // Log form data for debug
+            console.log('Form Data:');
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    console.log(`  ${key}: ${value.name} (${value.size} bytes, type: ${value.type})`);
                 } else {
-                    console.error('❌ Failed:', result.message);
-                    if (result.errors) {
-                        console.error('Validation Errors:', result.errors);
-                    }
+                    console.log(`  ${key}: ${value}`);
+                }
+            }
+
+            function formatBytes(bytes) {
+                if (bytes === 0) return '0 MB';
+                const mbs = bytes / (1024 * 1024);
+                return mbs.toFixed(2) + ' MB';
+            }
+
+            function finalize(success, message) {
+                if (success) {
                     if (typeof showMessage === 'function') {
-                        showMessage(result.message || 'Failed to create session', 'error');
+                        showMessage(message || 'Session created successfully!', 'success');
                     } else {
-                        alert('✗ ' + (result.message || 'Failed to create session'));
+                        alert('✓ ' + (message || 'Session created successfully!'));
                     }
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                }
-            } catch (error) {
-                console.error('❌ Exception occurred:', error);
-                console.error('Error stack:', error.stack);
-                if (typeof showMessage === 'function') {
-                    showMessage('An error occurred while uploading the session', 'error');
+                    form.reset();
                 } else {
-                    alert('✗ An error occurred while uploading the session');
+                    if (typeof showMessage === 'function') {
+                        showMessage(message || 'Failed to create session', 'error');
+                    } else {
+                        alert('✗ ' + (message || 'Failed to create session'));
+                    }
                 }
+
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
+                console.log('=== SESSION UPLOAD ENDED ===');
             }
-            
-            console.log('=== SESSION UPLOAD ENDED ===');
-        });
 
-        // Add video functionality
-        let videoCount = 1;
-        document.getElementById('addVideoBtn').addEventListener('click', function() {
-            videoCount++;
-            const container = document.getElementById('videosContainer');
-            const videoItem = createVideoItem(videoCount);
-            container.appendChild(videoItem);
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', window.API_BASE_URL + 'sessions.php?action=upload');
+
+            xhr.upload.addEventListener('progress', function(event) {
+                if (!event.lengthComputable) return;
+                const percent = Math.round((event.loaded / event.total) * 100);
+                progressBar.style.width = percent + '%';
+                progressBar.textContent = percent + '%';
+                progressText.textContent = `${formatBytes(event.loaded)} / ${formatBytes(event.total)} (${percent}%)`;
+            });
+
+            xhr.addEventListener('load', function() {
+                let result;
+                try {
+                    result = JSON.parse(xhr.responseText);
+                } catch (parseError) {
+                    console.error('Failed to parse JSON:', parseError);
+                    console.error('Response was:', xhr.responseText);
+                    finalize(false, 'Server returned invalid JSON');
+                    return;
+                }
+
+                if (xhr.status >= 200 && xhr.status < 300 && result.success) {
+                    console.log('✅ Success! Session ID:', result.sessionId);
+                    finalize(true, result.message || 'Session created successfully!');
+                } else {
+                    console.error('❌ Failed:', result && result.message ? result.message : 'Upload failed');
+                    if (result && result.errors) {
+                        console.error('Validation Errors:', result.errors);
+                    }
+                    finalize(false, result && result.message ? result.message : 'Upload failed');
+                }
+            });
+
+            xhr.addEventListener('error', function() {
+                console.error('Network error during upload');
+                finalize(false, 'Network error occurred during upload');
+            });
+
+            xhr.addEventListener('abort', function() {
+                console.warn('Upload aborted by user or network');
+                finalize(false, 'Upload was interrupted. Please try again.');
+            });
+
+            xhr.addEventListener('timeout', function() {
+                console.warn('Upload timed out');
+                finalize(false, 'Upload timed out. Please try again.');
+            });
+
+            // Avoid premature server timeout; set high ceiling in milliseconds (15 minutes)
+            xhr.timeout = 15 * 60 * 1000;
+
+            xhr.send(formData);
         });
 
         function createVideoItem(number) {
@@ -468,25 +553,25 @@
                         <label>Video Source *</label>
                         <div class="radio-group">
                             <label class="radio-label">
-                                <input type="radio" name="videoSource[${number-1}]" value="upload" checked onchange="toggleVideoInput(this)"> Upload File
+                                <input type="radio" name="videoSource[${number-1}]" value="upload" onchange="toggleVideoInput(this)"> Upload File
                             </label>
                             <label class="radio-label">
-                                <input type="radio" name="videoSource[${number-1}]" value="link" onchange="toggleVideoInput(this)"> Video Link
+                                <input type="radio" name="videoSource[${number-1}]" value="link" checked onchange="toggleVideoInput(this)"> Video Link
                             </label>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-row">
-                    <div class="form-group video-upload-group">
+                    <div class="form-group video-upload-group" style="display: none;">
                         <label>Video File *</label>
-                        <input type="file" name="videoFile[]" accept="video/*" required>
-                        <small class="file-info">Supported formats: MP4, AVI, MOV (Max: 500MB)</small>
+                        <input type="file" name="videoFile[]" accept="video/*" required disabled>
+                        <small class="file-info">Supported formats: MP4, AVI, MOV (No app-level limit, server/PHP size limits still apply)</small>
                     </div>
 
-                    <div class="form-group video-link-group" style="display: none;">
+                    <div class="form-group video-link-group" style="display: block;">
                         <label>Video URL *</label>
-                        <input type="url" name="videoLink[]" placeholder="e.g., https://youtube.com/watch?v=... or direct video URL">
+                        <input type="url" name="videoLink[]" required placeholder="e.g., https://youtube.com/watch?v=... or direct video URL">
                         <small class="file-info">YouTube, Vimeo, or direct video links supported</small>
                     </div>
                 </div>

@@ -128,6 +128,14 @@ function handlePost($action) {
         case 'login':
             loginStudent($data);
             break;
+        case 'update-video-progress':
+        case 'sv_p':
+            updateVideoProgress($data);
+            break;
+        case 'record-homework-view':
+        case 'sv_h':
+            recordHomeworkView($data);
+            break;
         default:
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Invalid action']);
@@ -255,7 +263,72 @@ function loginStudent($data) {
         }
 
     } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => 'Login error: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Internal Server Error: ' . $e->getMessage()]);
+    }
+}
+
+function recordHomeworkView($data) {
+    try {
+        $client = $GLOBALS['mongoClient'];
+        $databaseName = $GLOBALS['databaseName'];
+
+        if (!isset($data['phone']) || !isset($data['sessionNumber']) || !isset($data['videoTitle'])) {
+            echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+            return;
+        }
+
+        $phone = $data['phone'];
+        $sessionNumber = (int)$data['sessionNumber'];
+        $videoTitle = $data['videoTitle'];
+        $collectionName = $data['collection'] ?? 'users';
+
+        // Clean video title
+        $safeVideoTitle = preg_replace('/[^A-Za-z0-9 _-]/', '', $videoTitle);
+        $safeVideoTitle = str_replace(' ', '_', $safeVideoTitle);
+
+        $fieldPathList = "session_{$sessionNumber}.homework_list";
+        $fieldPathCount = "session_{$sessionNumber}.homework";
+
+        // Phone Normalization: Support both 01... and +201...
+        $cleanPhone = ltrim($phone, '+');
+        if (strpos($cleanPhone, '20') === 0) {
+            $localPhone = '0' . substr($cleanPhone, 2);
+            $intlPhone = '+' . $cleanPhone;
+        } else {
+            $localPhone = '0' . ltrim($cleanPhone, '0');
+            $intlPhone = '+2' . $localPhone;
+        }
+
+        // Cooldown: 10 seconds to prevent spam
+        $currentTime = time();
+        $threshold = $currentTime - 10;
+
+        $bulk = new MongoDB\Driver\BulkWrite();
+        // Only update if video not in list AND cooldown passed
+        $bulk->update(
+            [
+                '$and' => [
+                    ['$or' => [['phone' => $localPhone], ['phone' => $intlPhone]]],
+                    [$fieldPathList => ['$ne' => $safeVideoTitle]],
+                    ['$or' => [
+                        ['lastHomeworkUpdate' => ['$exists' => false]],
+                        ['lastHomeworkUpdate' => ['$lt' => $threshold]]
+                    ]]
+                ]
+            ],
+            [
+                '$addToSet' => [$fieldPathList => $safeVideoTitle],
+                '$inc' => [$fieldPathCount => 1],
+                '$set' => ['lastHomeworkUpdate' => $currentTime]
+            ]
+        );
+
+        $result = $client->executeBulkWrite("$databaseName.$collectionName", $bulk);
+        echo json_encode(['success' => true, 'updatedCount' => $result->getModifiedCount()]);
+
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Internal Server Error: ' . $e->getMessage()]);
     }
 }
 
@@ -380,6 +453,13 @@ function getStudent() {
                 'watchedSessions' => 0,
                 'totalWatchTimeFormatted' => '0h 0m'
             ], $sessionFields);
+
+            // Check if student is active
+            if (isset($studentArray['isActive']) && $studentArray['isActive'] === false) {
+                echo json_encode(['success' => false, 'message' => "Your account is deactivated. Please contact support."]);
+                return;
+            }
+
             echo json_encode(['success' => true, 'student' => $studentArray]);
             return;
         }
@@ -410,6 +490,12 @@ function getStudent() {
                 'watchedSessions' => $platformStudent->totalSessionsViewed ?? 0,
                 'totalWatchTimeFormatted' => formatWatchTime($platformStudent->totalWatchTime ?? 0)
             ], $sessionFields);
+
+            // Check if student is active
+            if (isset($studentArray['isActive']) && $studentArray['isActive'] === false) {
+                echo json_encode(['success' => false, 'message' => "Your account is deactivated. Please contact support."]);
+                return;
+            }
 
             echo json_encode(['success' => true, 'student' => $studentArray]);
             return;
@@ -647,6 +733,77 @@ function updateStudent($data) {
             'success' => true,
             'modifiedCount' => $result->getModifiedCount(),
             'message' => 'Student updated successfully'
+        ]);
+
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Update error: ' . $e->getMessage()]);
+    }
+}
+
+function updateVideoProgress($data) {
+    try {
+        $client = $GLOBALS['mongoClient'];
+        $databaseName = $GLOBALS['databaseName'];
+
+        if (!isset($data['phone']) || !isset($data['sessionNumber']) || !isset($data['videoTitle']) || !isset($data['incrementSeconds'])) {
+            echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+            return;
+        }
+
+        $phone = $data['phone'];
+        $sessionNumber = $data['sessionNumber'];
+        $videoTitle = $data['videoTitle'];
+        $incrementSeconds = (int)$data['incrementSeconds'];
+        $collectionName = $data['collection'] ?? 'users';
+
+        // Clean video title for use as a key
+        $safeVideoTitle = preg_replace('/[^A-Za-z0-9 _-]/', '', $videoTitle);
+        $safeVideoTitle = str_replace(' ', '_', $safeVideoTitle);
+
+        $fieldPath = "session_{$sessionNumber}.video_watch_history.{$safeVideoTitle}";
+
+        // Phone Normalization: Support both 01... and +201...
+        $cleanPhone = ltrim($phone, '+');
+        if (strpos($cleanPhone, '20') === 0) {
+            $localPhone = '0' . substr($cleanPhone, 2);
+            $intlPhone = '+' . $cleanPhone;
+        } else {
+            $localPhone = '0' . ltrim($cleanPhone, '0');
+            $intlPhone = '+2' . $localPhone;
+        }
+
+        // Cooldown: 4 minutes (240 seconds)
+        $currentTime = time();
+        $threshold = $currentTime - 240;
+
+        $bulk = new MongoDB\Driver\BulkWrite();
+        $bulk->update(
+            [
+                '$and' => [
+                    ['$or' => [['phone' => $localPhone], ['phone' => $intlPhone]]],
+                    ['$or' => [
+                        ['lastVideoUpdate' => ['$exists' => false]],
+                        ['lastVideoUpdate' => ['$lt' => $threshold]]
+                    ]]
+                ]
+            ],
+            [
+                '$inc' => [
+                    $fieldPath => $incrementSeconds,
+                    'totalWatchTime' => round($incrementSeconds / 60, 2)
+                ],
+                '$set' => [
+                    'lastVideoUpdate' => $currentTime
+                ]
+            ]
+        );
+
+        $result = $client->executeBulkWrite("$databaseName.$collectionName", $bulk);
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Watch time update attempt complete',
+            'modifiedCount' => $result->getModifiedCount()
         ]);
 
     } catch (Exception $e) {

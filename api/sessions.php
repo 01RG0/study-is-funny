@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Prevent HTML errors from being output - output JSON only
 @ini_set('display_errors', '0');
 @ini_set('log_errors', '1');
@@ -84,6 +84,11 @@ function normalizePhoneNumber($phone) {
     }
     
     // Ensure it starts with 0 (Egyptian phone format)
+    // If it's a 10-digit number starting with 1, it's likely missing the leading 0
+    if (strlen($phone) === 10 && strpos($phone, '1') === 0) {
+        return '0' . $phone;
+    }
+    
     if (strpos($phone, '0') !== 0 && strpos($phone, '20') === 0) {
         return '0' . substr($phone, 2);
     }
@@ -244,12 +249,15 @@ function validateSessionData($data) {
         $errors[] = 'Teacher is required';
     }
 
-    // Validate session number
-    if (isset($data['sessionNumber'])) {
+    // Validate session number (required for normal sessions, optional for revision)
+    $isRevision = isset($data['type']) && $data['type'] === 'revision';
+    if (isset($data['sessionNumber']) && !empty($data['sessionNumber'])) {
         $sessionNumber = (int)$data['sessionNumber'];
-        if ($sessionNumber < 1 || $sessionNumber > 100) {
-            $errors[] = 'Session number must be between 1-100';
+        if ($sessionNumber < 1 || $sessionNumber > 999) {
+            $errors[] = 'Session number must be between 1-999';
         }
+    } elseif (!$isRevision) {
+        $errors[] = 'Session number is required for normal sessions';
     }
 
     // Validate videos
@@ -370,6 +378,8 @@ function createSession($data) {
             'grade' => $data['grade'],
             'teacher' => $data['teacher'],
             'description' => isset($data['description']) ? trim($data['description']) : '',
+            'type' => $data['type'] ?? 'normal',
+            'googleSheetLink' => $data['googleSheetLink'] ?? '',
             'sessionNumber' => isset($data['sessionNumber']) ? (int)$data['sessionNumber'] : null,
             'accessControl' => $data['accessControl'] ?? 'free',
             'videos' => $data['videos'] ?? [],
@@ -451,11 +461,19 @@ function uploadSession($data) {
             'expiryDate' => $_POST['expiryDate'] ?? null,
             'status' => $_POST['isPublished'] ?? 'draft',
             'isPublished' => ($_POST['isPublished'] ?? 'draft') === 'published',
-            'allowedStudentTypes' => ['all'],  // Allow all student types (access controlled by sessionNumber)
+            'type' => $_POST['type'] ?? 'normal',
+            'googleSheetLink' => $_POST['googleSheetLink'] ?? '',
+            'allowedStudentTypes' => ['all'],
             'videos' => [],
-            'createdBy' => 'admin', // TODO: Get from session
+            'pdfFiles' => [],
+            'createdBy' => 'admin',
             'createdAt' => new MongoDB\BSON\UTCDateTime(),
         ];
+        
+        // For revision sessions, force accessControl to restricted
+        if ($sessionData['type'] === 'revision') {
+            $sessionData['accessControl'] = 'restricted';
+        }
         
         // Determine year from grade
         $yearMap = ['senior1' => 1, 'senior2' => 2, 'senior3' => 3];
@@ -475,8 +493,11 @@ function uploadSession($data) {
         if (empty($sessionData['teacher'])) {
             $errors[] = 'Teacher is required';
         }
-        if ($sessionData['sessionNumber'] === null) {
-            $errors[] = 'Session Number is required';
+        if ($sessionData['type'] === 'normal' && $sessionData['sessionNumber'] === null) {
+            $errors[] = 'Session Number is required for normal sessions';
+        }
+        if ($sessionData['type'] === 'revision' && empty($sessionData['googleSheetLink'])) {
+            $errors[] = 'Google Sheet Link is required for revision sessions';
         }
 
         if (!empty($errors)) {
@@ -516,9 +537,12 @@ function uploadSession($data) {
                 continue;
             }
             
-            if ($isUpload && !empty($fileName) && isset($_FILES['videoFile']['error'][$index]) && $_FILES['videoFile']['error'][$index] === UPLOAD_ERR_OK) {
-                // Handle file upload using Video class
-                $videoFile = [
+            if ($isUpload && !empty($fileName)) {
+                $fileError = $_FILES['videoFile']['error'][$index] ?? UPLOAD_ERR_NO_FILE;
+
+                if ($fileError === UPLOAD_ERR_OK) {
+                    // Handle file upload using Video class
+                    $videoFile = [
                     'name' => $_FILES['videoFile']['name'][$index],
                     'type' => $_FILES['videoFile']['type'][$index],
                     'tmp_name' => $_FILES['videoFile']['tmp_name'][$index],
@@ -541,7 +565,22 @@ function uploadSession($data) {
                     echo json_encode(['success' => false, 'message' => 'Video upload failed: ' . $uploadResult['message']]);
                     return;
                 }
+            } elseif ($isUpload && !empty($fileName)) {
+                // Handle upload errors from PHP
+                $errorMessages = [
+                    UPLOAD_ERR_INI_SIZE => 'File exceeds server upload_max_filesize',
+                    UPLOAD_ERR_FORM_SIZE => 'File exceeds MAX_FILE_SIZE',
+                    UPLOAD_ERR_PARTIAL => 'File was only partially uploaded',
+                    UPLOAD_ERR_NO_FILE => 'No file was uploaded',
+                    UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder',
+                    UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
+                    UPLOAD_ERR_EXTENSION => 'Upload stopped by extension'
+                ];
 
+                $message = $errorMessages[$fileError] ?? 'Unknown upload error';
+                echo json_encode(['success' => false, 'message' => 'Video upload error: ' . $message]);
+                return;
+            }
                 $sessionData['videos'][] = [
                     'video_id' => $uploadResult['video_id'],
                     'title' => $videoMetadata['title'],
@@ -563,6 +602,26 @@ function uploadSession($data) {
                     'url' => $videoLink,
                     'source' => 'link'
                 ];
+            }
+        }
+
+        // Handle PDF Material uploads
+        if (isset($_FILES['pdfFile']) && is_array($_FILES['pdfFile']['name'])) {
+            $pdfCount = count($_FILES['pdfFile']['name']);
+            for ($i = 0; $i < $pdfCount; $i++) {
+                if ($_FILES['pdfFile']['error'][$i] === UPLOAD_ERR_OK) {
+                    $originalName = $_FILES['pdfFile']['name'][$i];
+                    $ext = pathinfo($originalName, PATHINFO_EXTENSION);
+                    $newFileName = uniqid('material_') . '_' . time() . '.' . $ext;
+                    
+                    if (move_uploaded_file($_FILES['pdfFile']['tmp_name'][$i], $uploadDir . $newFileName)) {
+                        $sessionData['pdfFiles'][] = [
+                            'filename' => $newFileName,
+                            'originalName' => $originalName,
+                            'uploadedAt' => new MongoDB\BSON\UTCDateTime()
+                        ];
+                    }
+                }
             }
         }
 
@@ -970,7 +1029,7 @@ function checkStudentSessionAccess() {
             // Try each collection and phone variation
             foreach ($collectionsToTry as $collection) {
                 foreach ($phoneVariations as $phoneVariation) {
-                    $studentFilter = ['phone' => $phoneVariation];
+                    $studentFilter = ['phone' => $phoneVariation, 'isActive' => true];
                     
                     // If subject is provided and we are checking a broad collection, add subject filter
                     if ($subject && in_array($collection, ['all_students_view', 'users', 'students'])) {
@@ -1123,20 +1182,14 @@ function checkStudentSessionAccess() {
 
         // Case 2: Check by session_id
         if ($sessionId && $phone) {
-            // Find student by phone
-            $studentFilter = ['phone' => $phone];
-            $query = new MongoDB\Driver\Query($studentFilter);
-            $cursor = $client->executeQuery("$databaseName.students", $query);
-            $student = current($cursor->toArray());
-
-            if (!$student) {
-                echo json_encode(['success' => false, 'hasAccess' => false, 'message' => 'Student not found']);
+            // Fetch session FIRST to determine its type
+            try { $sessionObjId = new MongoDB\BSON\ObjectId($sessionId); }
+            catch (Exception $e) {
+                echo json_encode(['success' => false, 'hasAccess' => false, 'message' => 'Invalid session ID']);
                 return;
             }
 
-            // Get the session by ID
-            $sessionFilter = ['_id' => new MongoDB\BSON\ObjectId($sessionId)];
-            $sessionQuery = new MongoDB\Driver\Query($sessionFilter);
+            $sessionQuery = new MongoDB\Driver\Query(['_id' => $sessionObjId, 'isActive' => true]);
             $sessionCursor = $client->executeQuery("$databaseName.online_sessions", $sessionQuery);
             $session = current($sessionCursor->toArray());
 
@@ -1145,9 +1198,42 @@ function checkStudentSessionAccess() {
                 return;
             }
 
+            // === REVISION SESSION: Google Sheet is the ONLY check — no MongoDB needed ===
+            if (isset($session->type) && $session->type === 'revision') {
+                if (empty($session->googleSheetLink)) {
+                    echo json_encode(['success' => false, 'hasAccess' => false, 'message' => 'Revision session has no Google Sheet configured']);
+                    return;
+                }
+
+                $hasAccess = checkGoogleSheetAccess($session->googleSheetLink, $phone);
+                echo json_encode([
+                    'success'        => true,
+                    'hasAccess'      => $hasAccess,
+                    'message'        => $hasAccess ? 'Access granted' : 'Your phone number is not in the access list for this session',
+                    'sessionContent' => $hasAccess ? convertSessionToArray($session) : null,
+                ]);
+                return;
+            }
+
+            // === NORMAL SESSION by ID: check students collection ===
+            $phoneVariations = array_values(array_unique(array_filter([
+                $phone, normalizePhoneNumber($phone), convertTo20Format($phone)
+            ])));
+
+            $student = null;
+            foreach ($phoneVariations as $pv) {
+                $q = new MongoDB\Driver\Query(['phone' => $pv, 'isActive' => true]);
+                $cur = $client->executeQuery("$databaseName.students", $q);
+                $found = current($cur->toArray());
+                if ($found) { $student = $found; break; }
+            }
+
+            if (!$student) {
+                echo json_encode(['success' => false, 'hasAccess' => false, 'message' => 'Student not found']);
+                return;
+            }
+
             $hasAccess = false;
-            
-            // Check by session number if available
             if (isset($session->sessionNumber)) {
                 $sessionKey = 'session_' . $session->sessionNumber;
                 if (isset($student->$sessionKey)) {
@@ -1161,16 +1247,17 @@ function checkStudentSessionAccess() {
             }
 
             echo json_encode([
-                'success' => true,
-                'hasAccess' => $hasAccess,
-                'message' => $hasAccess ? 'Access granted' : 'No subscription for this session',
-                'sessionId' => $sessionId,
-                'phone' => $phone,
-                'student' => [
-                    'name' => $student->studentName ?? 'Student',
-                    'subject' => $student->subject ?? '',
-                    'grade' => $student->grade ?? '',
-                    'balance' => $student->balance ?? 0,
+                'success'        => true,
+                'hasAccess'      => $hasAccess,
+                'message'        => $hasAccess ? 'Access granted' : 'No subscription for this session',
+                'sessionId'      => $sessionId,
+                'phone'          => $phone,
+                'sessionContent' => $hasAccess ? convertSessionToArray($session) : null,
+                'student'        => [
+                    'name'          => $student->studentName ?? 'Student',
+                    'subject'       => $student->subject ?? '',
+                    'grade'         => $student->grade ?? '',
+                    'balance'       => $student->balance ?? 0,
                     'paymentAmount' => $student->paymentAmount ?? 80
                 ]
             ]);
@@ -1668,5 +1755,128 @@ function runDiagnostics() {
     ];
     
     echo json_encode($diagnostics, JSON_PRETTY_PRINT);
+}
+
+/**
+ * Fetch Google Sheet CSV and check if phone exists in 'phone' column
+ * @param string $csvUrl Google Sheet CSV export URL
+ * @param string $phone Phone number to look for
+ * @return bool
+ */
+function checkGoogleSheetAccess($csvUrl, $phone) {
+    if (empty($csvUrl) || empty($phone)) return false;
+
+    // Auto-convert standard Google Sheet links to CSV export links
+    if (strpos($csvUrl, 'docs.google.com/spreadsheets/d/') !== false && strpos($csvUrl, 'export?format=csv') === false && strpos($csvUrl, '/pub?') === false) {
+        // Extract spreadsheet ID
+        if (preg_match('/\/d\/([a-zA-Z0-9-_]+)/', $csvUrl, $matches)) {
+            $spreadsheetId = $matches[1];
+            $csvUrl = "https://docs.google.com/spreadsheets/d/$spreadsheetId/export?format=csv";
+            error_log("Google Sheet Access: Auto-converted link to $csvUrl");
+        }
+    }
+
+    // Normalize input phone
+    $searchPhone = normalizePhoneNumber($phone);
+    $searchPhone2 = convertTo20Format($phone);
+
+    error_log("Google Sheet Access: Searching for $searchPhone or $searchPhone2 in Sheet data");
+
+    try {
+        // Try curl first (works on Hostinger even when allow_url_fopen is off)
+        $data = false;
+        if (function_exists('curl_init')) {
+            $ch = curl_init($csvUrl);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_TIMEOUT        => 15,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_USERAGENT      => 'Mozilla/5.0',
+                CURLOPT_HTTPHEADER     => ['Accept: text/csv, application/json'],
+            ]);
+            $data = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            if ($data === false || $httpCode >= 400) {
+                error_log("Google Sheet Access: curl failed (HTTP $httpCode) for $csvUrl");
+                $data = false;
+            }
+        }
+
+        // Fallback to file_get_contents if curl not available
+        if ($data === false && ini_get('allow_url_fopen')) {
+            $ctx = stream_context_create(['http' => ['timeout' => 10, 'ignore_errors' => true]]);
+            $data = file_get_contents($csvUrl, false, $ctx);
+        }
+
+        if ($data === false || empty(trim($data))) {
+            error_log("Google Sheet Access: Could not fetch sheet data from $csvUrl — access denied");
+            return false;
+        }
+
+
+        $trimmedData = trim($data);
+
+        // Handle JSON response (e.g., from opensheet.elk.sh)
+        if (strpos($trimmedData, '[') === 0) {
+            $json = json_decode($trimmedData, true);
+            if (is_array($json)) {
+                foreach ($json as $row) {
+                    // Search for any key that contains 'phone' Case-Insensitive
+                    foreach ($row as $key => $val) {
+                        if (trim(strtolower($key)) === 'phone') {
+                            $rowPhone = normalizePhoneNumber($val);
+                            if ($rowPhone === $searchPhone || $rowPhone === $searchPhone2) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        // Parse CSV
+        $lines = explode("\n", str_replace("\r", "", $data));
+        if (empty($lines)) return false;
+
+        // Get header and find 'phone' column
+        $headerLine = array_shift($lines);
+        if (empty($headerLine)) return false;
+        
+        $header = str_getcsv($headerLine);
+        $phoneColIndex = -1;
+        foreach ($header as $idx => $colName) {
+            if (trim(strtolower($colName)) === 'phone') {
+                $phoneColIndex = $idx;
+                break;
+            }
+        }
+
+        if ($phoneColIndex === -1) {
+            error_log("Google Sheet Access: 'phone' column not found in Google Sheet CSV");
+            return false;
+        }
+
+        // Search for phone in the specified column
+        foreach ($lines as $line) {
+            if (empty(trim($line))) continue;
+            $row = str_getcsv($line);
+            if (isset($row[$phoneColIndex])) {
+                $rowPhone = normalizePhoneNumber($row[$phoneColIndex]);
+                if ($rowPhone === $searchPhone || $rowPhone === $searchPhone2) {
+                    error_log("Google Sheet Access: Found matching phone $rowPhone");
+                    return true;
+                }
+            }
+        }
+
+        error_log("Google Sheet Access: Phone $searchPhone not found in Sheet");
+        return false;
+    } catch (Exception $e) {
+        error_log("Google Sheet Access Error: " . $e->getMessage());
+        return false;
+    }
 }
 ?>

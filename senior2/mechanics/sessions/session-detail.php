@@ -110,6 +110,7 @@ if (isset($session->videos)) {
                 $filePath = $video->file_path ?? null;
                 $videoData['title'] = $video->title ?? 'Video';
                 $videoData['description'] = $video->description ?? '';
+                $videoData['type'] = $video->type ?? 'lecture';
             } elseif (is_array($video)) {
                 $videoId = $video['video_id'] ?? null;
                 $videoSource = $video['source'] ?? null;
@@ -117,6 +118,7 @@ if (isset($session->videos)) {
                 $filePath = $video['file_path'] ?? null;
                 $videoData['title'] = $video['title'] ?? 'Video';
                 $videoData['description'] = $video['description'] ?? '';
+                $videoData['type'] = $video['type'] ?? 'lecture';
             }
             
             // If source is "upload" and we have a file_path, use it directly
@@ -146,10 +148,12 @@ if (isset($session->videos)) {
                 $videoData['url'] = $normalized['url'];
                 $videoData['source'] = $normalized['source'];
                 $videoData['video_id'] = $normalized['video_id'];
+                $videoData['embed_type'] = $normalized['embed_type'] ?? 'video';
             } else {
                 $videoData['url'] = null;
                 $videoData['source'] = 'unknown';
                 $videoData['video_id'] = null;
+                $videoData['embed_type'] = 'unknown';
             }
             
             $videos[] = $videoData;
@@ -179,6 +183,24 @@ $currentVideo = !empty($videos) ? $videos[$currentVideoIndex] : null;
 // Set video URL from current video
 if ($currentVideo && isset($currentVideo['url'])) {
     $videoUrl = $currentVideo['url'];
+}
+
+// Process PDF Materials
+$pdfFiles = [];
+if (isset($session->pdfFiles)) {
+    $pdfArray = $session->pdfFiles;
+    if (is_object($pdfArray)) $pdfArray = (array)$pdfArray;
+    if (is_array($pdfArray)) {
+        foreach ($pdfArray as $pdf) {
+            $pdfData = is_object($pdf) ? (array)$pdf : $pdf;
+            if (isset($pdfData['filename'])) {
+                $pdfFiles[] = [
+                    'url' => '../../../uploads/sessions/' . $pdfData['filename'],
+                    'name' => $pdfData['originalName'] ?? $pdfData['filename']
+                ];
+            }
+        }
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -213,6 +235,7 @@ if ($currentVideo && isset($currentVideo['url'])) {
             text-decoration: underline !important;
         }
     </style>
+
 </head>
 <body>
     <!-- Premium Header -->
@@ -247,7 +270,12 @@ if ($currentVideo && isset($currentVideo['url'])) {
                         'url' => $currentVideo['url'],
                         'source' => $currentVideo['source'],
                         'video_id' => $currentVideo['video_id'],
-                        'embed_type' => $currentVideo['embed_type'] ?? 'video'
+                        'embed_type' => $currentVideo['embed_type'] ?? 'video',
+                        'title' => $currentVideo['title'] ?? $title,
+                        'sessionNumber' => $sessionNumber,
+                        'type' => $currentVideo['type'] ?? 'lecture',
+                        'collection' => $targetCollection,
+                        'useCamouflage' => true
                     ];
                 }
                 $playerDataJson = $playerData ? json_encode($playerData, JSON_HEX_QUOT | JSON_HEX_TAG) : 'null';
@@ -309,7 +337,7 @@ if ($currentVideo && isset($currentVideo['url'])) {
                         </div>
                     <?php else: ?>
                         <?php foreach ($videos as $index => $video): ?>
-                            <a href="?id=<?= htmlspecialchars($sessionId) ?>&video=<?= $index ?>" 
+                            <a href="?id=<?= htmlspecialchars($sessionId) ?>&video=<?= $index ?>&student_phone=<?= htmlspecialchars($_GET['student_phone'] ?? '') ?>" 
                                class="playlist-item <?= ($index === $currentVideoIndex) ? 'active' : '' ?>">
                                 <div class="video-thumb">
                                     <i class="fas <?= ($index === $currentVideoIndex) ? 'fa-play' : 'fa-lock' ?>"></i>
@@ -323,6 +351,28 @@ if ($currentVideo && isset($currentVideo['url'])) {
                     <?php endif; ?>
                 </div>
             </div>
+
+            <?php if (!empty($pdfFiles)): ?>
+            <div class="playlist-card" style="margin-top: 2rem; border-top: 4px solid #f39c12;">
+                <div class="playlist-header">
+                    <h4><i class="fas fa-file-pdf"></i> Session Materials</h4>
+                    <small><?= count($pdfFiles) ?> Files Available</small>
+                </div>
+                <div class="playlist-items">
+                    <?php foreach ($pdfFiles as $pdf): ?>
+                        <a href="<?= htmlspecialchars($pdf['url']) ?>" target="_blank" class="playlist-item">
+                            <div class="video-thumb" style="background: rgba(243, 156, 18, 0.1); color: #f39c12;">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="video-meta">
+                                <h4><?= htmlspecialchars($pdf['name']) ?></h4>
+                                <p>PDF Document</p>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
         </aside>
     </main>
 
@@ -459,17 +509,41 @@ if ($currentVideo && isset($currentVideo['url'])) {
             }
         }
 
-        // Player initialization
+        // Check user access
         async function checkUserAccess() {
             return new Promise((resolve, reject) => {
                 const overlay = document.getElementById('accessLoadingOverlay');
                 const userPhone = localStorage.getItem('userPhone');
                 const sessionNumber = <?= $sessionNumber ? $sessionNumber : 'null' ?>;
                 const accessControl = '<?= htmlspecialchars($accessControl) ?>';
+                const sessionType = '<?= htmlspecialchars($session->type ?? 'normal') ?>';
+                const sessionId = '<?= htmlspecialchars($sessionId) ?>';
                 
                 if (!userPhone) {
                     window.location.href = '/login/index.html';
                     reject('No user phone');
+                    return;
+                }
+                
+                // Revision sessions ALWAYS check Google Sheet — never bypass with 'free'
+                if (sessionType === 'revision') {
+                    (async () => {
+                        try {
+                            const response = await fetch(`${window.API_BASE_URL}sessions.php?action=check-access&sessionId=${encodeURIComponent(sessionId)}&phone=${encodeURIComponent(userPhone)}&t=${Date.now()}`);
+                            const data = await response.json();
+                            if (data.success && data.hasAccess) {
+                                fadeOutOverlay();
+                                resolve();
+                            } else {
+                                showAccessDenied(data.message || 'Your phone number is not in the access list for this revision session.');
+                                reject('Access denied');
+                            }
+                        } catch (error) {
+                            console.error('Revision access check failed:', error);
+                            showAccessDenied('Failed to verify access. Please check your internet connection and try again.');
+                            reject(error);
+                        }
+                    })();
                     return;
                 }
                 
@@ -509,6 +583,7 @@ if ($currentVideo && isset($currentVideo['url'])) {
                 }
             });
         }
+
         
         function initializePlayer() {
             if (window.sessionVideoData) {
@@ -552,5 +627,6 @@ if ($currentVideo && isset($currentVideo['url'])) {
     <style>
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
+
 </body>
 </html>

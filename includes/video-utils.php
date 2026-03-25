@@ -218,7 +218,9 @@ class VideoUtils {
                 break;
                 
             case 'local':
-                // Keep local URLs as is
+            case 'upload':
+                // Treat upload sources as local videos
+                $source = 'local';
                 $embedUrl = $url;
                 $embedType = 'video';
                 break;

@@ -10,9 +10,10 @@ class Video {
     private $collection = 'videos';
     private $uploadDir;
     private $allowedTypes = ['video/mp4', 'video/webm', 'video/avi', 'video/quicktime', 'video/x-msvideo'];
-    private $maxFileSize = 524288000; // 500MB in bytes
+    private $maxFileSize;
     
     public function __construct(DatabaseMongo $database, $uploadDir = null) {
+        $this->maxFileSize = defined('MAX_VIDEO_SIZE') ? MAX_VIDEO_SIZE : 0; // 0 = no app-level limit
         $this->db = $database;
         $this->uploadDir = $uploadDir ?? __DIR__ . '/../uploads/videos/';
         
@@ -145,11 +146,12 @@ class Video {
             ];
         }
         
-        // Check file size
-        if ($fileData['size'] > $this->maxFileSize) {
+        // Check file size (only if a limit is configured)
+        if ($this->maxFileSize > 0 && $fileData['size'] > $this->maxFileSize) {
+            $maxMB = round($this->maxFileSize / (1024 * 1024));
             return [
                 'success' => false,
-                'message' => 'File too large. Maximum size is 500MB'
+                'message' => 'File too large. Maximum size is ' . $maxMB . 'MB'
             ];
         }
         
@@ -355,19 +357,43 @@ class Video {
             $this->incrementViewCount($videoId);
         }
         
-        // Set headers for video streaming
+        // Remove PHP execution time limit so long videos don't get killed mid-stream
+        set_time_limit(0);
+        
+        // Flush and close any active output buffers so PHP doesn't buffer the video in RAM
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+        
         $filesize = filesize($filepath);
-        $mimeType = mime_content_type($filepath);
+        $mimeType = mime_content_type($filepath) ?: 'video/mp4';
+        $lastModified = filemtime($filepath);
+        $etag = md5($filepath . $filesize . $lastModified);
         
+        // Cache headers — browser can cache video and avoid re-downloading
         header('Content-Type: ' . $mimeType);
-        header('Content-Length: ' . $filesize);
         header('Accept-Ranges: bytes');
+        header('Cache-Control: public, max-age=86400'); // cache 1 day
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $lastModified) . ' GMT');
+        header('ETag: "' . $etag . '"');
         
-        // Handle range requests for seeking
+        // Respond to conditional requests (browser already has the file)
+        $ifNoneMatch  = $_SERVER['HTTP_IF_NONE_MATCH']  ?? '';
+        $ifModSince   = $_SERVER['HTTP_IF_MODIFIED_SINCE'] ?? '';
+        if (
+            ($ifNoneMatch && trim($ifNoneMatch) === '"' . $etag . '"') ||
+            ($ifModSince && strtotime($ifModSince) >= $lastModified)
+        ) {
+            http_response_code(304);
+            exit;
+        }
+        
+        // Handle range requests for seeking / resuming
         if (isset($_SERVER['HTTP_RANGE'])) {
             $this->streamRange($filepath, $filesize);
         } else {
-            readfile($filepath);
+            header('Content-Length: ' . $filesize);
+            $this->streamFull($filepath, $filesize);
         }
         
         exit;
@@ -379,13 +405,29 @@ class Video {
      * @param int $filesize File size
      * @return void
      */
+    private function streamFull($filepath, $filesize) {
+        // High-speed direct piping - fastest way on Hostinger
+        readfile($filepath);
+        exit;
+    }
+    
     private function streamRange($filepath, $filesize) {
         $range = $_SERVER['HTTP_RANGE'];
         $range = str_replace('bytes=', '', $range);
-        $range = explode('-', $range);
+        $parts = explode('-', $range, 2);
         
-        $start = (int) $range[0];
-        $end = isset($range[1]) && $range[1] !== '' ? (int) $range[1] : $filesize - 1;
+        $start = (int) $parts[0];
+        $end   = (isset($parts[1]) && $parts[1] !== '') ? (int) $parts[1] : $filesize - 1;
+        
+        // Clamp to valid range
+        $start = max(0, $start);
+        $end   = min($end, $filesize - 1);
+        
+        if ($start > $end) {
+            http_response_code(416); // Range Not Satisfiable
+            header("Content-Range: bytes */$filesize");
+            exit;
+        }
         
         $length = $end - $start + 1;
         
@@ -396,17 +438,23 @@ class Video {
         $fp = fopen($filepath, 'rb');
         fseek($fp, $start);
         
-        $buffer = 8192;
+        $buffer = 1048576; // 1MB chunks for smooth streaming
         $remaining = $length;
         
         while ($remaining > 0 && !feof($fp)) {
             $read = min($buffer, $remaining);
             echo fread($fp, $read);
             $remaining -= $read;
+            
+            // Explicitly force delivery to browser
             flush();
+            if (ob_get_level() > 0) ob_flush();
+            
+            if (connection_aborted()) break;
         }
         
         fclose($fp);
+        exit;
     }
 }
 ?>

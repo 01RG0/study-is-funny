@@ -292,7 +292,7 @@ $videos = $videoManager->getAll([], 50);
                             Click to upload video or drag and drop
                         </label>
                         <div class="file-info">
-                            Maximum file size: 500MB<br>
+                            No app-level max (server/PHP limits apply)<br>
                             Supported formats: MP4, WebM, AVI, MOV
                         </div>
                         <div id="selectedFile" class="selected-file" style="display:none;"></div>
@@ -364,22 +364,48 @@ $videos = $videoManager->getAll([], 50);
         }
 
         document.getElementById('uploadForm').addEventListener('submit', function(e) {
-            const progressBar = document.getElementById('progressBar');
+            e.preventDefault();
+
+            const progressBarWrapper = document.getElementById('progressBar');
             const progressFill = document.getElementById('progressFill');
-            
-            // Show progress bar when uploading
-            progressBar.style.display = 'block';
-            
-            // Simulate progress (in real implementation, use XMLHttpRequest for actual progress)
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 5;
-                if (progress >= 95) {
-                    clearInterval(interval);
+            progressBarWrapper.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressFill.textContent = '0%';
+
+            const fileInput = document.getElementById('videoFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file before uploading.');
+                return;
+            }
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'upload-video.php');
+
+            xhr.upload.addEventListener('progress', function (event) {
+                if (event.lengthComputable) {
+                    const percent = Math.round((event.loaded / event.total) * 100);
+                    progressFill.style.width = percent + '%';
+                    progressFill.textContent = percent + '%';
                 }
-                progressFill.style.width = progress + '%';
-                progressFill.textContent = progress + '%';
-            }, 200);
+            });
+
+            xhr.addEventListener('load', function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    progressFill.style.width = '100%';
+                    progressFill.textContent = '100%';
+                    showFileName(fileInput); // If you want to keep UI in sync
+                } else {
+                    alert('Upload failed: ' + xhr.statusText);
+                }
+            });
+
+            xhr.addEventListener('error', function () {
+                alert('Upload failed due to a network error.');
+            });
+
+            const formData = new FormData(this);
+            xhr.send(formData);
         });
     </script>
 </body>

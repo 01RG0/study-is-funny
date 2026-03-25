@@ -6,6 +6,7 @@
     <title>Sessions - Study is Funny</title>
     <link rel="stylesheet" href="css/student.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
     <style>
         /* Ensure links in video descriptions are blue and clickable */
@@ -20,6 +21,52 @@
         .video-description-link:hover {
             color: #1976D2 !important;
             text-decoration: underline !important;
+        }
+        
+        /* Revision Session Styles */
+        .revision-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .revision-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .revision-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            border-color: #008080;
+        }
+        .revision-item h4 {
+            margin: 0;
+            color: #333;
+            font-size: 1.1rem;
+        }
+        .revision-item .meta {
+            font-size: 0.85rem;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .revision-item .type-badge {
+            background: #e0f2f1;
+            color: #00796b;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            align-self: flex-start;
         }
     </style>
 </head>
@@ -47,9 +94,16 @@
 
     <!-- Main Content -->
     <div class="sessions-container">
-        <div class="sessions-header">
-            <h1><i class="fas fa-play-circle"></i> Online Sessions</h1>
-            <p>Select your subject and session number to access online content</p>
+        <div class="sessions-header" style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center;">
+                <button onclick="window.location.href='index.html'" style="background: none; border: none; color: #008080; font-size: 1.5rem; cursor: pointer; margin-right: 20px; display: flex; align-items: center;">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div>
+                    <h1><i class="fas fa-play-circle"></i> Online Sessions</h1>
+                    <p>Select your subject and session number to access online content</p>
+                </div>
+            </div>
         </div>
 
         <!-- Subject Selection -->
@@ -86,6 +140,13 @@
             <div class="session-numbers">
                 <div class="numbers-grid" id="sessionNumbersGrid">
                     <!-- Session numbers will be loaded here -->
+                </div>
+            </div>
+
+            <div id="revisionSection" style="display: none; margin-top: 40px;">
+                <h2 style="margin-bottom: 20px;"><i class="fas fa-star"></i> Revision Videos</h2>
+                <div class="revision-grid" id="revisionGrid">
+                    <!-- Revision sessions will be loaded here -->
                 </div>
             </div>
         </div>
@@ -218,9 +279,50 @@
                 sessionBtn.onclick = () => checkSessionAccess(subject, i);
                 grid.appendChild(sessionBtn);
             }
+            
+            // Fetch revision sessions
+            loadRevisionSessions(subject);
         }
 
-        async function checkSessionAccess(subject, sessionNumber) {
+        async function loadRevisionSessions(subject) {
+            const revisionSection = document.getElementById('revisionSection');
+            const revisionGrid = document.getElementById('revisionGrid');
+            revisionGrid.innerHTML = '';
+            
+            try {
+                const response = await fetch(`${window.APP_BASE_URL}api/sessions.php?action=list&subject=${subject}&grade=${currentStudent.grade}`);
+                const result = await response.json();
+                
+                if (result.success && result.sessions) {
+                    const revisionSessions = result.sessions.filter(s => s.type === 'revision');
+                    
+                    if (revisionSessions.length > 0) {
+                        revisionSection.style.display = 'block';
+                        revisionSessions.forEach(session => {
+                            const item = document.createElement('div');
+                            item.className = 'revision-item';
+                            item.onclick = () => checkSessionAccess(subject, null, session.id);
+                            
+                            item.innerHTML = `
+                                <span class="type-badge">Revision Video</span>
+                                <h4>${session.title}</h4>
+                                <div class="meta">
+                                    <i class="fas fa-video"></i> ${session.videos.length} Videos
+                                    | <i class="fas fa-file-pdf"></i> ${session.pdfFiles ? session.pdfFiles.length : 0} Files
+                                </div>
+                            `;
+                            revisionGrid.appendChild(item);
+                        });
+                    } else {
+                        revisionSection.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading revision sessions:', error);
+            }
+        }
+
+        async function checkSessionAccess(subject, sessionNumber, sessionId = null) {
             if (!currentStudent) {
                 showError('Student data not loaded');
                 return;
@@ -229,15 +331,23 @@
             showLoading();
 
             try {
-                const response = await fetch(`${window.APP_BASE_URL}api/sessions.php?action=check-access&studentId=${currentStudent.studentId || currentStudent._id}&sessionNumber=${sessionNumber}&subject=${subject}&grade=${currentStudent.grade}`);
+                let url = `${window.APP_BASE_URL}api/sessions.php?action=check-access&studentId=${currentStudent.studentId || currentStudent._id || currentStudent.phone}&subject=${subject}&grade=${currentStudent.grade}&phone=${currentStudent.phone}`;
+                
+                if (sessionId) {
+                    url += `&sessionId=${sessionId}`;
+                } else if (sessionNumber) {
+                    url += `&sessionNumber=${sessionNumber}`;
+                }
+
+                const response = await fetch(url);
                 const result = await response.json();
 
                 hideLoading();
 
                 if (result.success && result.hasAccess) {
-                    loadSessionContent(result.sessionContent, sessionNumber);
+                    loadSessionContent(result.sessionContent || result.sessionData, sessionNumber || 'Revision');
                 } else {
-                    let errorMsg = 'You don\'t have access to this session.';
+                    let errorMsg = result.message || 'You don\'t have access to this session.';
                     if (result.isExpired) {
                         errorMsg = 'This session has expired.';
                     }
@@ -260,7 +370,8 @@
             document.getElementById('sessionContent').style.display = 'block';
 
             // Update session info
-            document.getElementById('sessionTitle').textContent = `${session.title} (Session ${sessionNumber})`;
+            const displayTitle = sessionNumber === 'Revision' ? session.title : `${session.title} (Session ${sessionNumber})`;
+            document.getElementById('sessionTitle').textContent = displayTitle;
             document.getElementById('sessionSubject').textContent = session.subject;
             document.getElementById('sessionTeacher').textContent = `By ${session.teacher}`;
 
@@ -402,9 +513,15 @@
         }
 
         function logout() {
+            localStorage.removeItem('accessGranted');
+            localStorage.removeItem('userPhone');
             localStorage.removeItem('studentPhone');
-            window.location.href = '../login/index.html';
+            localStorage.removeItem('studentData');
+            localStorage.removeItem('studentGrade');
+            localStorage.removeItem('studentId');
+            window.location.href = '../index.html';
         }
     </script>
+
 </body>
 </html>

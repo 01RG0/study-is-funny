@@ -37,13 +37,19 @@ function showSection(sectionId) {
 document.addEventListener('DOMContentLoaded', function () {
     checkAdminAuth();
 
-    // Load dashboard data
-    loadDashboardStats();
-    loadRecentActivity();
+    // Check for dashboard stats presence before loading
+    if (document.getElementById('totalSessions')) {
+        loadDashboardStats();
+        loadRecentActivity();
+    }
 
-    // Initialize form handlers
-    initializeSessionUploadForm();
-    initializeSessionManagement();
+    // Only initialize forms if they exist on the current page
+    if (document.getElementById('sessionUploadForm')) {
+        initializeSessionUploadForm();
+    }
+    if (document.getElementById('sessionsTableBody')) {
+        initializeSessionManagement();
+    }
 });
 
 // Load dashboard statistics
@@ -52,27 +58,32 @@ async function loadDashboardStats() {
         // Get session stats from real API
         const sessionStats = await getSessionStats();
 
-        if (sessionStats.success) {
-            document.getElementById('totalSessions').textContent = sessionStats.stats.totalSessions;
-            document.getElementById('totalViews').textContent = sessionStats.stats.totalViews;
-            document.getElementById('uploadsToday').textContent = sessionStats.stats.publishedSessions;
+        const totalSessionsEl = document.getElementById('totalSessions');
+        const totalViewsEl = document.getElementById('totalViews');
+        const uploadsTodayEl = document.getElementById('uploadsToday');
+        const totalStudentsEl = document.getElementById('totalStudents');
+
+        if (sessionStats.success && sessionStats.stats) {
+            if (totalSessionsEl) totalSessionsEl.textContent = sessionStats.stats.totalSessions;
+            if (totalViewsEl) totalViewsEl.textContent = sessionStats.stats.totalViews;
+            if (uploadsTodayEl) uploadsTodayEl.textContent = sessionStats.stats.publishedSessions;
         } else {
-            console.warn('Session stats API failed:', sessionStats.message);
-            // Fallback values
-            document.getElementById('totalSessions').textContent = '0';
-            document.getElementById('totalViews').textContent = '0';
-            document.getElementById('uploadsToday').textContent = '0';
+            console.warn('Session stats API failed:', sessionStats?.message);
+            if (totalSessionsEl) totalSessionsEl.textContent = '0';
+            if (totalViewsEl) totalViewsEl.textContent = '0';
+            if (uploadsTodayEl) uploadsTodayEl.textContent = '0';
         }
 
         // For now, keep student stats as demo data
-        document.getElementById('totalStudents').textContent = '1250';
+        if (totalStudentsEl) totalStudentsEl.textContent = '1250';
     } catch (error) {
         console.error('Error loading dashboard stats:', error);
-        // Fallback values
-        document.getElementById('totalSessions').textContent = '0';
-        document.getElementById('totalStudents').textContent = '1250';
-        document.getElementById('totalViews').textContent = '0';
-        document.getElementById('uploadsToday').textContent = '0';
+        // Fallback values with existence check
+        const fields = ['totalSessions', 'totalStudents', 'totalViews', 'uploadsToday'];
+        fields.forEach(f => {
+            const el = document.getElementById(f);
+            if (el) el.textContent = f === 'totalStudents' ? '1250' : '0';
+        });
     }
 }
 
@@ -97,6 +108,9 @@ function loadRecentActivity() {
     ];
 
     const activityContainer = document.getElementById('recentActivity');
+    if (!activityContainer) {
+        return; // Page does not have an activity widget (e.g., upload session page)
+    }
     activityContainer.innerHTML = '';
 
     activities.forEach(activity => {
@@ -128,7 +142,16 @@ function initializeSessionUploadForm() {
     // Add video functionality
     addVideoBtn.addEventListener('click', function () {
         videoCount++;
-        const videoItem = createVideoUploadItem(videoCount);
+
+        let videoItem;
+        if (typeof createVideoItem === 'function') {
+            // Page-specific version (upload-session.php) preferred
+            videoItem = createVideoItem(videoCount);
+        } else {
+            // Default generic version
+            videoItem = createVideoUploadItem(videoCount);
+        }
+
         videosContainer.appendChild(videoItem);
 
         // Show remove button for first video if more than one video
@@ -153,33 +176,35 @@ function createVideoUploadItem(videoNumber) {
         <h4>Video ${videoNumber}</h4>
         <div class="form-row">
             <div class="form-group">
-                <label>Video Type *</label>
-                <select name="videoType[]" required>
-                    <option value="lecture">Lecture</option>
-                    <option value="questions">Questions</option>
-                    <option value="summary">Summary</option>
-                    <option value="exercise">Exercise</option>
-                    <option value="homework">Homework</option>
-                </select>
-            </div>
-
-            <div class="form-group">
                 <label>Video Title *</label>
                 <input type="text" name="videoTitle[]" required placeholder="e.g., Part ${videoNumber} - Introduction">
             </div>
         </div>
-
         <div class="form-row">
             <div class="form-group">
+                <label>Video Source *</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="videoSource[${videoNumber-1}]" value="upload" onchange="toggleVideoInput(this)"> Upload File
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="videoSource[${videoNumber-1}]" value="link" checked onchange="toggleVideoInput(this)"> Video Link
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group video-upload-group" style="display: none;">
                 <label>Video File *</label>
-                <input type="file" name="videoFile[]" accept="video/*" required>
-                <small class="file-info">Supported formats: MP4, AVI, MOV (Max: 500MB)</small>
+                <input type="file" name="videoFile[]" accept="video/*" required disabled>
+                <small class="file-info">Supported formats: MP4, AVI, MOV (No app limit; server/PHP limits apply)</small>
             </div>
 
-            <div class="form-group">
-                <label>Thumbnail (Optional)</label>
-                <input type="file" name="thumbnail[]" accept="image/*">
-                <small class="file-info">Recommended: 1280x720px, JPG/PNG</small>
+            <div class="form-group video-link-group" style="display: block;">
+                <label>Video URL *</label>
+                <input type="url" name="videoLink[]" required placeholder="e.g., https://youtube.com/watch?v=... or direct video URL">
+                <small class="file-info">YouTube, Vimeo, or direct video links supported</small>
             </div>
         </div>
 
@@ -199,6 +224,32 @@ function createVideoUploadItem(videoNumber) {
     `;
 
     return videoItem;
+}
+
+function toggleVideoInput(radio) {
+    const container = radio.closest('.video-upload-item');
+    const uploadGroup = container.querySelector('.video-upload-group');
+    const linkGroup = container.querySelector('.video-link-group');
+    const uploadInput = uploadGroup.querySelector('input[name="videoFile[]"]');
+    const linkInput = linkGroup.querySelector('input[name="videoLink[]"]');
+
+    if (radio.value === 'upload') {
+        uploadGroup.style.display = 'block';
+        linkGroup.style.display = 'none';
+        uploadInput.disabled = false;
+        uploadInput.required = true;
+        linkInput.disabled = true;
+        linkInput.required = false;
+        linkInput.value = '';
+    } else {
+        uploadGroup.style.display = 'none';
+        linkGroup.style.display = 'block';
+        uploadInput.disabled = true;
+        uploadInput.required = false;
+        uploadInput.value = ''; // Clear previous file selection
+        linkInput.disabled = false;
+        linkInput.required = true;
+    }
 }
 
 // Remove video function
@@ -583,6 +634,7 @@ function resetVideoContainer() {
 // Enhanced session management
 async function loadSessionsTableEnhanced() {
     const tableBody = document.getElementById('sessionsTableBody');
+    if (!tableBody) return;
     tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">Loading sessions...</td></tr>';
 
     try {
@@ -1033,9 +1085,13 @@ async function submitModalSessionForm(formData) {
 }
 
 // File upload validation
-function validateFileUpload(input, maxSizeMB = 500) {
+function validateFileUpload(input, maxSizeMB = 0) {
     const file = input.files[0];
     if (!file) return true;
+
+    if (maxSizeMB <= 0) {
+        return true; // no client-side limit
+    }
 
     const maxSize = maxSizeMB * 1024 * 1024; // Convert to bytes
 
@@ -1051,7 +1107,7 @@ function validateFileUpload(input, maxSizeMB = 500) {
 // Add file validation to video inputs
 document.addEventListener('change', function (e) {
     if (e.target.name === 'videoFile[]') {
-        validateFileUpload(e.target, 500); // 500MB limit
+        validateFileUpload(e.target, 0); // No hard limit (server limits apply)
     } else if (e.target.name === 'thumbnail[]') {
         validateFileUpload(e.target, 10); // 10MB limit for thumbnails
     }

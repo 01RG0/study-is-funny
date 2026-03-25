@@ -1,0 +1,194 @@
+{
+    "_id": {
+        "$oid": "69b3ad76728ec137830760f2"
+    },
+    "title": "Lesson (2) | Geometric and Binomial Distributions",
+    "subject": "statistics",
+    "grade": "senior3",
+    "teacher": "shadyelsharqawy",
+    "description": "",
+    "sessionNumber": 4,
+    "accessControl": "free",
+    "videos": [
+        {
+            "video_id": null,
+            "title": "q1",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/cf36d9bb-ad25-4b40-9a7f-3e4e87796b1a?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q2",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/69315e60-bec0-4ac1-b417-79622c2548b6?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q3",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/7682a862-a715-4737-9bb4-7b18fb3e2462?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q4",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/8d5a5e44-f5d7-48f7-b228-410cca9d2777?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q5",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/2b0167fb-3eb7-4dae-8def-05d40f6eb1db?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q6",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/0bf7952b-6d1b-4932-b280-0a007c8c6db8?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q7",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/9a80e189-a1a5-4000-b401-9eebeca7bcf5?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q8",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/0e2a168c-0efa-453e-bdc2-b17444c60c10?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q9",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/12d967b3-bd00-49ce-8638-fbd08030cf84?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q10",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/6ad02b1b-51b8-471c-9f8e-4fe23d0e9420?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q11",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/c883b434-943f-41bb-957a-8a2ee8a36511?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q12",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/0b8cf809-9f69-4325-a46b-86f823334dd4?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q13",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/14e07694-9a13-4865-8d81-c3bb9557764d?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q14",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/6a56a638-efe0-4388-8542-3ce410561222?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q15",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/2e846b38-4cd9-4b73-9e5d-7f1b74cee1e1?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q16",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/81ab2f42-065e-4976-ad69-34b8cd432997?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "q17",
+            "type": "homework",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/321205/3eda428b-354d-41ca-a6d4-9eb9c40a1343?autoplay=true&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        }
+    ],
+    "pdfFiles": [],
+    "tags": [],
+    "difficulty": "intermediate",
+    "status": "homework",
+    "isPublished": true,
+    "isFeatured": false,
+    "publishDate": {
+        "$date": "2026-03-13T06:23:00.000Z"
+    },
+    "expiryDate": null,
+    "maxViews": null,
+    "downloadable": true,
+    "allowedStudentTypes": [
+        "all"
+    ],
+    "views": 0,
+    "downloads": 0,
+    "rating": 0,
+    "ratingCount": 0,
+    "createdAt": {
+        "$date": "2026-03-13T06:23:50.588Z"
+    },
+    "updatedAt": {
+        "$date": "2026-03-13T06:23:50.588Z"
+    },
+    "createdBy": "admin",
+    "isActive": true
+}

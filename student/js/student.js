@@ -17,7 +17,10 @@ function logout() {
     localStorage.removeItem('accessGranted');
     localStorage.removeItem('userPhone');
     localStorage.removeItem('studentPhone');
-    window.location.href = '../login';
+    localStorage.removeItem('studentData');
+    localStorage.removeItem('studentGrade');
+    localStorage.removeItem('studentId');
+    window.location.href = '../index.html';
 }
 
 // Initialize student dashboard

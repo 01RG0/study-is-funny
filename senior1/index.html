@@ -517,6 +517,9 @@
 <body>
     <header>
         <div class="banner">
+            <button onclick="goBack()" style="background: none; border: none; color: var(--secondary-color); font-size: 1.5rem; cursor: pointer; margin-right: 15px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-arrow-left"></i>
+            </button>
             <img src="../images/logo.webp" alt="Website Logo" class="logo">
             <h1>Studyisfunny <i class="fas fa-graduation-cap"></i></h1>
         </div>
@@ -526,6 +529,17 @@
             <span class="slider1"></span>
         </label>
     </header>
+
+    <script>
+        function goBack() {
+            // Check if user came from parent dashboard
+            if (localStorage.getItem('parentAccessGranted') === 'true') {
+                window.location.href = '../parent-dashboard.html';
+            } else {
+                window.location.href = '../grade';
+            }
+        }
+    </script>
 
     <section id="subjects">
         <h2>Senior 1 Subjects</h2>

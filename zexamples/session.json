@@ -1,0 +1,59 @@
+{
+    "_id": {
+        "$oid": "69ab47e99f485ba99f053cd2"
+    },
+    "title": "sum & difference between 2 angles",
+    "subject": "mechanics",
+    "grade": "senior2",
+    "teacher": "shadyelsharqawy",
+    "description": "",
+    "sessionNumber": 5,
+    "accessControl": "restricted",
+    "videos": [
+        {
+            "video_id": null,
+            "title": "Explanation | sum & difference between 2 angles |",
+            "type": "lecture",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/471382/44dbd161-c2a0-4268-a042-ef62362a9063?token=cf753d1e3d7e5d5ffdafd4de36dd8a1e2d8d5c48e73a5cad9525a3e614bb8dc4&expires=1772843386&autoplay=false&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        },
+        {
+            "video_id": null,
+            "title": "Divers | sum & difference between 2 angles |",
+            "type": "lecture",
+            "description": "",
+            "duration": null,
+            "url": "https://iframe.mediadelivery.net/embed/471382/a53a9584-2eee-4b37-9cd5-c148901867c3?token=57e6208c5733db30b3bb8daa482940b06f2ba309ee6795b90c8deb08ca4b5c81&expires=1772916361&autoplay=false&loop=false&muted=false&preload=true&responsive=true",
+            "source": "link"
+        }
+    ],
+    "pdfFiles": [],
+    "tags": [],
+    "difficulty": "intermediate",
+    "status": "published",
+    "isPublished": true,
+    "isFeatured": false,
+    "publishDate": {
+        "$date": "2026-03-06T21:32:00.000Z"
+    },
+    "expiryDate": null,
+    "maxViews": null,
+    "downloadable": true,
+    "allowedStudentTypes": [
+        "all"
+    ],
+    "views": 0,
+    "downloads": 0,
+    "rating": 0,
+    "ratingCount": 0,
+    "createdAt": {
+        "$date": "2026-03-06T21:32:25.185Z"
+    },
+    "updatedAt": {
+        "$date": "2026-03-06T21:32:25.185Z"
+    },
+    "createdBy": "admin",
+    "isActive": true
+}

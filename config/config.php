@@ -21,7 +21,8 @@ define('RESOURCES_DIR', UPLOADS_DIR . '/resources');
 define('THUMBNAILS_DIR', UPLOADS_DIR . '/thumbnails');
 
 // File Upload Settings
-define('MAX_VIDEO_SIZE', 524288000); // 500MB in bytes
+// 0 means no explicit application-level limit (server/PHP limits still apply: upload_max_filesize and post_max_size).
+define('MAX_VIDEO_SIZE', 0); // was 524288000 (500MB)
 define('MAX_HOMEWORK_SIZE', 10485760); // 10MB in bytes
 define('ALLOWED_VIDEO_TYPES', ['video/mp4', 'video/webm', 'video/avi', 'video/quicktime']);
 define('ALLOWED_HOMEWORK_TYPES', ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png']);

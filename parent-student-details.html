@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/all.min.css">
     <link rel="icon" class="circular-icon" type="image/png" href="images/logo.png">
     <script src="js/api-config.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -346,6 +347,16 @@
 </head>
 
 <body>
+    <header style="background: var(--primary-color); color: white; padding: 15px;">
+        <div class="banner" style="display: flex; align-items: center; max-width: 1200px; margin: 0 auto;">
+            <button onclick="goBack()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; margin-right: 15px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <img src="images/logo.webp" alt="Website Logo" style="height: 40px; border-radius: 50%; margin-right: 15px;">
+            <h1 style="margin: 0; font-size: 1.5rem;">Studyisfunny <i class="fas fa-graduation-cap"></i></h1>
+        </div>
+    </header>
+
     <div class="details-container">
         <div class="header-section">
             <h1><i class="fas fa-chart-bar"></i> Student Details</h1>
@@ -638,6 +649,7 @@
             }
         })();
     </script>
+
 </body>
 
 </html>
