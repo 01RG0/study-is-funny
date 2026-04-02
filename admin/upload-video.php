@@ -1,4 +1,6 @@
 <?php
+// Check admin authentication first
+require_once dirname(__DIR__) . '/api/auth_check.php';
 require_once '../includes/session_check.php';
 requireTeacher();
 

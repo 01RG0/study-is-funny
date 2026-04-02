@@ -1,3 +1,13 @@
+<?php
+// Check admin authentication first - MUST be before any HTML output
+require_once dirname(__DIR__) . '/api/auth_check.php';
+
+// Generate CSRF token if not exists
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrfToken = $_SESSION['csrf_token'];
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -31,14 +41,6 @@
 </head>
 
 <body>
-    <?php
-    session_start();
-    // Generate CSRF token if not exists
-    if (empty($_SESSION['csrf_token'])) {
-        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-    }
-    $csrfToken = $_SESSION['csrf_token'];
-    ?>
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">

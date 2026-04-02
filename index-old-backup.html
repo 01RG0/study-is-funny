@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="منصة Study is Funny - التعليم الممتع والتفاعلي للثانوية العامة. دروس فيديو، واجبات، وتتبع الأداء.">
+    <meta name="keywords" content="تعليم, دراسة, منصة تعليمية, الثانوية العامة, دروس أونلاين, تعليم ممتع">
+    <!-- Meta Charset -->
+    <meta charset="UTF-8">
+
+    <!-- Meta Keywords -->
+    <meta name="keywords" content="
+        Study is Funny, 
+        منصة Study is Funny, 
+        تعلم المناهج الثانوية, 
+        تعلم الثانوية العامة, 
+        دروس الثانوية, 
+        تعليم ثانوي عربي, 
+        تعليم ثانوي إنجليزي, 
+        فيديوهات تعليمية, 
+        ملخصات دراسية, 
+        متابعة أولياء الأمور, 
+        دروس أونلاين, 
+        منصة تعليمية للثانوية, 
+        تعلم باللغة العربية, 
+        تعلم باللغة الإنجليزية, 
+        دروس لطلاب الثانوية, 
+        دروس تعليمية مبتكرة, 
+        منصة تعليمية في مصر, 
+        دروس مجانية, 
+        تعلم بمرح, 
+        دراسة أونلاين, 
+        منصة دراسية شاملة">
+
+    <!-- Meta Description -->
+    <meta name="description"
+        content="Study is Funny - منصة تعليمية متخصصة في تعليم المناهج الدراسية للمرحلة الثانوية باللغة العربية والإنجليزية. نقدم فيديوهات تعليمية، ملخصات دراسية، ومتابعة دقيقة لأولياء الأمور.">
+
+    <!-- Meta Robots -->
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Study is Funny - منصة تعليمية للثانوية العامة">
+    <meta property="og:description"
+        content="تعلم من خلال منصة Study is Funny. دروس الثانوية العامة باللغة العربية والإنجليزية، مع فيديوهات وملخصات شاملة. احصل على متابعة لأولياء الأمور.">
+    <meta property="og:image" content="https://studyisfunny.com/logo.png">
+    <meta property="og:url" content="https://studyisfunny.com">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Study is Funny - منصة تعليمية للثانوية العامة">
+    <meta name="twitter:description"
+        content="منصة Study is Funny توفر دروساً، فيديوهات وملخصات تعليمية لطلاب الثانوية العامة، مع متابعة مستمرة لأولياء الأمور.">
+    <meta name="twitter:image" content="https://studyisfunny.com/logo.png">
+
+    <!-- Viewport for Mobile Optimization -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Favicon -->
+    <link rel="icon" href="https://studyisfunny.com/favicon.ico" type="image/x-icon">
+
+    <title>Study is Funny - منصة تعليمية للثانوية العامة</title>
+
+    <meta name="google-site-verification" content="42RxQuls0CMyuqn5Sj9Z28CLeSBDwPct3ju_gMpsTPs" />
+    <title>Study is Funny - التعليم الممتع والتفاعلي</title>
+    <link rel="icon" class="circular-icon" type="image/png" href="images/logo.png">
+    <style>
+        .circular-icon {
+            width: 32px;
+            /* Adjust size */
+            height: 32px;
+            /* Adjust size */
+            border-radius: 50%;
+            /* Makes it circular */
+        }
+    </style>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="js/router.js"></script>
+    <script src="js/navigation.js"></script>
+
+
+    <!-- Schema.org Structured Data for Educational Organization -->
+
+    <script type="application/ld+json">
+
+    {
+        "@context": "https://schema.org",
+        "@type": "EducationalOrganization",
+        "name": "Study is Funny",
+        "url": "https://www.yourwebsite.com",
+        "logo": "https://www.yourwebsite.com/logo.webp",
+        "description": "منصة تقدم تعليمًا مبتكرًا وتفاعليًا يساعد الطلاب في تطوير مهاراتهم وتحقيق النجاح الدراسي."
+    }
+    </script>
+
+    <link rel="stylesheet" href="main.css">
+
+    <style>
+        :root {
+            --light-gray: #F0F0F0;
+            --dark-gray: #121212;
+            --contrast: #008080;
+            --text: #FFFFE0;
+            --button: #FF8C69;
+            --dark-text: wheat;
+            --dark-button: #FF6347;
+        }
+
+        /* Light Mode Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--light-gray);
+            color: #2F4F4F;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header-title {
+            background-color: var(--contrast);
+            color: var(--text);
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            font-size: 28px;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .section-content {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--contrast);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            color: var(--text);
+            max-width: 90%;
+            box-sizing: border-box;
+        }
+
+        .section-heading {
+            color: var(--text);
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .features-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .features-list li {
+            background-color: var(--contrast);
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 5px solid var(--button);
+            font-size: 18px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+        }
+
+        .features-list li i {
+            margin-right: 10px;
+            color: var(--button);
+            margin-left: 10px;
+        }
+
+        .start-button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin-top: 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .start-button:hover {
+            background-color: #45a049;
+        }
+
+        .users {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .register,
+        .login {
+            margin: 10px;
+            width: 270px;
+            padding: 20px;
+            text-align: center;
+            background-color: var(--contrast);
+            color: var(--text);
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .register:hover,
+        .login:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 600px) {
+
+            .register,
+            .login {
+                width: 80%;
+                font-size: 14px;
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .register h1,
+            .login h1 {
+                font-size: 16px;
+            }
+
+            .register i,
+            .login i {
+                font-size: 18px;
+            }
+
+            .users {
+                flex-direction: column;
+            }
+        }
+
+        .features {
+            direction: rtl;
+        }
+
+        .register i,
+        .login i {
+            margin-right: 8px;
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #121212;
+            color: var(--dark-text);
+        }
+
+        .dark-mode .banner {
+            background-color: #1f1f1f;
+            color: var(--dark-text);
+        }
+
+        .dark-mode .whatsapp-button {
+            background-color: #128C7E;
+        }
+
+        .dark-mode .header-title {
+            background-color: #333;
+            color: var(--dark-text);
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .dark-mode .section-content {
+            background-color: #333;
+            color: var(--dark-text);
+        }
+
+        .dark-mode .section-heading {
+            color: var(--dark-text);
+        }
+
+        .dark-mode .features-list li {
+            background-color: #444;
+            color: var(--dark-text);
+            border-left: 5px solid var(--dark-button);
+        }
+
+        .dark-mode .start-button {
+            background-color: var(--dark-button);
+            color: var(--dark-text);
+        }
+
+        .dark-mode .start-button:hover {
+            background-color: #FF4500;
+        }
+
+        .dark-mode .register,
+        .dark-mode .login {
+            background-color: var(--dark-gray);
+            color: var(--dark-text);
+        }
+
+        .dark-mode .register:hover,
+        .login:hover {
+            background-color: #4682B4;
+        }
+
+        .dark-mode .users {
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        /* Dark Mode Toggle Switch */
+        .dark-mode-switch {
+            position: absolute;
+            right: 150px;
+            /* Adjust to place next to WhatsApp button */
+            top: 25px;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .dark-mode-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 20px;
+            transition: 0.4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+
+        input:checked+.slider {
+            background-color: #4CAF50;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+        }
+    </style>
+
+    <!-- Navigation Styles -->
+    <style>
+        .nav-link {
+            display: block;
+            color: var(--text);
+            text-decoration: none;
+            padding: 15px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--button);
+            border-bottom-color: var(--button);
+        }
+
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-bottom-color: var(--button);
+        }
+
+        .nav-link i {
+            margin-left: 8px;
+            font-size: 0.9em;
+        }
+
+        /* Mobile Navigation */
+        @media (max-width: 768px) {
+            .main-navigation ul {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .nav-link {
+                padding: 12px 15px;
+                border-bottom: none;
+                border-left: 3px solid transparent;
+            }
+
+            .nav-link:hover {
+                border-left-color: var(--button);
+                border-bottom: none;
+            }
+
+            .nav-link.active {
+                border-left-color: var(--button);
+                border-bottom: none;
+            }
+        }
+
+        /* Dark mode support for navigation */
+        body.dark-mode .main-navigation {
+            background-color: #333;
+        }
+
+        body.dark-mode .nav-link {
+            color: var(--dark-text);
+        }
+
+        body.dark-mode .nav-link:hover {
+            color: var(--dark-button);
+            border-bottom-color: var(--dark-button);
+        }
+
+        body.dark-mode .nav-link.active {
+            color: var(--dark-button);
+            border-bottom-color: var(--dark-button);
+        }
+
+        /* Smooth scrolling for anchor links */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <header>
+        <div class="banner">
+            <img src="images/logo.webp" alt="Study is Funny Logo" class="logo">
+            <h1>Study is Funny<i class="fas fa-graduation-cap"></i></h1>
+            <!-- Updated Dark Mode Toggle Switch -->
+            <label class="dark-mode-switch">
+                <input type="checkbox" id="darkModeToggleCheckbox">
+                <span class="slider"></span>
+            </label>
+
+        </div>
+
+    </header>
+    <!-- User Registration and Login Section -->
+    <div id="home" class="users">
+        <div class="login" onclick="location.href='login'">
+            <i class="fas fa-sign-in-alt"></i>
+            <h1>تسجيل الدخول</h1>
+        </div>
+        <div class="login" onclick="location.href='parent-login'">
+            <i class="fas fa-user-tie"></i>
+            <h1>ولي امر</h1>
+        </div>
+    </div>
+
+    <!-- Features and Content Section -->
+    <div class="features">
+        <header class="section-content">
+            <h1 class="header-title">مرحبًا بك في "Study is Funny" – منصة التعليم الممتع والمبتكر!</h1>
+        </header>
+
+        <section class="section-content">
+            <p>هل تبحث عن طرق جديدة تجعل <strong>الدراسة ممتعة وسهلة</strong>؟ في "Study is Funny"، نقدم لك
+                <strong>تجربة تعليمية مبتكرة</strong> تساعدك على التعلم بطرق تفاعلية ومرحة. نحن هنا لتحويل التعليم
+                التقليدي إلى <strong>تجربة محفزة ومثيرة</strong>، تناسب جميع الطلاب والمعلمين الباحثين عن طرق لتطوير
+                مهاراتهم وفهم أعمق للمناهج الدراسية.
+            </p>
+        </section>
+
+        <section id="about" class="section-content">
+            <h2 class="section-heading">لماذا "Study is Funny"؟</h2>
+            <ul class="features-list">
+                <li><i class="fas fa-chalkboard-teacher"></i><strong>تعليم تفاعلي</strong>: استمتع بأنشطة وألعاب تعليمية
+                    مصممة لتسهيل فهم المناهج وتحفيز التفكير الإبداعي.</li>
+                <li><i class="fas fa-chart-line"></i><strong>تحسين الأداء الدراسي</strong>: بفضل أدواتنا المبتكرة، يمكنك
+                    التفوق في الاختبارات والاستمتاع بعملية التعلم.</li>
+                <li><i class="fas fa-users"></i><strong>مجتمع تعليمي داعم</strong>: انضم إلى آلاف الطلاب الذين يحققون
+                    النجاح مع "Study is Funny" من خلال المشاركة في ورش عمل تفاعلية ودروس مصممة بطريقة ممتعة.</li>
+                <li><i class="fas fa-brain"></i><strong>تعلم إبداعي</strong>: نسعى لتطوير مهارات التفكير الإبداعي عبر
+                    ورش العمل المصممة لتحفيز الخيال والنقد.</li>
+                <li><i class="fas fa-medal"></i><strong>إنجازات وجوائز</strong>: حقق الجوائز واحتفل بإنجازاتك التعليمية
+                    مع "Study is Funny".</li>
+            </ul>
+        </section>
+
+        <section class="section-content">
+            <h2 class="section-heading">ابدأ الآن رحلتك التعليمية الممتعة!</h2>
+            <p>سواء كنت طالبًا، مدرسًا، أو ولي أمر، هنا ستجد <strong>الأدوات والموارد</strong> التي تجعل التعلم ممتعًا
+                وسهلاً. اكتشف الآن كيف يمكن أن تكون <strong>الدراسة تجربة ممتعة</strong> ومليئة بالتحديات المثيرة!</p>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="section-content">
+            <h2 class="section-heading"><i class="fas fa-envelope"></i> اتصل بنا</h2>
+            <div style="text-align: center;">
+                <p><i class="fas fa-envelope"></i> <strong>البريد الإلكتروني:</strong> support@studyisfunny.com</p>
+                <p><i class="fas fa-phone-alt"></i> <strong>الهاتف:</strong> 01000733148</p>
+                <p><i class="fab fa-whatsapp"></i> <strong>واتساب:</strong> <a
+                        href="https://wa.me/201000733148?text=Hello" target="_blank" style="color: var(--button);">اضغط
+                        هنا للمحادثة</a></p>
+                <p><i class="fas fa-map-marker-alt"></i> <strong>العنوان:</strong> مصر</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Select the dark mode toggle checkbox
+        const darkModeToggleCheckbox = document.getElementById('darkModeToggleCheckbox');
+
+        // Check localStorage for dark mode preference on page load
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+            darkModeToggleCheckbox.checked = true; // Ensure the toggle reflects the dark mode state
+        } else {
+            document.body.classList.remove('dark-mode');
+            darkModeToggleCheckbox.checked = false; // Ensure the toggle reflects the light mode state
+        }
+
+        // Listen for changes to the dark mode toggle
+        darkModeToggleCheckbox.addEventListener('change', () => {
+            if (darkModeToggleCheckbox.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled'); // Save preference to localStorage
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled'); // Save preference to localStorage
+            }
+        });
+
+        // Navigation active state management
+        function updateActiveNavLink() {
+            const sections = ['home', 'about', 'contact'];
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            let current = 'home';
+
+            sections.forEach(section => {
+                const element = document.getElementById(section);
+                if (element) {
+                    const rect = element.getBoundingClientRect();
+                    if (rect.top <= 100 && rect.bottom >= 100) {
+                        current = section;
+                    }
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Update navigation on scroll
+        window.addEventListener('scroll', updateActiveNavLink);
+        window.addEventListener('load', updateActiveNavLink);
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('.nav-link[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+    </script>
+
+</body>
+
+</html>

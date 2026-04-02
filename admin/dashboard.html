@@ -133,6 +133,15 @@
         </div>
     </div>
 
+    <script>
+        // Auth check - prevent unauthorized access
+        (function() {
+            const token = sessionStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = 'login.html';
+            }
+        })();
+    </script>
     <script src="js/admin.js"></script>
 </body>
 

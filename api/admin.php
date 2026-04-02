@@ -1,30 +1,58 @@
 <?php
+// Set error handling before anything else
+error_reporting(E_ALL);
+ini_set('display_errors', 0);  // Don't display errors, log them instead
+ini_set('log_errors', 1);
+
+// Start output buffering
+ob_start();
+
+// Start session
+session_start();
+
+// Load configuration
 require_once dirname(__DIR__) . '/config/config.php';
 
-header('Content-Type: application/json');
+// Clean output buffer to remove any stray characters
+ob_clean();
+
+// Set headers
+header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
 header('Expires: 0');
 
-$method = $_SERVER['REQUEST_METHOD'];
-$action = $_GET['action'] ?? '';
+// Try-catch for entire script
+try {
+    $method = $_SERVER['REQUEST_METHOD'];
+    $action = $_GET['action'] ?? '';
 
-switch ($method) {
-    case 'GET':
-        handleGet($action);
-        break;
-    case 'POST':
-        handlePost($action);
-        break;
-    case 'PUT':
-        handlePut($action);
-        break;
-    case 'DELETE':
-        handleDelete($action);
-        break;
-    default:
-        http_response_code(405);
-        echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    switch ($method) {
+        case 'GET':
+            handleGet($action);
+            break;
+        case 'POST':
+            handlePost($action);
+            break;
+        case 'PUT':
+            handlePut($action);
+            break;
+        case 'DELETE':
+            handleDelete($action);
+            break;
+        default:
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    }
+} catch (Throwable $e) {
+    // Catch any error (Exception or Error)
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Server error: ' . $e->getMessage(),
+        'error' => get_class($e)
+    ]);
+    error_log('Admin API Error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
 }
 
 function handleGet($action) {
@@ -55,6 +83,9 @@ function handlePost($action) {
     switch ($action) {
         case 'login':
             adminLogin();
+            break;
+        case 'logout':
+            adminLogout();
             break;
         default:
             // Check admin authentication for other actions
@@ -136,62 +167,115 @@ function validateAdminToken($token) {
 
 function adminLogin() {
     try {
-        $data = json_decode(file_get_contents('php://input'), true);
+        $inputData = file_get_contents('php://input');
+        $data = json_decode($inputData, true);
 
         if (!isset($data['username']) || !isset($data['password'])) {
+            http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Username and password required']);
             return;
         }
 
-        $username = $data['username'];
+        $username = trim($data['username']);
         $password = $data['password'];
 
-        // For demo purposes - in production, use proper authentication
+        // Validate credentials (hardcoded for now)
         $validAdmins = [
             'admin' => 'admin123',
             'shady' => 'shady123'
         ];
 
         if (!isset($validAdmins[$username]) || $validAdmins[$username] !== $password) {
+            http_response_code(401);
             echo json_encode(['success' => false, 'message' => 'Invalid credentials']);
             return;
         }
 
-        // Generate token
+        // Generate secure token
         $token = bin2hex(random_bytes(32));
-        $expiresAt = new MongoDB\BSON\UTCDateTime(strtotime('+24 hours') * 1000);
+        $expiresAt = time() + (24 * 60 * 60); // 24 hours
 
-        // Store token in database
-        $client = $GLOBALS['mongoClient'];
-        $databaseName = $GLOBALS['databaseName'];
+        // Store token in session (primary method)
+        $_SESSION['admin_authenticated'] = true;
+        $_SESSION['admin_token'] = $token;
+        $_SESSION['admin_username'] = $username;
+        $_SESSION['admin_login_time'] = time();
 
-        $tokenData = [
-            'token' => $token,
-            'type' => 'admin',
-            'username' => $username,
-            'createdAt' => new MongoDB\BSON\UTCDateTime(),
-            'expiresAt' => $expiresAt,
-            'ipAddress' => $_SERVER['REMOTE_ADDR'] ?? '',
-            'userAgent' => $_SERVER['HTTP_USER_AGENT'] ?? ''
-        ];
+        // Try to store in database (optional, for persistence across sessions)
+        try {
+            if (isset($GLOBALS['mongoClient']) && $GLOBALS['mongoClient']) {
+                $client = $GLOBALS['mongoClient'];
+                $databaseName = $GLOBALS['databaseName'];
+                
+                if ($databaseName) {
+                    $expiresAtTimestamp = new MongoDB\BSON\UTCDateTime($expiresAt * 1000);
+                    
+                    $tokenData = [
+                        'token' => $token,
+                        'type' => 'admin',
+                        'username' => $username,
+                        'createdAt' => new MongoDB\BSON\UTCDateTime(),
+                        'expiresAt' => $expiresAtTimestamp,
+                        'ipAddress' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+                        'userAgent' => substr($_SERVER['HTTP_USER_AGENT'] ?? 'unknown', 0, 255)
+                    ];
+                    
+                    $bulk = new MongoDB\Driver\BulkWrite();
+                    $bulk->insert($tokenData);
+                    $client->executeBulkWrite("$databaseName.auth_tokens", $bulk);
+                }
+            }
+        } catch (Exception $dbError) {
+            // Database error is not critical - session auth will still work
+            error_log('Database token storage failed: ' . $dbError->getMessage());
+        }
 
-        $bulk = new MongoDB\Driver\BulkWrite();
-        $bulk->insert($tokenData);
-        $client->executeBulkWrite("$databaseName.auth_tokens", $bulk);
-
+        // Return success response
+        http_response_code(200);
         echo json_encode([
             'success' => true,
             'message' => 'Login successful',
             'token' => $token,
-            'expiresAt' => date('c', strtotime('+24 hours')),
+            'expiresAt' => date('c', $expiresAt),
             'user' => [
                 'username' => $username,
                 'role' => 'admin'
             ]
         ]);
-
+        
     } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => 'Login error: ' . $e->getMessage()]);
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Login error: ' . $e->getMessage()
+        ]);
+        error_log('Login error: ' . $e->getMessage());
+    }
+}
+
+function adminLogout() {
+    try {
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+        
+        if (!empty($authHeader)) {
+            $token = str_replace('Bearer ', '', $authHeader);
+            
+            // Remove token from database
+            $client = $GLOBALS['mongoClient'];
+            $databaseName = $GLOBALS['databaseName'];
+            
+            $bulk = new MongoDB\Driver\BulkWrite();
+            $bulk->delete(['token' => $token], ['limit' => 0]);
+            $client->executeBulkWrite("$databaseName.auth_tokens", $bulk);
+        }
+        
+        // Clear session
+        session_destroy();
+        
+        echo json_encode(['success' => true, 'message' => 'Logged out successfully']);
+    } catch (Exception $e) {
+        echo json_encode(['success' => true, 'message' => 'Logged out']);
     }
 }
 
@@ -506,5 +590,3 @@ function countSessions() {
         return 0;
     }
 }
-?></contents>
-</xai:function_call">Create the admin.js file to handle frontend interactions with the admin API

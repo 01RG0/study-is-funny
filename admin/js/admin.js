@@ -1,18 +1,67 @@
 // Admin Dashboard JavaScript
 window.APP_BASE_URL = window.APP_BASE_URL || '../';
 
+// Get admin token from session storage
+function getAdminToken() {
+    return sessionStorage.getItem('adminToken') || '';
+}
+
+// Helper function to make authorized API calls
+async function apiCall(url, options = {}) {
+    const token = getAdminToken();
+    if (!token) {
+        window.location.href = 'login.html';
+        throw new Error('Not authenticated');
+    }
+    
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        ...options.headers
+    };
+    
+    const response = await fetch(url, {
+        ...options,
+        headers
+    });
+    
+    // Handle 401 Unauthorized - token expired or invalid
+    if (response.status === 401) {
+        sessionStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUsername');
+        window.location.href = 'login.html';
+        throw new Error('Session expired');
+    }
+    
+    return response;
+}
+
 // Check if admin is logged in
 function checkAdminAuth() {
-    const isLoggedIn = localStorage.getItem('adminLoggedIn');
-    if (!isLoggedIn && window.location.pathname.includes('dashboard.html')) {
+    const token = getAdminToken();
+    if (!token) {
         window.location.href = 'login.html';
+        return false;
     }
+    return true;
 }
 
 // Logout function
 function logout() {
-    localStorage.removeItem('adminLoggedIn');
+    const token = getAdminToken();
+    sessionStorage.removeItem('adminToken');
     localStorage.removeItem('adminUsername');
+    
+    // Call logout API to invalidate token (before clearing it)
+    if (token) {
+        fetch(window.API_BASE_URL.replace(/\/$/, '') + '/api/admin.php?action=logout', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        }).catch(e => console.log('Logout cleanup:', e));
+    }
+    
     window.location.href = 'login.html';
 }
 
@@ -405,7 +454,7 @@ function showMessage(message, type) {
 // Session Management Functions
 async function createSession(sessionData) {
     try {
-        const response = await fetch(`${window.APP_BASE_URL}api/sessions.php?action=create`, {
+        const response = await apiCall(`${window.APP_BASE_URL}api/sessions.php?action=create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -424,7 +473,7 @@ async function createSession(sessionData) {
 async function getAllSessions(filters = {}) {
     try {
         const queryParams = new URLSearchParams(filters);
-        const response = await fetch(`${window.APP_BASE_URL}api/sessions.php?action=all&${queryParams}&t=${Date.now()}`);
+        const response = await apiCall(`${window.APP_BASE_URL}api/sessions.php?action=all&${queryParams}&t=${Date.now()}`);
 
         const result = await response.json();
         return result;
@@ -436,7 +485,7 @@ async function getAllSessions(filters = {}) {
 
 async function updateSession(sessionId, updates) {
     try {
-        const response = await fetch(`${window.APP_BASE_URL}api/sessions.php?action=update`, {
+        const response = await apiCall(`${window.APP_BASE_URL}api/sessions.php?action=update`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -454,7 +503,7 @@ async function updateSession(sessionId, updates) {
 
 async function deleteSession(sessionId) {
     try {
-        const response = await fetch(`${window.APP_BASE_URL}api/sessions.php?action=delete`, {
+        const response = await apiCall(`${window.APP_BASE_URL}api/sessions.php?action=delete`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -472,7 +521,7 @@ async function deleteSession(sessionId) {
 
 async function publishSession(sessionId) {
     try {
-        const response = await fetch(`${window.APP_BASE_URL}api/sessions.php?action=publish`, {
+        const response = await apiCall(`${window.APP_BASE_URL}api/sessions.php?action=publish`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -490,7 +539,7 @@ async function publishSession(sessionId) {
 
 async function unpublishSession(sessionId) {
     try {
-        const response = await fetch(`${window.APP_BASE_URL}api/sessions.php?action=unpublish`, {
+        const response = await apiCall(`${window.APP_BASE_URL}api/sessions.php?action=unpublish`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -508,7 +557,7 @@ async function unpublishSession(sessionId) {
 
 async function getSessionStats() {
     try {
-        const response = await fetch(`${window.APP_BASE_URL}api/sessions.php?action=stats&t=${Date.now()}`);
+        const response = await apiCall(`${window.APP_BASE_URL}api/sessions.php?action=stats&t=${Date.now()}`);
         const result = await response.json();
         return result;
     } catch (error) {

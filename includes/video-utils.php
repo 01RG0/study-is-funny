@@ -152,7 +152,7 @@ class VideoUtils {
      * @return string The embed URL
      */
     public static function getYouTubeEmbedUrl($videoId) {
-        return "https://www.youtube.com/embed/{$videoId}?rel=0&modestbranding=1&autoplay=0";
+        return "https://www.youtube-nocookie.com/embed/{$videoId}?rel=0&modestbranding=1&autoplay=0";
     }
     
     /**
@@ -203,6 +203,19 @@ class VideoUtils {
                     $embedUrl = static::getYouTubeEmbedUrl($videoId);
                     $embedType = 'iframe';
                 }
+                break;
+            
+            case 'link':
+                // 'link' is a generic source type — re-detect from URL so YouTube/Vimeo
+                // short links (youtu.be, vimeo.com) get converted to proper embed URLs
+                // instead of being iframed raw (which is blocked by X-Frame-Options).
+                $detectedSource = static::detectVideoSource($url);
+                if ($detectedSource !== 'unknown' && $detectedSource !== 'link') {
+                    return static::normalizeVideoUrl($url, $detectedSource);
+                }
+                // Fallback: treat as CDN
+                $embedType = static::isIframeableUrl($url) ? 'iframe' : 'video';
+                $embedUrl = $url;
                 break;
                 
             case 'cdn':

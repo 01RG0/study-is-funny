@@ -56,6 +56,8 @@ if (php_sapi_name() !== 'cli' && !headers_sent()) {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
     header('Access-Control-Allow-Headers: Content-Type, Authorization');
+    // Allow YouTube, Vimeo and other media iframes to load inside pages
+    header("Content-Security-Policy: frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://iframe.mediadelivery.net;");
 }
 
 // Handle preflight OPTIONS request

@@ -594,16 +594,24 @@
         
         loadYouTube(videoId) {
             this.playerContent.innerHTML = `
-                <iframe 
-                    src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen
-                    style="width: 100%; height: 100%; border: none; display: block;">
-                </iframe>
+                <div style="position:relative; width:100%; height:100%;">
+                    <iframe 
+                        src="https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen
+                        style="width:100%; height:100%; border:none; display:block;">
+                    </iframe>
+                    <!-- Block top bar: title, channel link, "Watch on YouTube" button -->
+                    <div style="position:absolute; top:0; left:0; right:0; height:58px; z-index:10; cursor:default;" title=""></div>
+                    <!-- Block bottom-right: settings gear, CC, theater mode, YouTube logo -->
+                    <div style="position:absolute; bottom:0; right:0; width:300px; height:50px; z-index:10; cursor:default;" title=""></div>
+                    <!-- Block bottom-left: copy-link / share button -->
+                    <div style="position:absolute; bottom:0; left:0; width:120px; height:50px; z-index:10; cursor:default;" title=""></div>
+                </div>
             `;
             this.currentPlayer = 'iframe';
             this.videoElement = null;
-            this.hideCustomControls(); // YouTube has its own player
+            this.hideCustomControls();
             this.updatePlayPauseButton();
         }
         
