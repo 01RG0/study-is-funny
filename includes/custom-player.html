@@ -366,6 +366,20 @@
         line-height: 1.6;
     }
     .player-error.visible { display: block; }
+
+    /* Wistia responsive wrapper */
+    .wistia_responsive_padding {
+        width: 100%;
+        height: 0;
+        overflow: hidden;
+    }
+    .wistia_responsive_wrapper {
+        position: absolute;
+    }
+    .wistia_embed {
+        display: block;
+        border: none;
+    }
 </style>
 
 <script>
@@ -620,19 +634,89 @@
             // Decode URL in case it's been HTML-encoded
             const decodedUrl = decodeURIComponent(url);
             
-            this.playerContent.innerHTML = `
-                <iframe 
-                    src="${decodedUrl}" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; payment; sync-xhr; geolocation"
-                    referrerpolicy="no-referrer-when-downgrade"
-                    allowfullscreen
-                    style="width: 100%; height: 100%; border: none; display: block;">
-                </iframe>
-            `;
+            // Check if this is a Wistia embed URL
+            if (decodedUrl.includes('wistia.com') || decodedUrl.includes('fast.wistia.net')) {
+                this.loadWistiaEmbed(decodedUrl);
+            } else {
+                this.playerContent.innerHTML = `
+                    <iframe 
+                        src="${decodedUrl}" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; payment; sync-xhr; geolocation"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        allowfullscreen
+                        style="width: 100%; height: 100%; border: none; display: block;">
+                    </iframe>
+                `;
+            }
+            
             this.currentPlayer = 'iframe';
             this.videoElement = null;
             this.hideCustomControls(); // Hide our controls for embedded players
             this.updatePlayPauseButton();
+        }
+
+        loadWistiaEmbed(url) {
+            // Handle Wistia embeds with proper responsive wrapper
+            const decodedUrl = decodeURIComponent(url);
+            
+            // Build the final URL with required parameters
+            let finalUrl = decodedUrl;
+            
+            // Add parameters safely without duplicating them
+            if (!finalUrl.includes('web_component=')) {
+                finalUrl += (finalUrl.includes('?') ? '&' : '?') + 'web_component=true';
+            }
+            if (!finalUrl.includes('seo=')) {
+                finalUrl += '&seo=false';
+            }
+            
+            // Create wrapper that fills the player content area
+            this.playerContent.innerHTML = `
+                <iframe 
+                    src="${finalUrl}" 
+                    title="Wistia Video" 
+                    allow="autoplay; fullscreen; encrypted-media" 
+                    allowtransparency="true" 
+                    frameborder="0" 
+                    scrolling="no" 
+                    class="wistia_embed" 
+                    style="width:100%;height:100%;border:none;display:block;position:absolute;top:0;left:0;">
+                </iframe>
+            `;
+            
+            // Load Wistia player script if not already present
+            this.loadWistiaScript();
+        }
+        
+        loadWistiaScript() {
+            // Check if script is already loaded
+            if (document.querySelector('script[src*="fast.wistia.net/player.js"]')) {
+                return; // Already loaded
+            }
+            
+            // Check if script is already being loaded
+            if (window._wistiaScriptLoading) {
+                return;
+            }
+            
+            window._wistiaScriptLoading = true;
+            const script = document.createElement('script');
+            script.src = 'https://fast.wistia.net/player.js';
+            script.async = true;
+            script.onload = () => {
+                window._wistiaScriptLoading = false;
+                // Reinitialize any Wistia embeds
+                if (window._wq && typeof window._wq.push === 'function') {
+                    window._wq.push({ id: '_all', onReady: (video) => {
+                        console.log('Wistia video loaded:', video.name());
+                    }});
+                }
+            };
+            script.onerror = () => {
+                window._wistiaScriptLoading = false;
+                console.error('Failed to load Wistia player script');
+            };
+            document.head.appendChild(script);
         }
         
         loadLocalVideo(url) {

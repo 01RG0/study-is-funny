@@ -262,6 +262,7 @@ class VideoUtils {
             'youtu.be',
             'dailymotion.com',
             'wistia.com',
+            'fast.wistia.net',
             'twitch.tv',
             'rumble.com',
             'bitchute.com',

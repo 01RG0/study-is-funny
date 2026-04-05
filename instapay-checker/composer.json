@@ -1,0 +1,14 @@
+{
+    "name": "instapay-checker/validator",
+    "description": "Advanced Instapay transaction validator with professional libraries",
+    "require": {
+        "php": ">=8.0",
+        "globalcitizen/php-iban": "^4.2",
+        "giggsey/libphonenumber-for-php": "^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "": "./"
+        }
+    }
+}
