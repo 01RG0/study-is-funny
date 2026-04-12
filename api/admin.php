@@ -200,6 +200,10 @@ function adminLogin() {
         $_SESSION['admin_token'] = $token;
         $_SESSION['admin_username'] = $username;
         $_SESSION['admin_login_time'] = time();
+        
+        // Set session variables expected by payment-review.php
+        $_SESSION['admin_id'] = $username; // Use username as ID for now
+        $_SESSION['role'] = 'admin';
 
         // Try to store in database (optional, for persistence across sessions)
         try {

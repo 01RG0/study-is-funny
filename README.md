@@ -22,8 +22,9 @@ The project has been organized for better maintainability and clarity:
 
 ### Support & Maintenance
 - `archive/`: Deprecated or old files kept for reference.
-- `debug/`: Utility scripts for database diagnosis and API testing.
 - `logs/`: Application error and access logs.
+- `scripts/`: Automation, deployment, and cleanup scripts.
+- `test/`: Comprehensive suite of testing and verification scripts.
 
 ### Grade-Specific Content
 - `senior1/`, `senior2/`, `senior3/`: Landing pages and subject-specific content for different grade levels.
@@ -32,6 +33,6 @@ The project has been organized for better maintainability and clarity:
 
 1.  Ensure you have PHP and a MongoDB instance (or Atlas) configured.
 2.  Update `config/config.php` with your connection strings.
-3.  Run the local server using `run.ps1` or `php -S localhost:8000 router.php`.
+3.  Run the local server using `scripts/run.ps1` or `php -S localhost:8000 router.php`.
 
 For more detailed information, please refer to the documents in the `docs/` folder.

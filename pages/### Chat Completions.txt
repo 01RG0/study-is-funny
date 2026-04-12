@@ -1,0 +1,273 @@
+### Chat Completions
+```json
+{
+  "messages": [
+    {
+      "role": "system",
+      "cache_control": {
+        "type": "ephemeral"
+      }
+    }
+  ],
+  "model": "openai",
+  "modalities": [
+    "text"
+  ],
+  "audio": {
+    "voice": "alloy",
+    "format": "wav"
+  },
+  "frequency_penalty": 0,
+  "repetition_penalty": 0,
+  "logprobs": false,
+  "top_logprobs": 0,
+  "max_tokens": 0,
+  "presence_penalty": 0,
+  "response_format": {
+    "type": "text"
+  },
+  "seed": -1,
+  "stream": false,
+  "stream_options": {
+    "include_usage": true
+  },
+  "thinking": {
+    "type": "disabled",
+    "budget_tokens": 1
+  },
+  "reasoning_effort": "none",
+  "thinking_budget": 0,
+  "temperature": 1,
+  "top_p": 1,
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "parameters": {
+          "propertyName*": "anything"
+        },
+        "strict": false
+      }
+    }
+  ],
+  "tool_choice": "none",
+  "parallel_tool_calls": true,
+  "function_call": "none",
+  "functions": [
+    {
+      "parameters": {
+        "propertyName*": "anything"
+      }
+    }
+  ]
+}
+```
+
+#### Responses
+
+##### Status: 200 Success
+
+###### Content-Type: application/json
+
+- **`choices` (required)**
+
+  `array`
+
+  **Items:**
+
+  - **`content_filter_results`**
+
+    `object`
+
+  - **`finish_reason`**
+
+    `object`
+
+  - **`index`**
+
+    `integer`
+
+  - **`logprobs`**
+
+    `object`
+
+  - **`message`**
+
+    `object`
+
+    - **`role` (required)**
+
+      `string`
+
+    - **`audio`**
+
+      `object`
+
+    - **`content`**
+
+      `object`
+
+    - **`content_blocks`**
+
+      `object`
+
+    - **`function_call`**
+
+      `object`
+
+    - **`reasoning_content`**
+
+      `object`
+
+    - **`tool_calls`**
+
+      `object`
+
+- **`created` (required)**
+
+  `integer`
+
+- **`id` (required)**
+
+  `string`
+
+- **`model` (required)**
+
+  `string`
+
+- **`object` (required)**
+
+  `string`
+
+- **`citations`**
+
+  `array`
+
+  **Items:**
+
+  `string`
+
+- **`prompt_filter_results`**
+
+  `object`
+
+- **`system_fingerprint`**
+
+  `object`
+
+- **`usage`**
+
+  `object`
+
+- **`user_tier`**
+
+  `string`, possible values: `"anonymous", "seed", "flower", "nectar"`
+
+**Example:**
+
+```json
+{
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "tool_calls": [
+          {
+            "type": "function"
+          }
+        ],
+        "role": "assistant",
+        "content_blocks": [
+          {
+            "type": "text",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          }
+        ],
+        "audio": {
+          "expires_at": -9007199254740991
+        }
+      },
+      "logprobs": {
+        "content": [
+          {
+            "logprob": 1,
+            "bytes": [
+              "[Max Depth Exceeded]"
+            ],
+            "top_logprobs": [
+              {
+                "token": "[Max Depth Exceeded]",
+                "logprob": "[Max Depth Exceeded]",
+                "bytes": "[Max Depth Exceeded]"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "prompt_filter_results": [
+    {
+      "prompt_index": 0
+    }
+  ],
+  "created": -9007199254740991,
+  "object": "chat.completion",
+  "user_tier": "anonymous",
+  "citations": [
+    ""
+  ]
+}
+```
+
+### Simple Text Generation
+- **Method:** `GET`
+- **Path:** `/text/{prompt}`
+- **Tags:** ✍️ Text Generation
+
+Generate text from a prompt via a simple GET request. Returns plain text.
+
+This is a simplified alternative to the OpenAI-compatible `/v1/chat/completions` endpoint — ideal for quick prototyping or simple integrations.
+
+#### Responses
+
+##### Status: 200 Generated text response
+
+###### Content-Type: text/plain
+
+`string`
+
+**Example:**
+
+```json
+true
+```
+
+### Generate Image
+- **Method:** `GET`
+- **Path:** `/image/{prompt}`
+- **Tags:** 🖼️ Image Generation
+
+Generate an image from a text prompt. Returns JPEG or PNG.
+
+**Available models:** `kontext`, `nanobanana`, `nanobanana-2`, `nanobanana-pro`, `seedream5`, `seedream`, `seedream-pro`, `gptimage`, `gptimage-large`, `flux`, `zimage`, `wan-image`, `wan-image-pro`, `qwen-image`, `grok-imagine`, `grok-imagine-pro`, `klein`, `p-image`, `p-image-edit`, `nova-canvas`. `zimage` is the default.
+
+Browse all available models and their capabilities at [`/image/models`](https://gen.pollinations.ai/image/models).
+
+#### Responses
+
+##### Status: 200 Success - Returns the generated image
+
+###### Content-Type: image/jpeg
+
+`string`, format: `binary`
+
+**Example:**
+
+###### Content-Type: image/png
+
+`string`, format: `binary`
+
+**Example:**

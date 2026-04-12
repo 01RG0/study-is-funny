@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Review - Study is Funny</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" class="circular-icon" type="image/png" href="../images/logo.png">
+    <script>
+        // API Configuration for Hostinger subdirectory support
+        function getApiBaseUrl() {
+            const protocol = window.location.protocol;
+            const host = window.location.host;
+            const pathname = window.location.pathname;
+            
+            if (pathname.includes('study-is-funny')) {
+                const basePathMatch = pathname.match(/^(.+?\/study-is-funny)\//);
+                const basePath = basePathMatch ? basePathMatch[1] : '/study-is-funny';
+                return `${protocol}//${host}${basePath}/api/`;
+            }
+            
+            return `${protocol}//${host}/api/`;
+        }
+        
+        window.API_BASE = getApiBaseUrl();
+        console.log('Payment Review - API Base URL:', window.API_BASE);
+    </script>
+    <style>
+        .transactions-grid {
+            display: grid;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .transaction-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-right: 4px solid #ffc107;
+        }
+
+        .transaction-card.approved {
+            border-right-color: #28a745;
+        }
+
+        .transaction-card.rejected {
+            border-right-color: #dc3545;
+        }
+
+        .transaction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .transaction-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-approve {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: 8px;
+            padding: 5px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="../images/logo.webp" alt="Logo" class="sidebar-logo">
+            <h2>Admin Panel</h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="upload-session.php" class="nav-item">
+                <i class="fas fa-upload"></i> Upload Session
+            </a>
+            <a href="manage-sessions.html" class="nav-item">
+                <i class="fas fa-list"></i> Manage Sessions
+            </a>
+            <a href="manage-students.html" class="nav-item">
+                <i class="fas fa-user-cog"></i> Manage Students
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <i class="fas fa-chart-bar"></i> Analytics
+            </a>
+            <a href="payment-review.html" class="nav-item active">
+                <i class="fas fa-coins"></i> Payment Review
+                <span class="notification-badge" id="pendingPaymentCount" style="display: none;">0</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-section active">
+            <div class="section-header">
+                <h1><i class="fas fa-coins"></i> Payment Review</h1>
+            </div>
+
+            <div id="message"></div>
+
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingCount">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="approvedCount">0</div>
+                    <div class="stat-label">Approved</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="rejectedCount">0</div>
+                    <div class="stat-label">Rejected</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+            </div>
+
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('pending')">
+                    <i class="fas fa-clock"></i> Pending
+                </button>
+                <button class="nav-tab" onclick="showTab('approved')">
+                    <i class="fas fa-check-circle"></i> Approved
+                </button>
+                <button class="nav-tab" onclick="showTab('rejected')">
+                    <i class="fas fa-times-circle"></i> Rejected
+                </button>
+            </div>
+
+            <div id="loading" class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading transactions...
+            </div>
+
+            <div id="transactionsList" class="transactions-grid" style="display: none;">
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <i class="fas fa-inbox"></i>
+                <h3>No transactions found</h3>
+                <p>There are no transactions in this category.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Lightbox Modal -->
+    <div id="imageModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); cursor: pointer;">
+        <span onclick="closeImageModal()" style="position: absolute; top: 20px; right: 30px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; z-index: 10000;">&times;</span>
+        <img id="modalImage" style="margin: auto; display: block; max-width: 90%; max-height: 90%; border-radius: 8px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    </div>
+
+    <script>
+        let currentTab = 'pending';
+        let allTransactions = [];
+        let studentCache = {};
+
+        // Check admin authentication
+        function checkAuth() {
+            return true;
+        }
+
+        // Convert absolute Windows path to relative web path
+        function getWebPath(path) {
+            if (!path) return '';
+            // If it's already a relative path, return as-is
+            if (path.startsWith('../') || path.startsWith('./')) return path;
+            // If it's an absolute Windows path, convert to relative
+            // D:\system\study-is-funny\api\uploads\payments\file.jpg -> ../uploads/payments/file.jpg
+            if (path.includes('uploads/payments')) {
+                const parts = path.split('uploads/payments');
+                if (parts.length > 1) {
+                    return '../uploads/payments' + parts[1];
+                }
+            }
+            return path;
+        }
+
+        // Open image modal
+        function openImageModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = imageSrc;
+            modal.style.display = 'block';
+        }
+
+        // Close image modal
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside the image
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeImageModal();
+            }
+        });
+
+        // Fetch student details by phone
+        async function getStudentDetails(phone) {
+            if (!phone) return null;
+            if (studentCache[phone]) return studentCache[phone];
+
+            try {
+                const response = await fetch(window.API_BASE + 'students.php?action=get&phone=' + encodeURIComponent(phone));
+                const data = await response.json();
+                if (data.success && data.student) {
+                    studentCache[phone] = data.student;
+                    return data.student;
+                }
+            } catch (error) {
+                console.error('Error fetching student details:', error);
+            }
+            return null;
+        }
+
+        // Load transactions
+        async function loadTransactions() {
+            if (!checkAuth()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                console.log('Fetching transactions from:', window.API_BASE + 'payment.php?action=get_pending_transactions');
+                const response = await fetch(window.API_BASE + 'payment.php?action=get_pending_transactions');
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (data.success) {
+                    allTransactions = data.data?.transactions || data.transactions || [];
+                    console.log('Loaded transactions:', allTransactions.length);
+
+                    // Fetch student details for each transaction
+                    for (const transaction of allTransactions) {
+                        if (transaction.student_phone) {
+                            transaction.studentDetails = await getStudentDetails(transaction.student_phone);
+                        }
+                    }
+
+                    displayTransactions();
+                    updateStats();
+                } else {
+                    console.error('API returned error:', data.error);
+                    showMessage(data.error || 'Failed to load transactions', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+                showMessage('Failed to connect to server', 'error');
+            }
+        }
+
+        // Display transactions based on current tab
+        function displayTransactions() {
+            const container = document.getElementById('transactionsList');
+            const loading = document.getElementById('loading');
+            const emptyState = document.getElementById('emptyState');
+
+            loading.style.display = 'none';
+
+            let filteredTransactions = allTransactions.filter(t => t.status === currentTab);
+
+            if (filteredTransactions.length === 0) {
+                container.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            container.style.display = 'grid';
+            emptyState.style.display = 'none';
+
+            container.innerHTML = filteredTransactions.map(transaction => `
+                <div class="transaction-card ${transaction.status}">
+                    <div class="transaction-header">
+                        <div>
+                            <strong>Transaction #${transaction.id}</strong>
+                            <span class="status-badge status-${transaction.status}">${transaction.status}</span>
+                        </div>
+                        <div>${new Date(transaction.submission_date).toLocaleDateString()}</div>
+                    </div>
+
+                    <div class="transaction-info">
+                        <div class="info-item">
+                            <span class="info-label">Student Name</span>
+                            <span class="info-value">${transaction.studentDetails?.name || 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Grade</span>
+                            <span class="info-value">${transaction.studentDetails?.grade || 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Phone</span>
+                            <span class="info-value">${transaction.student_phone}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Student Balance</span>
+                            <span class="info-value">${transaction.studentDetails?.balance || 0} EGP</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Amount Requested</span>
+                            <span class="info-value">EGP ${transaction.amount_requested}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Instapay Amount</span>
+                            <span class="info-value">EGP ${transaction.instapay_amount || 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Reference</span>
+                            <span class="info-value">${transaction.instapay_reference_number || 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Confidence Score</span>
+                            <span class="info-value">${transaction.validation_score || 0}% (${transaction.confidence_level || 'N/A'})</span>
+                        </div>
+                    </div>
+
+                    ${transaction.screenshot_path ? `
+                        <div style="margin: 15px 0;">
+                            <span class="info-label">Transaction Screenshot:</span><br>
+                            <img src="${getWebPath(transaction.screenshot_path)}" alt="Transaction" style="max-width: 100%; max-height: 200px; border-radius: 6px; border: 1px solid #ddd; margin-top: 8px; cursor: pointer;" onclick="openImageModal('${getWebPath(transaction.screenshot_path)}')" onerror="console.error('Failed to load image:', '${transaction.screenshot_path}'); this.src='../images/placeholder.png'; this.alt='Image not found'">
+                        </div>
+                    ` : ''}
+
+                    ${transaction.issues && transaction.issues.length > 0 ? `
+                        <div style="margin: 15px 0; padding: 12px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                            <strong style="color: #856404;">⚠️ Critical Issues:</strong>
+                            <ul style="margin: 8px 0 0 20px; color: #856404;">
+                                ${transaction.issues.map(issue => `<li>${issue}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+
+                    ${transaction.warnings && transaction.warnings.length > 0 ? `
+                        <div style="margin: 15px 0; padding: 12px; background: #d1ecf1; border-left: 4px solid #17a2b8; border-radius: 4px;">
+                            <strong style="color: #0c5460;">ℹ️ Warnings:</strong>
+                            <ul style="margin: 8px 0 0 20px; color: #0c5460;">
+                                ${transaction.warnings.map(warning => `<li>${warning}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+
+                    ${transaction.status === 'pending' ? `
+                        <div class="action-buttons">
+                            <button class="btn btn-approve" onclick="approveTransaction('${transaction.id}')">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button class="btn btn-reject" onclick="rejectTransaction('${transaction.id}')">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Update statistics
+        function updateStats() {
+            const pending = allTransactions.filter(t => t.status === 'pending').length;
+            const approved = allTransactions.filter(t => t.status === 'approved').length;
+            const rejected = allTransactions.filter(t => t.status === 'rejected').length;
+            const total = allTransactions.length;
+
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('approvedCount').textContent = approved;
+            document.getElementById('rejectedCount').textContent = rejected;
+            document.getElementById('totalCount').textContent = total;
+        }
+
+        // Approve transaction
+        async function approveTransaction(transactionId) {
+            if (!confirm('Are you sure you want to approve this transaction?')) return;
+
+            try {
+                const response = await fetch(window.API_BASE + 'payment.php?action=approve_transaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `transaction_id=${transactionId}&notes=Approved by admin`
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Transaction approved successfully', 'success');
+                    loadTransactions();
+                } else {
+                    showMessage(data.error || 'Failed to approve transaction', 'error');
+                }
+            } catch (error) {
+                console.error('Error approving transaction:', error);
+                showMessage('Failed to connect to server', 'error');
+            }
+        }
+
+        // Reject transaction
+        async function rejectTransaction(transactionId) {
+            const reason = prompt('Please enter rejection reason:');
+            if (!reason) return;
+
+            try {
+                const response = await fetch(window.API_BASE + 'payment.php?action=reject_transaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `transaction_id=${transactionId}&reason=${encodeURIComponent(reason)}`
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Transaction rejected successfully', 'success');
+                    loadTransactions();
+                } else {
+                    showMessage(data.error || 'Failed to reject transaction', 'error');
+                }
+            } catch (error) {
+                console.error('Error rejecting transaction:', error);
+                showMessage('Failed to connect to server', 'error');
+            }
+        }
+
+        // Show tab
+        function showTab(tab) {
+            currentTab = tab;
+            
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            displayTransactions();
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class="${type}">${message}</div>`;
+            
+            setTimeout(() => {
+                messageDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        // Logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTransactions();
+        });
+    </script>
+</body>
+</html>

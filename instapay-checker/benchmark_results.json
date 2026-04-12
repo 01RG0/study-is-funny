@@ -1,0 +1,30 @@
+{
+    "openai": {
+        "status": "Failed",
+        "time": 2.33,
+        "accuracy": "0%",
+        "details": null,
+        "raw": "No response"
+    },
+    "qwen-vision": {
+        "status": "Failed",
+        "time": 29.23,
+        "accuracy": "0%",
+        "details": null,
+        "raw": "No response"
+    },
+    "gpt-4o": {
+        "status": "Failed",
+        "time": 30,
+        "accuracy": "0%",
+        "details": null,
+        "raw": "No response"
+    },
+    "llama": {
+        "status": "Failed",
+        "time": 30,
+        "accuracy": "0%",
+        "details": null,
+        "raw": "No response"
+    }
+}

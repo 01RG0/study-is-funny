@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة رصيد - Instapay</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/all.min.css">
+    <link rel="stylesheet" href="add-money.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <h1>إضافة رصيد</h1>
+                <p class="subtitle">أرسل تحويل عبر إنستاباي وأضف رصيد لحسابك</p>
+            </div>
+
+            <!-- Progress Steps -->
+            <div class="progress-steps">
+                <div class="progress-step active" data-step="1">
+                    <div class="step-indicator">
+                        <span class="step-number">1</span>
+                        <i class="fas fa-check step-check"></i>
+                    </div>
+                    <span class="step-title">بيانات التحويل</span>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <div class="step-indicator">
+                        <span class="step-number">2</span>
+                        <i class="fas fa-check step-check"></i>
+                    </div>
+                    <span class="step-title">صورة الشاشة</span>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <div class="step-indicator">
+                        <span class="step-number">3</span>
+                        <i class="fas fa-check step-check"></i>
+                    </div>
+                    <span class="step-title">التحقق</span>
+                </div>
+            </div>
+
+            <!-- Alert Box -->
+            <div id="alert" class="alert-box"></div>
+
+            <!-- Form Stage -->
+            <div id="formStage" class="stage active">
+                <form id="paymentForm">
+                    <!-- Info Banner -->
+                    <div class="info-banner">
+                        <div class="banner-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="banner-content">
+                            <p>يرجى الانتظار حتى يتم التحقق من التحويل</p>
+                            <small>الحد الأدنى: 50 جنيه | الحد الأقصى: 1000 جنيه</small>
+                        </div>
+                    </div>
+
+                    <!-- Form Fields -->
+                    <div class="form-fields">
+                        <!-- Phone Field -->
+                        <div class="field-group">
+                            <label for="phone">
+                                <span class="label-text">رقم الهاتف</span>
+                                <span class="required">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-phone input-icon"></i>
+                                <input type="text" id="phone" name="phone" placeholder="01xxxxxxxxx" readonly>
+                            </div>
+                            <div class="field-hint">
+                                <i class="fas fa-check-circle"></i>
+                                <span>تم اكتشافه تلقائياً من حسابك</span>
+                            </div>
+                        </div>
+
+                        <!-- Subject Field -->
+                        <div class="field-group" id="subjectGroup" style="display: none;">
+                            <label for="subject">
+                                <span class="label-text">Select Subject</span>
+                                <span class="required">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-book input-icon"></i>
+                                <select id="subject" name="subject" style="direction: ltr; text-align: left;" required>
+                                    <option value="">-- Select Subject --</option>
+                                </select>
+                            </div>
+                            <div class="field-hint">You have multiple subjects, please select the required one</div>
+                        </div>
+
+                        <!-- Amount Display -->
+                        <div class="field-group" id="amountDisplay" style="display: none;">
+                            <label>
+                                <span class="label-text">المبلغ المكتشف</span>
+                                <span class="required">*</span>
+                            </label>
+                            <div class="amount-card">
+                                <div class="amount-value" id="detectedAmountDisplay">0 EGP</div>
+                                <div class="amount-label">مكتشف من الصورة تلقائياً</div>
+                                <button type="button" id="changeAmountBtn" class="edit-btn">
+                                    <i class="fas fa-edit"></i>
+                                    تعديل
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Manual Amount -->
+                        <div class="field-group" id="manualAmountGroup" style="display: none;">
+                            <label for="manualAmount">
+                                <span class="label-text">أدخل المبلغ (جنيه مصري)</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-pound-sign input-icon"></i>
+                                <input type="number" id="manualAmount" name="manualAmount" placeholder="مثال: 100" min="50" max="1000" step="0.01">
+                            </div>
+                            <div class="field-hint">الحد الأدنى: 50 جنيه | الحد الأقصى: 1000 جنيه</div>
+                        </div>
+
+                        <!-- Confirmation Box -->
+                        <div class="confirmation-card" id="confirmationBox" style="display: none;">
+                            <div class="confirmation-icon">
+                                <i class="fas fa-question-circle"></i>
+                            </div>
+                            <h3>تأكيد المبلغ</h3>
+                            <p>هل المبلغ <strong id="confirmAmount">100</strong> جنيه صحيح؟</p>
+                            <small>تأكد من أن المبلغ المكتشف يطابق التحويل الذي قمت به</small>
+                            <div class="confirmation-actions">
+                                <button type="button" id="confirmYes" class="btn-confirm">
+                                    <i class="fas fa-check"></i>
+                                    نعم، صحيح
+                                </button>
+                                <button type="button" id="confirmNo" class="btn-cancel">
+                                    <i class="fas fa-times"></i>
+                                    تعديل
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Hidden Amount Field -->
+                        <input type="hidden" id="amount" name="amount" value="">
+
+                        <!-- Screenshot Upload -->
+                        <div class="field-group">
+                            <label for="screenshot">
+                                <span class="label-text">صورة شاشة التحويل</span>
+                                <span class="required">*</span>
+                            </label>
+                            <div class="upload-zone">
+                                <input type="file" id="screenshot" name="screenshot" accept="image/*" required>
+                                <label for="screenshot" class="upload-label">
+                                    <div class="upload-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <div class="upload-text">
+                                        <p class="upload-title">انقر لاختيار صورة</p>
+                                        <p class="upload-subtitle">أو اسحبها هنا (JPG, PNG, GIF)</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div id="fileName" class="file-name"></div>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div class="instructions-card">
+                            <div class="instructions-header">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>تعليمات مهمة</span>
+                            </div>
+                            <ul class="instructions-list">
+                                <li>تأكد من ظهور جميع تفاصيل التحويل في الصورة</li>
+                                <li>يجب أن يظهر المبلغ والمرجع والتاريخ والمستقبل</li>
+                                <li>لا يمكن استخدام نفس الصورة أكثر من مرة</li>
+                                <li>التحويل يجب أن يكون في آخر 7 أيام</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button type="button" class="btn-back" onclick="history.back()">
+                            <i class="fas fa-arrow-right"></i>
+                            رجوع
+                        </button>
+                        <button type="button" class="btn-submit" onclick="handlePaymentSubmit()">
+                            <i class="fas fa-check"></i>
+                            تحقق من التحويل
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Loading Stage -->
+            <div id="loadingStage" class="stage loading-stage">
+                <div class="loading-content">
+                    <div class="spinner"></div>
+                    <p>جاري التحقق من التحويل...</p>
+                    <small>قد يستغرق هذا بضع ثوان</small>
+                </div>
+            </div>
+
+            <!-- Result Stage -->
+            <div id="resultStage" class="stage result-stage"></div>
+        </div>
+    </div>
+
+    <script src="add-money.js"></script>
+</body>
+</html>

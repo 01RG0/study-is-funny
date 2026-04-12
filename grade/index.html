@@ -41,9 +41,10 @@
             background-color: #008080;
             color: var(--text);
             padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            text-align: right !important;
         }
 
         .banner {
@@ -200,10 +201,71 @@
             height: 14px;
             width: 14px;
             left: 3px;
-            bottom: 3px;
+            top: 3px;
             background-color: white;
             border-radius: 50%;
             transition: 0.4s;
+        }
+
+        /* Add Money Button Styling */
+        .add-money-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            margin-right: 10px;
+        }
+
+        .add-money-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        .balance-text {
+            font-size: 13px;
+            white-space: nowrap;
+            color: #ffff99;
+        }
+
+        .balance-text strong {
+            color: #ffff99;
+            font-weight: 700;
+        }
+
+        /* Override WhatsApp button for header flex layout */
+        .whatsapp-button {
+            background-color: #25D366 !important;
+            color: white !important;
+            text-decoration: none !important;
+            font-weight: bold !important;
+            padding: 10px 15px !important;
+            border-radius: 50px !important;
+            font-size: 14px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            position: static !important;
+            right: auto !important;
+            top: auto !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+            transition: background-color 0.3s ease !important;
+        }
+
+        .whatsapp-button i {
+            font-size: 16px !important;
+        }
+
+        .whatsapp-button:hover {
+            background-color: #1DA853 !important;
         }
 
         input:checked+.slider {
@@ -272,12 +334,11 @@
         }
 
         .dark-mode-switch {
-            position: absolute;
-            right: 150px;
-            top: 25px;
             display: inline-block;
             width: 40px;
             height: 20px;
+            margin: 0 10px;
+            position: relative;
         }
 
         .dark-mode-switch input {
@@ -629,14 +690,20 @@
             <img src="../images/logo.webp" alt="Website Logo" class="logo">
             <h1>Studyisfunny <i class="fas fa-graduation-cap"></i></h1>
         </div>
-        <!-- Dark Mode Toggle Switch -->
-        <label class="dark-mode-switch">
-            <input type="checkbox" id="darkModeToggleCheckbox">
-            <span class="slider"></span>
-        </label>
-        <a href="https://wa.me/201000733148?text=Hello" target="_blank" class="whatsapp-button">
-            <i class="fab fa-whatsapp"></i> WhatsApp
-        </a>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <!-- Dark Mode Toggle Switch -->
+            <label class="dark-mode-switch">
+                <input type="checkbox" id="darkModeToggleCheckbox">
+                <span class="slider"></span>
+            </label>
+            <a href="../pages/add-money.html" class="add-money-btn" title="إضافة رصيد">
+                <i class="fas fa-wallet"></i>
+                <span class="balance-text">Balance: <strong id="studentBalance">0</strong> EGP</span>
+            </a>
+            <a href="https://wa.me/201000733148?text=Hello" target="_blank" class="whatsapp-button">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+            </a>
+        </div>
     </header>
 
 
@@ -1084,6 +1151,38 @@
             `;
             document.head.appendChild(style);
         }
+
+        // Load student balance on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStudentBalance();
+        });
+
+        function loadStudentBalance() {
+            const userPhone = localStorage.getItem('userPhone');
+            if (!userPhone) {
+                document.getElementById('studentBalance').textContent = '0';
+                return;
+            }
+
+            // Try to fetch from student API
+            fetch('../api/student.php?action=get_balance&phone=' + encodeURIComponent(userPhone))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.balance !== undefined) {
+                        document.getElementById('studentBalance').textContent = 
+                            parseFloat(data.balance).toFixed(2);
+                    } else {
+                        document.getElementById('studentBalance').textContent = '0';
+                    }
+                })
+                .catch(error => {
+                    console.log('Balance load note: API may not exist yet');
+                    document.getElementById('studentBalance').textContent = '0';
+                });
+        }
+
+        // Refresh balance every 30 seconds
+        setInterval(loadStudentBalance, 30000);
 
     </script>
 </body>

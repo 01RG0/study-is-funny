@@ -1,0 +1,1094 @@
+Skip to content
+
+## Navigation Menu
+
+[Sign in](https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2Flanggenius%2Fdify%2Fdiscussions%2F17263)
+- PlatformAI CODE CREATIONGitHub CopilotWrite better code with AIGitHub SparkBuild and deploy intelligent appsGitHub ModelsManage and compare promptsMCP RegistryNewIntegrate external toolsDEVELOPER WORKFLOWSActionsAutomate any workflowCodespacesInstant dev environmentsIssuesPlan and track workCode ReviewManage code changesAPPLICATION SECURITYGitHub Advanced SecurityFind and fix vulnerabilitiesCode securitySecure your code as you buildSecret protectionStop leaks before they startEXPLOREWhy GitHubDocumentationBlogChangelogMarketplace[View all features](https://github.com/features)
+- AI CODE CREATIONGitHub CopilotWrite better code with AIGitHub SparkBuild and deploy intelligent appsGitHub ModelsManage and compare prompts[MCP RegistryNewIntegrate external tools](https://github.com/mcp)
+- [GitHub CopilotWrite better code with AI](https://github.com/features/copilot)
+- [GitHub SparkBuild and deploy intelligent apps](https://github.com/features/spark)
+- [GitHub ModelsManage and compare prompts](https://github.com/features/models)
+- [MCP RegistryNewIntegrate external tools](https://github.com/mcp)
+- DEVELOPER WORKFLOWSActionsAutomate any workflowCodespacesInstant dev environmentsIssuesPlan and track work[Code ReviewManage code changes](https://github.com/features/code-review)
+- [ActionsAutomate any workflow](https://github.com/features/actions)
+- [CodespacesInstant dev environments](https://github.com/features/codespaces)
+- [IssuesPlan and track work](https://github.com/features/issues)
+- [Code ReviewManage code changes](https://github.com/features/code-review)
+- APPLICATION SECURITYGitHub Advanced SecurityFind and fix vulnerabilitiesCode securitySecure your code as you build[Secret protectionStop leaks before they start](https://github.com/security/advanced-security/secret-protection)
+- [GitHub Advanced SecurityFind and fix vulnerabilities](https://github.com/security/advanced-security)
+- [Code securitySecure your code as you build](https://github.com/security/advanced-security/code-security)
+- [Secret protectionStop leaks before they start](https://github.com/security/advanced-security/secret-protection)
+- EXPLOREWhy GitHubDocumentationBlogChangelog[Marketplace](https://github.com/marketplace)
+- [Why GitHub](https://github.com/why-github)
+- [Documentation](https://docs.github.com)
+- [Blog](https://github.blog)
+- [Changelog](https://github.blog/changelog)
+- [Marketplace](https://github.com/marketplace)
+- SolutionsBY COMPANY SIZEEnterprisesSmall and medium teamsStartupsNonprofitsBY USE CASEApp ModernizationDevSecOpsDevOpsCI/CDView all use casesBY INDUSTRYHealthcareFinancial servicesManufacturingGovernmentView all industries[View all solutions](https://github.com/solutions)
+- BY COMPANY SIZEEnterprisesSmall and medium teamsStartups[Nonprofits](https://github.com/solutions/industry/nonprofits)
+- [Enterprises](https://github.com/enterprise)
+- [Small and medium teams](https://github.com/team)
+- [Startups](https://github.com/enterprise/startups)
+- [Nonprofits](https://github.com/solutions/industry/nonprofits)
+- BY USE CASEApp ModernizationDevSecOpsDevOpsCI/CD[View all use cases](https://github.com/solutions/use-case)
+- [App Modernization](https://github.com/solutions/use-case/app-modernization)
+- [DevSecOps](https://github.com/solutions/use-case/devsecops)
+- [DevOps](https://github.com/solutions/use-case/devops)
+- [CI/CD](https://github.com/solutions/use-case/ci-cd)
+- [View all use cases](https://github.com/solutions/use-case)
+- BY INDUSTRYHealthcareFinancial servicesManufacturingGovernment[View all industries](https://github.com/solutions/industry)
+- [Healthcare](https://github.com/solutions/industry/healthcare)
+- [Financial services](https://github.com/solutions/industry/financial-services)
+- [Manufacturing](https://github.com/solutions/industry/manufacturing)
+- [Government](https://github.com/solutions/industry/government)
+- [View all industries](https://github.com/solutions/industry)
+- ResourcesEXPLORE BY TOPICAISoftware DevelopmentDevOpsSecurityView all topicsEXPLORE BY TYPECustomer storiesEvents & webinarsEbooks & reportsBusiness insightsGitHub SkillsSUPPORT & SERVICESDocumentationCustomer supportCommunity forumTrust centerPartners[View all resources](https://github.com/resources)
+- EXPLORE BY TOPICAISoftware DevelopmentDevOpsSecurity[View all topics](https://github.com/resources/articles)
+
+## Navigation Menu
+
+- [AI](https://github.com/resources/articles?topic=ai)
+- [Software Development](https://github.com/resources/articles?topic=software-development)
+- [DevOps](https://github.com/resources/articles?topic=devops)
+- [Security](https://github.com/resources/articles?topic=security)
+- [View all topics](https://github.com/resources/articles)
+- EXPLORE BY TYPECustomer storiesEvents & webinarsEbooks & reportsBusiness insights[GitHub Skills](https://skills.github.com)
+- [Customer stories](https://github.com/customer-stories)
+- [Events & webinars](https://github.com/resources/events)
+- [Ebooks & reports](https://github.com/resources/whitepapers)
+- [Business insights](https://github.com/solutions/executive-insights)
+- [GitHub Skills](https://skills.github.com)
+- SUPPORT & SERVICESDocumentationCustomer supportCommunity forumTrust center[Partners](https://github.com/partners)
+- [Documentation](https://docs.github.com)
+- [Customer support](https://support.github.com)
+- [Community forum](https://github.com/orgs/community/discussions)
+- [Trust center](https://github.com/trust-center)
+- [Partners](https://github.com/partners)
+- Open SourceCOMMUNITYGitHub SponsorsFund open source developersPROGRAMSSecurity LabMaintainer CommunityAcceleratorGitHub StarsArchive ProgramREPOSITORIESTopicsTrending[Collections](https://github.com/collections)
+- COMMUNITY[GitHub SponsorsFund open source developers](https://github.com/sponsors)
+- [GitHub SponsorsFund open source developers](https://github.com/sponsors)
+- PROGRAMSSecurity LabMaintainer CommunityAcceleratorGitHub Stars[Archive Program](https://archiveprogram.github.com)
+- [Security Lab](https://securitylab.github.com)
+- [Maintainer Community](https://maintainers.github.com)
+- [Accelerator](https://github.com/accelerator)
+- [GitHub Stars](https://stars.github.com)
+- [Archive Program](https://archiveprogram.github.com)
+- REPOSITORIESTopicsTrending[Collections](https://github.com/collections)
+- [Topics](https://github.com/topics)
+- [Trending](https://github.com/trending)
+- [Collections](https://github.com/collections)
+- EnterpriseENTERPRISE SOLUTIONSEnterprise platformAI-powered developer platformAVAILABLE ADD-ONSGitHub Advanced SecurityEnterprise-grade security featuresCopilot for BusinessEnterprise-grade AI features[Premium SupportEnterprise-grade 24/7 support](https://github.com/premium-support)
+- ENTERPRISE SOLUTIONS[Enterprise platformAI-powered developer platform](https://github.com/enterprise)
+- [Enterprise platformAI-powered developer platform](https://github.com/enterprise)
+- AVAILABLE ADD-ONSGitHub Advanced SecurityEnterprise-grade security featuresCopilot for BusinessEnterprise-grade AI features[Premium SupportEnterprise-grade 24/7 support](https://github.com/premium-support)
+- [GitHub Advanced SecurityEnterprise-grade security features](https://github.com/security/advanced-security)
+- [Copilot for BusinessEnterprise-grade AI features](https://github.com/features/copilot/copilot-business)
+- [Premium SupportEnterprise-grade 24/7 support](https://github.com/premium-support)
+- [Pricing](https://github.com/pricing)
+- AI CODE CREATIONGitHub CopilotWrite better code with AIGitHub SparkBuild and deploy intelligent appsGitHub ModelsManage and compare prompts[MCP RegistryNewIntegrate external tools](https://github.com/mcp)
+- [GitHub CopilotWrite better code with AI](https://github.com/features/copilot)
+- [GitHub SparkBuild and deploy intelligent apps](https://github.com/features/spark)
+- [GitHub ModelsManage and compare prompts](https://github.com/features/models)
+- [MCP RegistryNewIntegrate external tools](https://github.com/mcp)
+- DEVELOPER WORKFLOWSActionsAutomate any workflowCodespacesInstant dev environmentsIssuesPlan and track work[Code ReviewManage code changes](https://github.com/features/code-review)
+- [ActionsAutomate any workflow](https://github.com/features/actions)
+- [CodespacesInstant dev environments](https://github.com/features/codespaces)
+- [IssuesPlan and track work](https://github.com/features/issues)
+- [Code ReviewManage code changes](https://github.com/features/code-review)
+- APPLICATION SECURITYGitHub Advanced SecurityFind and fix vulnerabilitiesCode securitySecure your code as you build[Secret protectionStop leaks before they start](https://github.com/security/advanced-security/secret-protection)
+- [GitHub Advanced SecurityFind and fix vulnerabilities](https://github.com/security/advanced-security)
+
+## Navigation Menu
+
+- [Code securitySecure your code as you build](https://github.com/security/advanced-security/code-security)
+- [Secret protectionStop leaks before they start](https://github.com/security/advanced-security/secret-protection)
+- EXPLOREWhy GitHubDocumentationBlogChangelog[Marketplace](https://github.com/marketplace)
+- [Why GitHub](https://github.com/why-github)
+- [Documentation](https://docs.github.com)
+- [Blog](https://github.blog)
+- [Changelog](https://github.blog/changelog)
+- [Marketplace](https://github.com/marketplace)
+- [GitHub CopilotWrite better code with AI](https://github.com/features/copilot)
+- [GitHub SparkBuild and deploy intelligent apps](https://github.com/features/spark)
+- [GitHub ModelsManage and compare prompts](https://github.com/features/models)
+- [MCP RegistryNewIntegrate external tools](https://github.com/mcp)
+[GitHub CopilotWrite better code with AI](https://github.com/features/copilot)
+[GitHub SparkBuild and deploy intelligent apps](https://github.com/features/spark)
+[GitHub ModelsManage and compare prompts](https://github.com/features/models)
+[MCP RegistryNewIntegrate external tools](https://github.com/mcp)
+- [ActionsAutomate any workflow](https://github.com/features/actions)
+- [CodespacesInstant dev environments](https://github.com/features/codespaces)
+- [IssuesPlan and track work](https://github.com/features/issues)
+- [Code ReviewManage code changes](https://github.com/features/code-review)
+[ActionsAutomate any workflow](https://github.com/features/actions)
+[CodespacesInstant dev environments](https://github.com/features/codespaces)
+[IssuesPlan and track work](https://github.com/features/issues)
+[Code ReviewManage code changes](https://github.com/features/code-review)
+- [GitHub Advanced SecurityFind and fix vulnerabilities](https://github.com/security/advanced-security)
+- [Code securitySecure your code as you build](https://github.com/security/advanced-security/code-security)
+- [Secret protectionStop leaks before they start](https://github.com/security/advanced-security/secret-protection)
+[GitHub Advanced SecurityFind and fix vulnerabilities](https://github.com/security/advanced-security)
+[Code securitySecure your code as you build](https://github.com/security/advanced-security/code-security)
+[Secret protectionStop leaks before they start](https://github.com/security/advanced-security/secret-protection)
+- [Why GitHub](https://github.com/why-github)
+- [Documentation](https://docs.github.com)
+- [Blog](https://github.blog)
+- [Changelog](https://github.blog/changelog)
+- [Marketplace](https://github.com/marketplace)
+[Why GitHub](https://github.com/why-github)
+[Documentation](https://docs.github.com)
+[Blog](https://github.blog)
+[Changelog](https://github.blog/changelog)
+[Marketplace](https://github.com/marketplace)
+[View all features](https://github.com/features)
+- BY COMPANY SIZEEnterprisesSmall and medium teamsStartups[Nonprofits](https://github.com/solutions/industry/nonprofits)
+- [Enterprises](https://github.com/enterprise)
+- [Small and medium teams](https://github.com/team)
+- [Startups](https://github.com/enterprise/startups)
+- [Nonprofits](https://github.com/solutions/industry/nonprofits)
+- BY USE CASEApp ModernizationDevSecOpsDevOpsCI/CD[View all use cases](https://github.com/solutions/use-case)
+- [App Modernization](https://github.com/solutions/use-case/app-modernization)
+- [DevSecOps](https://github.com/solutions/use-case/devsecops)
+- [DevOps](https://github.com/solutions/use-case/devops)
+- [CI/CD](https://github.com/solutions/use-case/ci-cd)
+- [View all use cases](https://github.com/solutions/use-case)
+- BY INDUSTRYHealthcareFinancial servicesManufacturingGovernment[View all industries](https://github.com/solutions/industry)
+- [Healthcare](https://github.com/solutions/industry/healthcare)
+- [Financial services](https://github.com/solutions/industry/financial-services)
+- [Manufacturing](https://github.com/solutions/industry/manufacturing)
+- [Government](https://github.com/solutions/industry/government)
+- [View all industries](https://github.com/solutions/industry)
+- [Enterprises](https://github.com/enterprise)
+- [Small and medium teams](https://github.com/team)
+- [Startups](https://github.com/enterprise/startups)
+- [Nonprofits](https://github.com/solutions/industry/nonprofits)
+[Enterprises](https://github.com/enterprise)
+[Small and medium teams](https://github.com/team)
+[Startups](https://github.com/enterprise/startups)
+[Nonprofits](https://github.com/solutions/industry/nonprofits)
+
+## Navigation Menu
+
+- [App Modernization](https://github.com/solutions/use-case/app-modernization)
+- [DevSecOps](https://github.com/solutions/use-case/devsecops)
+- [DevOps](https://github.com/solutions/use-case/devops)
+- [CI/CD](https://github.com/solutions/use-case/ci-cd)
+- [View all use cases](https://github.com/solutions/use-case)
+[App Modernization](https://github.com/solutions/use-case/app-modernization)
+[DevSecOps](https://github.com/solutions/use-case/devsecops)
+[DevOps](https://github.com/solutions/use-case/devops)
+[CI/CD](https://github.com/solutions/use-case/ci-cd)
+[View all use cases](https://github.com/solutions/use-case)
+- [Healthcare](https://github.com/solutions/industry/healthcare)
+- [Financial services](https://github.com/solutions/industry/financial-services)
+- [Manufacturing](https://github.com/solutions/industry/manufacturing)
+- [Government](https://github.com/solutions/industry/government)
+- [View all industries](https://github.com/solutions/industry)
+[Healthcare](https://github.com/solutions/industry/healthcare)
+[Financial services](https://github.com/solutions/industry/financial-services)
+[Manufacturing](https://github.com/solutions/industry/manufacturing)
+[Government](https://github.com/solutions/industry/government)
+[View all industries](https://github.com/solutions/industry)
+[View all solutions](https://github.com/solutions)
+- EXPLORE BY TOPICAISoftware DevelopmentDevOpsSecurity[View all topics](https://github.com/resources/articles)
+- [AI](https://github.com/resources/articles?topic=ai)
+- [Software Development](https://github.com/resources/articles?topic=software-development)
+- [DevOps](https://github.com/resources/articles?topic=devops)
+- [Security](https://github.com/resources/articles?topic=security)
+- [View all topics](https://github.com/resources/articles)
+- EXPLORE BY TYPECustomer storiesEvents & webinarsEbooks & reportsBusiness insights[GitHub Skills](https://skills.github.com)
+- [Customer stories](https://github.com/customer-stories)
+- [Events & webinars](https://github.com/resources/events)
+- [Ebooks & reports](https://github.com/resources/whitepapers)
+- [Business insights](https://github.com/solutions/executive-insights)
+- [GitHub Skills](https://skills.github.com)
+- SUPPORT & SERVICESDocumentationCustomer supportCommunity forumTrust center[Partners](https://github.com/partners)
+- [Documentation](https://docs.github.com)
+- [Customer support](https://support.github.com)
+- [Community forum](https://github.com/orgs/community/discussions)
+- [Trust center](https://github.com/trust-center)
+- [Partners](https://github.com/partners)
+- [AI](https://github.com/resources/articles?topic=ai)
+- [Software Development](https://github.com/resources/articles?topic=software-development)
+- [DevOps](https://github.com/resources/articles?topic=devops)
+- [Security](https://github.com/resources/articles?topic=security)
+- [View all topics](https://github.com/resources/articles)
+[AI](https://github.com/resources/articles?topic=ai)
+[Software Development](https://github.com/resources/articles?topic=software-development)
+[DevOps](https://github.com/resources/articles?topic=devops)
+[Security](https://github.com/resources/articles?topic=security)
+[View all topics](https://github.com/resources/articles)
+- [Customer stories](https://github.com/customer-stories)
+- [Events & webinars](https://github.com/resources/events)
+- [Ebooks & reports](https://github.com/resources/whitepapers)
+- [Business insights](https://github.com/solutions/executive-insights)
+- [GitHub Skills](https://skills.github.com)
+[Customer stories](https://github.com/customer-stories)
+[Events & webinars](https://github.com/resources/events)
+[Ebooks & reports](https://github.com/resources/whitepapers)
+[Business insights](https://github.com/solutions/executive-insights)
+[GitHub Skills](https://skills.github.com)
+- [Documentation](https://docs.github.com)
+- [Customer support](https://support.github.com)
+- [Community forum](https://github.com/orgs/community/discussions)
+- [Trust center](https://github.com/trust-center)
+- [Partners](https://github.com/partners)
+[Documentation](https://docs.github.com)
+[Customer support](https://support.github.com)
+[Community forum](https://github.com/orgs/community/discussions)
+[Trust center](https://github.com/trust-center)
+[Partners](https://github.com/partners)
+[View all resources](https://github.com/resources)
+- COMMUNITY[GitHub SponsorsFund open source developers](https://github.com/sponsors)
+
+## Navigation Menu
+
+- [GitHub SponsorsFund open source developers](https://github.com/sponsors)
+- PROGRAMSSecurity LabMaintainer CommunityAcceleratorGitHub Stars[Archive Program](https://archiveprogram.github.com)
+- [Security Lab](https://securitylab.github.com)
+- [Maintainer Community](https://maintainers.github.com)
+- [Accelerator](https://github.com/accelerator)
+- [GitHub Stars](https://stars.github.com)
+- [Archive Program](https://archiveprogram.github.com)
+- REPOSITORIESTopicsTrending[Collections](https://github.com/collections)
+- [Topics](https://github.com/topics)
+- [Trending](https://github.com/trending)
+- [Collections](https://github.com/collections)
+- [GitHub SponsorsFund open source developers](https://github.com/sponsors)
+[GitHub SponsorsFund open source developers](https://github.com/sponsors)
+- [Security Lab](https://securitylab.github.com)
+- [Maintainer Community](https://maintainers.github.com)
+- [Accelerator](https://github.com/accelerator)
+- [GitHub Stars](https://stars.github.com)
+- [Archive Program](https://archiveprogram.github.com)
+[Security Lab](https://securitylab.github.com)
+[Maintainer Community](https://maintainers.github.com)
+[Accelerator](https://github.com/accelerator)
+[GitHub Stars](https://stars.github.com)
+[Archive Program](https://archiveprogram.github.com)
+- [Topics](https://github.com/topics)
+- [Trending](https://github.com/trending)
+- [Collections](https://github.com/collections)
+[Topics](https://github.com/topics)
+[Trending](https://github.com/trending)
+[Collections](https://github.com/collections)
+- ENTERPRISE SOLUTIONS[Enterprise platformAI-powered developer platform](https://github.com/enterprise)
+- [Enterprise platformAI-powered developer platform](https://github.com/enterprise)
+- AVAILABLE ADD-ONSGitHub Advanced SecurityEnterprise-grade security featuresCopilot for BusinessEnterprise-grade AI features[Premium SupportEnterprise-grade 24/7 support](https://github.com/premium-support)
+- [GitHub Advanced SecurityEnterprise-grade security features](https://github.com/security/advanced-security)
+- [Copilot for BusinessEnterprise-grade AI features](https://github.com/features/copilot/copilot-business)
+- [Premium SupportEnterprise-grade 24/7 support](https://github.com/premium-support)
+- [Enterprise platformAI-powered developer platform](https://github.com/enterprise)
+[Enterprise platformAI-powered developer platform](https://github.com/enterprise)
+- [GitHub Advanced SecurityEnterprise-grade security features](https://github.com/security/advanced-security)
+- [Copilot for BusinessEnterprise-grade AI features](https://github.com/features/copilot/copilot-business)
+- [Premium SupportEnterprise-grade 24/7 support](https://github.com/premium-support)
+[GitHub Advanced SecurityEnterprise-grade security features](https://github.com/security/advanced-security)
+[Copilot for BusinessEnterprise-grade AI features](https://github.com/features/copilot/copilot-business)
+[Premium SupportEnterprise-grade 24/7 support](https://github.com/premium-support)
+[Pricing](https://github.com/pricing)
+
+# Search code, repositories, users, issues, pull requests...
+[Search syntax tips](https://docs.github.com/search-github/github-code-search/understanding-github-code-search-syntax)
+
+# Provide feedback
+We read every piece of feedback, and take your input very seriously.
+
+## Use saved searches to filter your results more quickly
+
+To see all available qualifiers, see our [documentation](https://docs.github.com/search-github/github-code-search/understanding-github-code-search-syntax).
+[Sign in](https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2Flanggenius%2Fdify%2Fdiscussions%2F17263)
+[Sign up](https://github.com/signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2F%3Cuser-name%3E%2F%3Crepo-name%3E%2Fvoltron%2Fdiscussions_fragments%2Fdiscussion_layout&source=header-repo&source_repo=langgenius%2Fdify)
+[Reload](https://github.com/langgenius/dify/discussions/17263)
+[Reload](https://github.com/langgenius/dify/discussions/17263)
+[Reload](https://github.com/langgenius/dify/discussions/17263)
+[langgenius](https://github.com/langgenius)
+[dify](https://github.com/langgenius/dify)
+- 
+            [Notifications](https://github.com/login?return_to=%2Flanggenius%2Fdify)    You must be signed in to change notification settings
+
+
+- 
+          [Fork
+    21.4k](https://github.com/login?return_to=%2Flanggenius%2Fdify)
+
+- 
+
+        [Star
+          137k](https://github.com/login?return_to=%2Flanggenius%2Fdify)
+
+[Notifications](https://github.com/login?return_to=%2Flanggenius%2Fdify)
+[Fork
+    21.4k](https://github.com/login?return_to=%2Flanggenius%2Fdify)
+[Star
+          137k](https://github.com/login?return_to=%2Flanggenius%2Fdify)
+- 
+  [Code](https://github.com/langgenius/dify)
+- 
+  [Issues
+          415](https://github.com/langgenius/dify/issues)
+- 
+  [Pull requests
+          468](https://github.com/langgenius/dify/pulls)
+- 
+  [Discussions](https://github.com/langgenius/dify/discussions)
+- 
+  [Actions](https://github.com/langgenius/dify/actions)
+- 
+  [Security and quality
+          13](https://github.com/langgenius/dify/security)
+- 
+  [Insights](https://github.com/langgenius/dify/pulse)
+[Code](https://github.com/langgenius/dify)
+[Issues
+          415](https://github.com/langgenius/dify/issues)
+[Pull requests
+          468](https://github.com/langgenius/dify/pulls)
+[Discussions](https://github.com/langgenius/dify/discussions)
+[Actions](https://github.com/langgenius/dify/actions)
+[Security and quality
+          13](https://github.com/langgenius/dify/security)
+[Insights](https://github.com/langgenius/dify/pulse)
+- 
+
+
+    [Code](https://github.com/langgenius/dify)
+
+
+- 
+
+
+    [Issues](https://github.com/langgenius/dify/issues)
+
+
+- 
+
+
+    [Pull requests](https://github.com/langgenius/dify/pulls)
+
+
+- 
+
+
+    [Discussions](https://github.com/langgenius/dify/discussions)
+
+
+- 
+
+
+    [Actions](https://github.com/langgenius/dify/actions)
+
+
+- 
+
+
+    [Security and quality](https://github.com/langgenius/dify/security)
+
+
+- 
+
+
+    [Insights](https://github.com/langgenius/dify/pulse)
+
+
+[Code](https://github.com/langgenius/dify)
+[Issues](https://github.com/langgenius/dify/issues)
+[Pull requests](https://github.com/langgenius/dify/pulls)
+[Discussions](https://github.com/langgenius/dify/discussions)
+[Actions](https://github.com/langgenius/dify/actions)
+[Security and quality](https://github.com/langgenius/dify/security)
+[Insights](https://github.com/langgenius/dify/pulse)
+
+# 404 models/gemini-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods. #17263
+
+[HuangYunHUST](https://github.com/HuangYunHUST)
+[Help](https://github.com/langgenius/dify/discussions/categories/help)
+404 models/gemini-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+[HuangYunHUST](https://github.com/HuangYunHUST)
+Return to top
+-
+
+### Uh oh!
+
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### Uh oh!
+
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+## HuangYunHUST Apr 1, 2025
+
+[HuangYunHUST](https://github.com/HuangYunHUST)
+Apr 1, 2025
+-
+
+### Self Checks
+-  I have searched for existing issues [search for existing issues](https://github.com/langgenius/dify/issues), including closed ones.
+-  I confirm that I am using English to submit this report (我已阅读并同意 [Language Policy](https://github.com/langgenius/dify/issues/1542)).
+-  [FOR CHINESE USERS] 请务必使用英文提交 Issue，否则会被关闭。谢谢！:)
+-  Please do not modify this template :) and fill in all the required fields.
+[search for existing issues](https://github.com/langgenius/dify/issues)
+[Language Policy](https://github.com/langgenius/dify/issues/1542)
+
+### 1. Is this request related to a challenge you're experiencing? Tell me about your story.
+https://private-user-images.githubusercontent.com/128787745/428929406-bcbc8df4-e629-422b-8fe6-f061b7b58616.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzU2Njk2NjMsIm5iZiI6MTc3NTY2OTM2MywicGF0aCI6Ii8xMjg3ODc3NDUvNDI4OTI5NDA2LWJjYmM4ZGY0LWU2MjktNDIyYi04ZmU2LWYwNjFiN2I1ODYxNi5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjYwNDA4JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI2MDQwOFQxNzI5MjNaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT03ZDgwOTE4ZTkxOTMxYTliMjFlZDc0ODU1YjNjZTkzMzdhOTVkOTM0NTZiN2UzNWQ3ZDhhZjYxMTM1NGQ5M2FiJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.FFdC-noVUmKWwUmZZNe_dGVNvhKq45TBObac-Eg9ioEI get an api from google ai studio to use gemini in dify. However, when I try to import the api, it report the error as following. 404 models/gemini-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+
+### 2. Additional context or comments
+No response
+Beta Was this translation helpful? Give feedback.
+
+## Replies: 4 comments · 9 replies
+
+- 
+  [Oldest](https://github.com/langgenius/dify/discussions/17263?sort=old)
+
+
+- 
+  [Newest](https://github.com/langgenius/dify/discussions/17263?sort=new)
+
+
+- 
+  [Top](https://github.com/langgenius/dify/discussions/17263?sort=top)
+
+
+[Oldest](https://github.com/langgenius/dify/discussions/17263?sort=old)
+[Newest](https://github.com/langgenius/dify/discussions/17263?sort=new)
+[Top](https://github.com/langgenius/dify/discussions/17263?sort=top)
+-
+
+### Uh oh!
+
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### cH6noota May 2, 2025
+[cH6noota](https://github.com/cH6noota)
+May 2, 2025
+-
+[@HuangYunHUST](https://github.com/HuangYunHUST)
+I ran into the same error. The problem is the model ID that Dify uses when it verifies the API token. You can clear the error by changing the model ID in google.py inside the API service.
+[https://github.com/langgenius/dify/blob/0.15.3/api/core/model_runtime/model_providers/google/google.py](https://github.com/langgenius/dify/blob/0.15.3/api/core/model_runtime/model_providers/google/google.py)
+
+```
+import logging from core.model_runtime.entities.model_entities import ModelType from core.model_runtime.errors.validate import CredentialsValidateFailedError from core.model_runtime.model_providers.__base.model_provider import ModelProvider logger = logging.getLogger(__name__) class GoogleProvider(ModelProvider): def validate_provider_credentials(self, credentials: dict) -> None: """ Validate provider credentials. If validation fails, raise an exception. :param credentials: provider credentials defined in `provider_credential_schema`. """ try: model_instance = self.get_model_instance(ModelType.LLM) # Use `gemini-1.5-pro` for validation instead of the default. model_instance.validate_credentials(model="gemini-1.5-pro", credentials=credentials) except CredentialsValidateFailedError as ex: raise ex except Exception as ex: logger.exception( f"{self.get_provider_schema().provider} credentials validation failed" ) raise ex
+```
+
+I also wrote a (Japanese-language) blog post about the issue—feel free to use it as a reference:
+[https://zenn.dev/upgradetech/articles/dify-old-version-use](https://zenn.dev/upgradetech/articles/dify-old-version-use)
+Beta Was this translation helpful? Give feedback.
+-
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### Abdssamie Jun 19, 2025
+[Abdssamie](https://github.com/Abdssamie)
+Jun 19, 2025
+-
+For those running Dify 0.15.3 in Docker and encountering the 404 error when configuring the Google Gemini API (models/gemini-pro is not found), the solution provided by [@cH6noota](https://github.com/cH6noota) to modify google.py works great, but it won’t work directly in a Dockerized environment. Since Docker containers are ephemeral, you can’t just edit the source code inside the container (e.g., /app/api/core/model_runtime/model_providers/google/google.py) as changes will be lost on restart. Instead, you need to build a custom Docker image based on langgenius/dify-api:0.15.3 with the modified google.py file.
+Here’s how to do it:
+Clone the Dify repository to get the source code for version 0.15.3: bash
+
+```
+git clone --branch 0.15.3 https://github.com/langgenius/dify.git cd dify
+```
+
+
+```
+git clone --branch 0.15.3 https://github.com/langgenius/dify.git cd dify
+```
+
+Modify the google.py file located at api/core/model_runtime/model_providers/google/google.py. Update the validate_provider_credentials method to use gemini-1.5-pro (or another supported model like gemini-1.5-flash) instead of gemini-pro. The relevant section should look like: python
+
+```
+try: model_instance = self.get_model_instance(ModelType.LLM) # Use `gemini-2.5-pro` for validation or use other valid model. model_instance.validate_credentials(model="gemini-2.5-pro", credentials=credentials) except CredentialsValidateFailedError as ex: raise ex
+```
+
+
+```
+try: model_instance = self.get_model_instance(ModelType.LLM) # Use `gemini-2.5-pro` for validation or use other valid model. model_instance.validate_credentials(model="gemini-2.5-pro", credentials=credentials) except CredentialsValidateFailedError as ex: raise ex
+```
+
+Create a Dockerfile in the dify directory to build a custom image. Below is the Dockerfile content:
+Build the custom image:
+bash
+
+```
+docker build -t custom-dify-api:0.15.3 .
+```
+
+
+```
+docker build -t custom-dify-api:0.15.3 .
+```
+
+Update your docker-compose.yaml (located in dify/docker/docker-compose.yaml) to use the custom image for the api and worker services: yaml
+
+```
+services: api: image: custom-dify-api:0.15.3 # ... other configurations ... worker: image: custom-dify-api:0.15.3 # ... other configurations ...
+```
+
+
+```
+services: api: image: custom-dify-api:0.15.3 # ... other configurations ... worker: image: custom-dify-api:0.15.3 # ... other configurations ...
+```
+
+Restart the containers: bash
+
+```
+cd docker docker compose down docker compose up -d
+```
+
+
+```
+cd docker docker compose down docker compose up -d
+```
+
+Verify the fix in the Dify dashboard under Settings > Model Provider > Google Gemini. Enter your API key and save. The 404 error should be resolved. Notes:
+Ensure your Gemini API key has access to gemini-1.5-pro or gemini-1.5-flash. Check available models with: bash
+
+```
+curl "https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_API_KEY"
+```
+
+
+```
+curl "https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_API_KEY"
+```
+
+This approach ensures changes persist across container restarts, unlike mounting a modified file via volumes. If you’re in a region with network restrictions (e.g., China), configure proxy settings in docker-compose.yaml as needed. Upgrading to a newer Dify version might fix this issue without modification, but test carefully as some versions may introduce other challenges. This solution worked for me, and I hope it helps others running Dify in Docker! Thanks to [@cH6noota](https://github.com/cH6noota) for the original fix.
+Beta Was this translation helpful? Give feedback.
+- 
+              👍
+              2
+
+-
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+-
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+#### cH6noota Jun 19, 2025
+[cH6noota](https://github.com/cH6noota)
+Jun 19, 2025
+-
+[@Abdssamie](https://github.com/Abdssamie) Thanks for the great idea!
+Since Docker containers are ephemeral, you can’t just edit the source code inside the container (e.g., /app/api/core/model_runtime/model_providers/google/google.py) as changes will be lost on restart. Instead, you need to build a custom Docker image based on langgenius/dify-api:0.15.3 with the modified google.py file.
+Yes, that's correct. Any changes you make to the source code will be lost upon restart.
+However, the validate_credentials method only runs when the API key is authenticated. So, if you don't need to change the API key again, then creating a custom image isn't necessary.
+
+```
+validate_credentials
+```
+
+Beta Was this translation helpful? Give feedback.
+- 
+              👍
+              1
+
+-
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### maynoreelias Oct 3, 2025
+[maynoreelias](https://github.com/maynoreelias)
+Oct 3, 2025
+-
+Solution Found: 404 v1beta error is caused by an incorrect model name alias. After extensive debugging, I've found the solution to the persistent 404 Not Found for API version v1beta error.
+The Problem: My script was failing when calling generate_content with a 404 error pointing to a deprecated model (...-002) and the v1beta API, even though my code was using what I thought was the correct model name.
+The Solution: The issue was a simple but crucial error in the model name. The correct alias for the latest Flash model is not gemini-1.5-flash-latest.
+The fix is to change the model name in the code:
+OLD (Incorrect): MODEL_NAME = 'gemini-1.5-flash-latest'
+NEW (Correct): MODEL_NAME = 'gemini-flash-latest'
+This single change completely resolved the error on a stable Python environment (3.11.9).
+Additional Context for Advanced Users (e.g., Arch Linux on Python 3.13+):
+For users on bleeding-edge systems, please note that this model name issue was compounded by a separate library incompatibility with the new Python 3.13.7. On that version, a faulty version of the google-generativeai library was being installed, which made debugging this much harder. The ultimate solution for that environment was to use pyenv to manage a stable Python version (like 3.11 or 3.12) OR apply a specific dependency fix (pinning grpcio versions).
+However, for most users on stable Python versions, simply correcting the model name to gemini-flash-latest should be the definitive solution.
+Closing this issue as resolved.
+Beta Was this translation helpful? Give feedback.
+- 
+              👍
+              4
+
+- 
+              🚀
+              5
+
+-
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+#### MohibUllahKhanSherwani Jan 22, 2026
+[MohibUllahKhanSherwani](https://github.com/MohibUllahKhanSherwani)
+Jan 22, 2026
+-
+Thankss man i was running google ADK agents, and i had the issue with the model name for like 2 days, resolved it! Thanks again
+Beta Was this translation helpful? Give feedback.
+-
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+#### maryamrauf-dev Jan 30, 2026
+[maryamrauf-dev](https://github.com/maryamrauf-dev)
+Jan 30, 2026
+-
+thanks man this was helpful and time saver fr
+Beta Was this translation helpful? Give feedback.
+-
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+#### Sai-guru Feb 23, 2026
+[Sai-guru](https://github.com/Sai-guru)
+Feb 23, 2026
+-
+Very thank u sir , godly time ...
+Beta Was this translation helpful? Give feedback.
+-
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+#### marwanfizzy-design Mar 21, 2026
+[marwanfizzy-design](https://github.com/marwanfizzy-design)
+Mar 21, 2026
+-
+thanx
+Beta Was this translation helpful? Give feedback.
+-
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+#### samuelbosawer Mar 27, 2026
+[samuelbosawer](https://github.com/samuelbosawer)
+Mar 27, 2026
+-
+Thanks Mr, this was helpful 🙏
+Beta Was this translation helpful? Give feedback.
+-
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### Uh oh!
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+
+### smirk-dev Dec 26, 2025
+
+[smirk-dev](https://github.com/smirk-dev)
+Dec 26, 2025
+-
+The "404 models/gemini-pro is not found" error occurs because Google's Gemini API uses different model naming conventions and requires proper API configuration. Here's how to fix it:
+1. Update to Correct Gemini Model Names:
+Google has deprecated gemini-pro. Use these current models instead:
+
+```
+gemini-pro
+```
+
+
+```
+gemini-1.5-pro # Latest high-performance model gemini-1.5-flash # Fast and efficient model gemini-2.0-flash # Latest available model (if enabled) gemini-1.0-pro # Legacy but still available
+```
+
+
+```
+gemini-1.5-pro # Latest high-performance model gemini-1.5-flash # Fast and efficient model gemini-2.0-flash # Latest available model (if enabled) gemini-1.0-pro # Legacy but still available
+```
+
+2. Verify Your API Setup in Dify:
+- Go to: Settings > Model Providers > Google Gemini
+- Select the correct model from the dropdown
+- Ensure your API key has access to the model
+- Check that the API key is from a Google Cloud project with Generative AI API enabled
+3. Update google-generativeai Library:
+If you're using Dify with custom models, update the library:
+
+```
+pip install --upgrade google-generativeai>=0.4.0
+```
+
+4. Check API Configuration:
+Verify these settings are correct:
+
+```
+API Key: Your Google Generative AI API key (from ai.google.dev or Google Cloud) Model: gemini-1.5-pro or gemini-1.5-flash Version: v1 (NOT v1beta - v1beta is deprecated for production use)
+```
+
+
+```
+API Key: Your Google Generative AI API key (from ai.google.dev or Google Cloud) Model: gemini-1.5-pro or gemini-1.5-flash Version: v1 (NOT v1beta - v1beta is deprecated for production use)
+```
+
+5. Common Mistakes to Avoid:
+- ✗ Using gemini-pro (deprecated)
+- ✗ Using v1beta API version (use v1 instead)
+- ✗ Using wrong API key (ensure it's Generative AI API key, not Cloud key)
+- ✗ Model not enabled in your Google Cloud project
+
+```
+gemini-pro
+```
+
+
+```
+v1beta
+```
+
+
+```
+v1
+```
+
+6. For Dify Docker Setup:
+If self-hosting, ensure your environment variables are set:
+
+```
+# In docker/.env GOOGLE_API_KEY=your_api_key_here GOOGLE_API_VERSION=v1
+```
+
+Restart containers:
+
+```
+docker-compose down docker-compose up -d
+```
+
+7. Test Connection:
+Create a simple test workflow:
+1. Add an LLM node
+2. Select Google Gemini
+3. Choose gemini-1.5-flash
+4. Enter a simple prompt: "Say hello"
+5. Run and verify it works
+
+```
+gemini-1.5-flash
+```
+
+Why You're Seeing This Error:
+Google sunsetted gemini-pro as it was a preview model. The current production models are gemini-1.0-pro, gemini-1.5-pro, and gemini-1.5-flash. The error also suggests you might be using an old API version (v1beta) which doesn't support newer models.
+
+```
+gemini-pro
+```
+
+
+```
+gemini-1.0-pro
+```
+
+
+```
+gemini-1.5-pro
+```
+
+
+```
+gemini-1.5-flash
+```
+
+
+```
+v1beta
+```
+
+If Still Having Issues:
+1. Verify API key: Test at [https://ai.google.dev/](https://ai.google.dev/)
+2. Check project quota: Google Cloud Console > Quotas
+3. Enable API: Google Cloud > Generative AI API (enable if not)
+4. Check billing: Ensure your project has active billing
+[https://ai.google.dev/](https://ai.google.dev/)
+Switch to gemini-1.5-flash for best results - it's faster and more reliable than the old gemini-pro.
+
+```
+gemini-1.5-flash
+```
+
+
+```
+gemini-pro
+```
+
+Beta Was this translation helpful? Give feedback.
+[Sign up for free](https://github.com/join?source=comment-repo)
+[Sign in to comment](https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2Flanggenius%2Fdify%2Fdiscussions%2F17263)
+[🙏
+
+      Help](https://github.com/langgenius/dify/discussions/categories/help)
+- 
+
+
+
+
+
+
+
+
+
+
+          Heading
+
+
+
+
+- 
+
+
+
+
+
+
+
+
+
+
+          Bold
+
+
+
+
+- 
+
+
+
+
+
+
+
+
+
+
+          Italic
+
+
+
+
+- 
+
+
+
+
+
+
+
+
+
+
+          Quote
+
+
+
+
+- 
+
+
+
+
+
+
+
+
+
+
+          Code
+
+
+
+
+- 
+
+
+
+
+
+
+
+
+
+
+          Link
+
+
+
+
+- 
+- 
+
+
+
+
+
+
+
+
+
+
+          Numbered list
+
+
+
+
+- 
+
+
+
+
+
+
+
+
+
+
+          Unordered list
+
+
+
+
+- 
+
+
+
+
+
+
+
+
+
+
+          Task list
+
+
+
+
+- 
+- 
+
+
+
+
+
+
+
+
+
+
+          Attach files
+
+
+
+
+- 
+
+
+
+
+
+
+
+
+
+
+          Mention
+
+
+
+
+- 
+
+
+
+
+
+
+
+
+
+
+          Reference
+
+### Uh oh!
+
+There was an error while loading. [Please reload this page](https://github.com/langgenius/dify/discussions/17263).
+[Create a new saved reply](https://github.com/settings/replies?return_to=1)
+
+### Footer navigation
+
+- 
+            [Terms](https://docs.github.com/site-policy/github-terms/github-terms-of-service)
+
+- 
+            [Privacy](https://docs.github.com/site-policy/privacy-policies/github-privacy-statement)
+
+- 
+            [Security](https://github.com/security)
+
+- 
+            [Status](https://www.githubstatus.com/)
+
+- 
+            [Community](https://github.community/)
+
+- 
+            [Docs](https://docs.github.com/)
+
+- 
+            [Contact](https://support.github.com?tags=dotcom-footer)
+
+- 
+
+
+       Manage cookies
+
+
+
+- 
+
+
+      Do not share my personal information
+
+
+
+[Terms](https://docs.github.com/site-policy/github-terms/github-terms-of-service)
+[Privacy](https://docs.github.com/site-policy/privacy-policies/github-privacy-statement)
+[Security](https://github.com/security)
+[Status](https://www.githubstatus.com/)
+[Community](https://github.community/)
+[Docs](https://docs.github.com/)
+[Contact](https://support.github.com?tags=dotcom-footer)

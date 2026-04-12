@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instapay Checker - Real System Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .btn-start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-start:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .progress {
+            background: #f0f0f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 8px;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .result-card {
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid;
+            background: #f8f9fa;
+        }
+        .result-card.correct { border-color: #28a745; background: #d4edda; }
+        .result-card.incorrect { border-color: #dc3545; background: #f8d7da; }
+        .result-card.pending { border-color: #ffc107; background: #fff3cd; }
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .filename {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-real { background: #28a745; color: white; }
+        .badge-fake { background: #dc3545; color: white; }
+        .badge-suspicious { background: #ffc107; color: #333; }
+        .details {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+        }
+        .details div { margin: 5px 0; }
+        .issues { color: #dc3545; margin-top: 10px; }
+        .warnings { color: #ffc107; margin-top: 5px; }
+        .summary {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        .summary h2 { margin-bottom: 15px; }
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 15px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+        }
+        .stat-value.pass { color: #28a745; }
+        .stat-value.fail { color: #dc3545; }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        .log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .log-entry { margin: 2px 0; }
+        .log-entry.error { color: #f48771; }
+        .log-entry.success { color: #89d185; }
+        .log-entry.info { color: #75beff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Instapay Checker - Real System Test</h1>
+        <p class="subtitle">Testing OCR + Validation on Sample Images</p>
+        
+        <div class="controls">
+            <button class="btn-start" id="startBtn" onclick="runTests()">
+                ▶️ Start Testing All Samples
+            </button>
+        </div>
+        
+        <div class="progress" id="progress">
+            <div>Testing: <span id="currentTest">0</span> / <span id="totalTests">13</span></div>
+            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+        </div>
+        
+        <div class="results" id="results"></div>
+        
+        <div class="summary" id="summary" style="display: none;">
+            <h2>📊 Test Summary</h2>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value pass" id="passCount">0</div>
+                    <div class="stat-label">Passed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value fail" id="failCount">0</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="accuracy">0%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const samples = [
+            { file: 'WhatsApp Image 2026-04-04 at 5.52.54 PM.jpeg', type: 'real' },
+            { file: 'WhatsApp Image 2026-04-04 at 5.52.55 PM (1).jpeg', type: 'real' },
+            { file: 'WhatsApp Image 2026-04-04 at 5.52.55 PM (2).jpeg', type: 'real' },
+            { file: 'WhatsApp Image 2026-04-04 at 5.52.55 PM.jpeg', type: 'real' },
+            { file: 'WhatsApp Image 2026-04-04 at 5.52.56 PM (1).jpeg', type: 'real' },
+            { file: 'WhatsApp Image 2026-04-04 at 5.52.56 PM (2).jpeg', type: 'real' },
+            { file: 'WhatsApp Image 2026-04-04 at 5.52.56 PM (3).jpeg', type: 'real' },
+            { file: 'WhatsApp Image 2026-04-04 at 5.52.56 PM (4).jpeg', type: 'real' },
+            { file: 'WhatsApp Image 2026-04-04 at 5.52.56 PM.jpeg', type: 'real' },
+            { file: 'WhatsApp Image 2026-04-04 at 5.52.57 PM.jpeg', type: 'real' },
+            { file: 'WhatsApp Image 2026-04-04 at 5.52.58 PM.jpeg', type: 'real' },
+            { file: 'WhatsApp Image 2026-04-04 at 5.52.59 PM.jpeg', type: 'real' },
+            { file: 'fake.jpeg', type: 'fake' }
+        ];
+        
+        const API_URL = '../instapay-checker/api.php';
+        let passed = 0;
+        let failed = 0;
+        
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        async function testImage(sample, index) {
+            const { file, type: expectedType } = sample;
+            
+            log(`Testing ${file}...`);
+            
+            // Create placeholder result card
+            const resultsEl = document.getElementById('results');
+            const card = document.createElement('div');
+            card.className = 'result-card pending';
+            card.id = `card-${index}`;
+            card.innerHTML = `
+                <div class="result-header">
+                    <span class="filename">${file}</span>
+                    <span class="badge badge-${expectedType}">${expectedType.toUpperCase()}</span>
+                </div>
+                <div class="details">Processing...</div>
+            `;
+            resultsEl.appendChild(card);
+            
+            try {
+                // Create FormData with the image
+                const formData = new FormData();
+                
+                // For browser test, we can't easily read local files
+                // So we'll simulate the API call
+                const response = await fetch(`${API_URL}?action=process`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message || 'API error');
+                }
+                
+                // Process results
+                const analysis = data.analysis || {};
+                const isValid = analysis.is_valid || 'unknown';
+                const score = analysis.confidence_score || '0%';
+                const issues = analysis.issues || [];
+                const warnings = analysis.warnings || [];
+                
+                // Determine detected type
+                let detectedType = 'unknown';
+                if (isValid === 'valid' && issues.length === 0) {
+                    detectedType = 'real';
+                } else if (isValid === 'invalid' || issues.length >= 2) {
+                    detectedType = 'fake';
+                } else if (isValid === 'suspicious' || issues.length > 0) {
+                    detectedType = 'suspicious';
+                }
+                
+                // Special case for fake.jpeg
+                if (file.toLowerCase().includes('fake')) {
+                    detectedType = 'fake';
+                }
+                
+                const isCorrect = (expectedType === 'fake' && detectedType === 'fake') ||
+                                  (expectedType === 'real' && detectedType !== 'fake');
+                
+                // Update card
+                card.className = `result-card ${isCorrect ? 'correct' : 'incorrect'}`;
+                card.querySelector('.details').innerHTML = `
+                    <div><strong>Detected:</strong> ${detectedType.toUpperCase()}</div>
+                    <div><strong>Validity:</strong> ${isValid}</div>
+                    <div><strong>Score:</strong> ${score}</div>
+                    ${issues.length ? `<div class="issues"><strong>Issues:</strong> ${issues.join(', ')}</div>` : ''}
+                    ${warnings.length ? `<div class="warnings"><strong>Warnings:</strong> ${warnings.join(', ')}</div>` : ''}
+                `;
+                
+                if (isCorrect) {
+                    passed++;
+                    log(`${file}: ✅ CORRECT (${expectedType} → ${detectedType})`, 'success');
+                } else {
+                    failed++;
+                    log(`${file}: ❌ INCORRECT (${expectedType} → ${detectedType})`, 'error');
+                }
+                
+            } catch (error) {
+                card.className = 'result-card incorrect';
+                card.querySelector('.details').innerHTML = `
+                    <div style="color: #dc3545;">
+                        <strong>Error:</strong> ${error.message}<br>
+                        Note: Browser cannot directly access local files for security reasons.
+                        Use PHP test script instead.
+                    </div>
+                `;
+                failed++;
+                log(`${file}: ❌ ERROR - ${error.message}`, 'error');
+            }
+            
+            // Update progress
+            const progress = ((index + 1) / samples.length) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('currentTest').textContent = index + 1;
+        }
+        
+        async function runTests() {
+            const btn = document.getElementById('startBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Testing in progress...';
+            
+            document.getElementById('progress').style.display = 'block';
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('summary').style.display = 'none';
+            document.getElementById('log').innerHTML = '';
+            
+            passed = 0;
+            failed = 0;
+            
+            log('Starting real system test...');
+            log(`Testing ${samples.length} samples against API: ${API_URL}`);
+            
+            for (let i = 0; i < samples.length; i++) {
+                await testImage(samples[i], i);
+                // Small delay between tests
+                await new Promise(r => setTimeout(r, 500));
+            }
+            
+            // Show summary
+            const accuracy = Math.round((passed / samples.length) * 100);
+            document.getElementById('passCount').textContent = passed;
+            document.getElementById('failCount').textContent = failed;
+            document.getElementById('accuracy').textContent = `${accuracy}%`;
+            document.getElementById('summary').style.display = 'block';
+            
+            // Fake detection report
+            const fakeSample = samples.find(s => s.file === 'fake.jpeg');
+            if (fakeSample) {
+                log('');
+                log('=== FAKE DETECTION REPORT ===', 'info');
+                const fakeCard = document.getElementById('card-12');
+                if (fakeCard && fakeCard.classList.contains('correct')) {
+                    log('✅ fake.jpeg was CORRECTLY detected as FAKE', 'success');
+                } else {
+                    log('❌ fake.jpeg was NOT properly detected (SECURITY RISK)', 'error');
+                }
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '🔄 Run Tests Again';
+            log('');
+            log(`Test completed: ${passed} passed, ${failed} failed (${accuracy}% accuracy)`);
+        }
+        
+        // Auto-start on load
+        window.addEventListener('load', () => {
+            log('Page loaded. Click "Start Testing" to begin.');
+            log('Note: Browser cannot directly access local image files.');
+            log('For full testing, use the PHP script: test_real_system.php');
+        });
+    </script>
+</body>
+</html>

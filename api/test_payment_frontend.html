@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Payment API</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .test { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background: #c8e6c9; }
+        .error { background: #ffcdd2; }
+        button { padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Payment API Validation Tests</h1>
+    
+    <div class="test">
+        <h3>Test 1: Verify Handler</h3>
+        <button onclick="testVerify()">Test Verify Handler</button>
+        <pre id="verify-result"></pre>
+    </div>
+
+    <div class="test">
+        <h3>Test 2: Extract Amount (Base64 Image)</h3>
+        <input type="file" id="imageFile" accept="image/*">
+        <button onclick="testExtractAmount()">Test Amount Extraction</button>
+        <pre id="extract-result"></pre>
+    </div>
+
+    <script>
+        const API_URL = './payment.php';
+
+        async function testVerify() {
+            const resultEl = document.getElementById('verify-result');
+            try {
+                resultEl.textContent = 'Testing verify handler...';
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'verify',
+                        reference: '123456789012',
+                        student_id: 1
+                    })
+                });
+
+                const text = await response.text();
+                const data = JSON.parse(text);
+                
+                resultEl.textContent = JSON.stringify(data, null, 2);
+                resultEl.parentElement.className = 'test ' + (response.ok ? 'success' : 'error');
+            } catch (error) {
+                resultEl.textContent = 'ERROR: ' + error.message;
+                resultEl.parentElement.className = 'test error';
+            }
+        }
+
+        async function testExtractAmount() {
+            const resultEl = document.getElementById('extract-result');
+            const file = document.getElementById('imageFile').files[0];
+            
+            if (!file) {
+                resultEl.textContent = 'Please select an image file first';
+                return;
+            }
+
+            try {
+                resultEl.textContent = 'Processing image...';
+                const reader = new FileReader();
+                
+                reader.onload = async function(e) {
+                    const base64 = e.target.result.split(',')[1];
+                    
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'extract_amount',
+                            image: base64
+                        })
+                    });
+
+                    const text = await response.text();
+                    
+                    try {
+                        const data = JSON.parse(text);
+                        resultEl.textContent = JSON.stringify(data, null, 2);
+                        resultEl.parentElement.className = 'test ' + (response.ok ? 'success' : 'error');
+                    } catch (parseError) {
+                        resultEl.textContent = 'Raw Response:\n' + text;
+                        resultEl.parentElement.className = 'test error';
+                    }
+                };
+                
+                reader.readAsDataURL(file);
+            } catch (error) {
+                resultEl.textContent = 'ERROR: ' + error.message;
+                resultEl.parentElement.className = 'test error';
+            }
+        }
+    </script>
+</body>
+</html>

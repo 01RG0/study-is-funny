@@ -186,6 +186,31 @@ body {
     width: 20px;
 }
 
+.notification-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f44336;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: auto;
+    margin-right: 10px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(244, 67, 54, 0);
+    }
+}
+
 .sidebar-footer {
     position: absolute;
     bottom: 20px;

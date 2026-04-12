@@ -1,0 +1,160 @@
+## gemini-2.5-flash
+
+```
+gemini-2.5-flash
+```
+
+Inputs
+Text, images, video, audio
+Output
+Text
+[[*]](https://ai.google.dev/gemini-api/docs/tokens)
+Input token limit
+1,048,576
+Output token limit
+65,536
+Audio generation
+Not supported
+Batch API
+Supported
+Caching
+Supported
+Code execution
+Supported
+File search
+Supported
+Flex inference
+Supported
+Function calling
+Supported
+Grounding with Google Maps
+Supported
+Image generation
+Not supported
+Live API
+Not supported
+Priority inference
+Supported
+Search grounding
+Supported
+Structured outputs
+Supported
+Thinking
+Supported
+URL context
+Supported
+[model version patterns](https://ai.google.dev/gemini-api/docs/models/gemini)
+- Stable: gemini-2.5-flash
+- Shut down: [gemini-2.5-flash-preview-09-2025](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash-preview-09-2025)
+
+```
+gemini-2.5-flash
+```
+
+[gemini-2.5-flash-preview-09-2025](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash-preview-09-2025)
+
+```
+gemini-2.5-flash-preview-09-2025
+```
+
+Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the [Google Developers Site Policies](https://developers.google.com/site-policies). Java is a registered trademark of Oracle and/or its affiliates.
+Last updated 2026-04-01 UTC.
+- 
+
+
+        [Terms](https://policies.google.com/terms)
+
+
+- 
+
+
+        [Privacy](https://policies.google.com/privacy)
+
+
+- 
+
+
+        Manage cookies
+
+
+[Terms](https://policies.google.com/terms)
+[Privacy](https://policies.google.com/privacy)
+Manage cookies
+- 
+      [English](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [Deutsch](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [Español – América Latina](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [Français](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [Indonesia](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [Italiano](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [Polski](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [Português – Brasil](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [Shqip](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [Tiếng Việt](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [Türkçe](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [Русский](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [עברית](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [العربيّة](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [فارسی](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [हिंदी](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [বাংলা](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [ภาษาไทย](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [中文 – 简体](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [中文 – 繁體](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [日本語](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+- 
+      [한국어](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+
+[English](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+[Deutsch](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+[Español – América Latina](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+[Français](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+[Indonesia](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+[Italiano](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+[Polski](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+[Português – Brasil](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+[Shqip](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+[Tiếng Việt](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+[Türkçe](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+[Русский](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)

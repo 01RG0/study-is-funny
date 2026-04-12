@@ -54,6 +54,10 @@
             <a href="analytics.html" class="nav-item">
                 <i class="fas fa-chart-bar"></i> Analytics
             </a>
+            <a href="payment-review.html" class="nav-item">
+                <i class="fas fa-coins"></i> Payment Review
+                <span class="notification-badge" id="pendingPaymentCount" style="display: none;">0</span>
+            </a>
             <a href="settings.html" class="nav-item">
                 <i class="fas fa-cog"></i> Settings
             </a>
@@ -141,6 +145,26 @@
                 window.location.href = 'login.html';
             }
         })();
+
+        // Load pending payment count
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPendingPaymentCount();
+            // Refresh every 60 seconds
+            setInterval(loadPendingPaymentCount, 60000);
+        });
+
+        function loadPendingPaymentCount() {
+            fetch('../api/payment.php?action=get_pending_transactions')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.count > 0) {
+                        const badge = document.getElementById('pendingPaymentCount');
+                        badge.textContent = data.count;
+                        badge.style.display = 'inline-flex';
+                    }
+                })
+                .catch(error => console.log('Payment notification check'));
+        }
     </script>
     <script src="js/admin.js"></script>
 </body>

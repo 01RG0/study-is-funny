@@ -1,235 +1,203 @@
 <?php
 /**
- * Database Functions for Instapay Transaction Validator
- * Handles all database operations with consistent schema
+ * Transaction Database Handler - MongoDB Version
+ * Manages storage and retrieval of Instapay transactions using MongoDB
  */
 
+// Include MongoDB driver and configuration
+require_once __DIR__ . '/../api/config.php';
+require_once __DIR__ . '/../classes/DatabaseMongo.php';
+
 class TransactionDatabase {
-    private static $dbFile = 'transactions.db';
-    private static $pdo = null;
+    private static $db = null;
+    private static $collection = 'instapay_transactions';
+    private static $fraudCollection = 'fraud_attempts';
 
     /**
-     * Get PDO connection (SQLite)
+     * Get MongoDB connection instance
      */
     public static function getConnection() {
-        if (self::$pdo === null) {
+        if (self::$db === null) {
             try {
-                self::$pdo = new PDO('sqlite:' . self::$dbFile);
-                self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            } catch (PDOException $e) {
-                error_log('Database connection error: ' . $e->getMessage());
+                // Use the URI and database name from config.php
+                global $mongoUri, $databaseName;
+                self::$db = new DatabaseMongo($mongoUri, $databaseName);
+            } catch (Exception $e) {
+                error_log('MongoDB Connection Error: ' . $e->getMessage());
                 return null;
             }
         }
-        return self::$pdo;
+        return self::$db;
     }
 
     /**
-     * Initialize database and create tables if they don't exist
+     * Initialize database - MongoDB creates collections on insertion
      */
     public static function initialize() {
-        $pdo = self::getConnection();
-        if (!$pdo) {
+        return true; 
+    }
+
+    /**
+     * Save a transaction to MongoDB
+     */
+    public static function saveTransaction($data) {
+        $db = self::getConnection();
+        if (!$db) return false;
+
+        // Enforce amount limits
+        $amount = isset($data['amount']) ? (float)$data['amount'] : 0;
+        $minAmount = defined('MIN_TRANSACTION_AMOUNT') ? MIN_TRANSACTION_AMOUNT : 50;
+        $maxAmount = defined('MAX_TRANSACTION_AMOUNT') ? MAX_TRANSACTION_AMOUNT : 1000;
+        
+        if ($amount < $minAmount || $amount > $maxAmount) {
+            error_log("Transaction amount $amount outside limits ($minAmount-$maxAmount)");
             return false;
         }
 
+        // Determine admin status based on validation results
+        $isValid = ($data['is_valid'] ?? 'unknown') === 'valid';
+        $hasIssues = !empty($data['issues'] ?? []);
+        $isDuplicate = !empty($data['is_duplicate'] ?? false);
+        
+        // Status: pending_approval, approved, rejected, flagged
+        if ($isDuplicate) {
+            $status = 'rejected';
+        } elseif ($hasIssues || !$isValid) {
+            $status = 'flagged';
+        } else {
+            $status = 'pending_approval'; // Needs admin approval
+        }
+
+        $document = [
+            'reference_number' => $data['reference_number'] ?? null,
+            'amount' => $amount,
+            'currency' => $data['currency'] ?? 'EGP',
+            'transaction_date' => $data['transaction_date'] ?? null,
+            'sender_account' => $data['sender_account'] ?? null,
+            'sender_name' => $data['sender_name'] ?? null,
+            'receiver_name' => $data['receiver_name'] ?? null,
+            'receiver_phone' => $data['receiver_phone'] ?? null,
+            'bank_name' => $data['bank_name'] ?? null,
+            'transaction_type' => $data['transaction_type'] ?? 'transfer',
+            'full_text' => $data['full_text'] ?? null,
+            'ai_response_raw' => $data['ai_response_raw'] ?? null,
+            'status' => $status,
+            'admin_status' => 'pending_review', // For admin workflow
+            'confidence_score' => $data['confidence_score'] ?? 0,
+            'is_valid' => $data['is_valid'] ?? 'unknown',
+            'validation_issues' => $data['issues'] ?? [],
+            'validation_warnings' => $data['warnings'] ?? [],
+            'is_duplicate' => $isDuplicate,
+            'screenshot_path' => $data['screenshot_path'] ?? null,
+            'submitted_by' => [
+                'user_id' => $data['user_id'] ?? null,
+                'username' => $data['username'] ?? 'anonymous',
+                'email' => $data['user_email'] ?? null,
+                'ip' => self::getClientIP(),
+                'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown'
+            ],
+            'admin_review' => [
+                'reviewed_by' => null,
+                'reviewed_at' => null,
+                'decision' => null,
+                'notes' => null
+            ],
+            'created_at' => DatabaseMongo::createUTCDateTime(intval(microtime(true) * 1000)),
+            'updated_at' => DatabaseMongo::createUTCDateTime(intval(microtime(true) * 1000))
+        ];
+
         try {
-            // Check if table exists
-            $result = $pdo->query("
-                SELECT name FROM sqlite_master 
-                WHERE type='table' AND name='transactions'
-            ");
-
-            if ($result->fetch()) {
-                return true; // Table already exists
-            }
-
-            // Create transactions table with consistent schema
-            $pdo->exec("
-                CREATE TABLE transactions (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    
-                    -- Amount and Currency
-                    amount DECIMAL(12, 2) NOT NULL,
-                    currency VARCHAR(3) DEFAULT 'EGP',
-                    
-                    -- Sender Information
-                    sender_account VARCHAR(255) NOT NULL,
-                    sender_name VARCHAR(255),
-                    
-                    -- Receiver Information
-                    receiver_name VARCHAR(255) NOT NULL,
-                    receiver_phone VARCHAR(20),
-                    
-                    -- Transaction Details
-                    reference_number VARCHAR(50) UNIQUE NOT NULL,
-                    transaction_date DATETIME,
-                    transaction_type VARCHAR(100) DEFAULT 'تحويل أموال',
-                    
-                    -- Bank Information
-                    bank_name VARCHAR(100),
-                    
-                    -- Validation Data
-                    is_valid VARCHAR(20) DEFAULT 'valid',
-                    confidence_score INT DEFAULT 100,
-                    validation_issues TEXT,
-                    
-                    -- Files and Metadata
-                    screenshot_file VARCHAR(255),
-                    extracted_text LONGTEXT,
-                    raw_data JSON,
-                    
-                    -- Timestamps
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    
-                    -- Additional Fields
-                    notes TEXT,
-                    status VARCHAR(20) DEFAULT 'active',
-                    ip_address VARCHAR(45),
-                    user_agent TEXT
-                )
-            ");
-
-            // Create indexes for faster queries
-            $pdo->exec("CREATE INDEX idx_reference_number ON transactions(reference_number)");
-            $pdo->exec("CREATE INDEX idx_sender_account ON transactions(sender_account)");
-            $pdo->exec("CREATE INDEX idx_receiver_phone ON transactions(receiver_phone)");
-            $pdo->exec("CREATE INDEX idx_created_at ON transactions(created_at)");
-            $pdo->exec("CREATE INDEX idx_amount ON transactions(amount)");
-
-            return true;
-        } catch (PDOException $e) {
-            error_log('Database initialization error: ' . $e->getMessage());
+            return $db->insert(self::$collection, $document);
+        } catch (Exception $e) {
+            error_log('MongoDB Insert Error: ' . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * Save transaction to database
+     * Find a duplicate transaction
      */
-    public static function saveTransaction($transactionData) {
-        $pdo = self::getConnection();
-        if (!$pdo) {
-            return false;
-        }
+    public static function findDuplicate($ref, $amount, $date) {
+        $db = self::getConnection();
+        if (!$db) return null;
+
+        $filter = [
+            'reference_number' => $ref,
+            'amount' => (float)$amount,
+            'transaction_date' => $date
+        ];
 
         try {
-            $stmt = $pdo->prepare("
-                INSERT INTO transactions (
-                    amount,
-                    currency,
-                    sender_account,
-                    sender_name,
-                    receiver_name,
-                    receiver_phone,
-                    reference_number,
-                    transaction_date,
-                    transaction_type,
-                    bank_name,
-                    is_valid,
-                    confidence_score,
-                    screenshot_file,
-                    raw_data,
-                    ip_address,
-                    user_agent,
-                    created_at,
-                    updated_at
-                ) VALUES (
-                    :amount,
-                    :currency,
-                    :sender_account,
-                    :sender_name,
-                    :receiver_name,
-                    :receiver_phone,
-                    :reference_number,
-                    :transaction_date,
-                    :transaction_type,
-                    :bank_name,
-                    :is_valid,
-                    :confidence_score,
-                    :screenshot_file,
-                    :raw_data,
-                    :ip_address,
-                    :user_agent,
-                    CURRENT_TIMESTAMP,
-                    CURRENT_TIMESTAMP
-                )
-            ");
+            return $db->findOne(self::$collection, $filter);
+        } catch (Exception $e) {
+            error_log('MongoDB Find Error: ' . $e->getMessage());
+            return null;
+        }
+    }
 
-            // Extract confidence score (remove % sign)
-            $confidenceScore = str_replace('%', '', $transactionData['confidence_score'] ?? '0');
+    /**
+     * Get transaction by reference
+     */
+    public static function getByReference($ref) {
+        $db = self::getConnection();
+        if (!$db) return null;
 
-            $params = [
-                ':amount' => floatval($transactionData['amount'] ?? 0),
-                ':currency' => $transactionData['currency'] ?? 'EGP',
-                ':sender_account' => $transactionData['sender_account'] ?? '',
-                ':sender_name' => $transactionData['sender_name'] ?? '',
-                ':receiver_name' => $transactionData['receiver_name'] ?? '',
-                ':receiver_phone' => $transactionData['receiver_phone'] ?? '',
-                ':reference_number' => $transactionData['reference_number'] ?? '',
-                ':transaction_date' => $transactionData['transaction_date'] ?? null,
-                ':transaction_type' => $transactionData['transaction_type'] ?? 'تحويل أموال',
-                ':bank_name' => $transactionData['bank_name'] ?? '',
-                ':is_valid' => $transactionData['is_valid'] ?? 'valid',
-                ':confidence_score' => intval($confidenceScore),
-                ':screenshot_file' => $transactionData['temp_file'] ?? '',
-                ':raw_data' => json_encode($transactionData),
-                ':ip_address' => self::getClientIP(),
-                ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? ''
+        try {
+            return $db->findOne(self::$collection, ['reference_number' => $ref]);
+        } catch (Exception $e) {
+            error_log('MongoDB Find Error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Get transaction by reference number (Backward Compatibility)
+     */
+    public static function getTransactionByRef($ref) {
+        return self::getByReference($ref);
+    }
+
+    /**
+     * Log a fraud attempt
+     */
+    public static function logFraudAttempt($data) {
+        $db = self::getConnection();
+        if (!$db) return false;
+
+        $document = [
+            'type' => $data['type'] ?? 'unknown',
+            'reason' => $data['reason'] ?? 'No reason provided',
+            'details' => $data['details'] ?? [],
+            'reference_number' => $data['reference_number'] ?? null,
+            'created_at' => DatabaseMongo::createUTCDateTime(intval(microtime(true) * 1000)),
+            'ip_address' => self::getClientIP(),
+            'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown'
+        ];
+
+        try {
+            return $db->insert(self::$fraudCollection, $document);
+        } catch (Exception $e) {
+            error_log('MongoDB Fraud Log Error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get recent fraud attempts
+     */
+    public static function getFraudAttempts($limit = 50) {
+        $db = self::getConnection();
+        if (!$db) return [];
+
+        try {
+            $options = [
+                'sort' => ['created_at' => -1],
+                'limit' => intval($limit)
             ];
-
-            return $stmt->execute($params);
-        } catch (PDOException $e) {
-            error_log('Database save error: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Find duplicate transaction
-     */
-    public static function findDuplicate($referenceNumber, $amount, $date) {
-        $pdo = self::getConnection();
-        if (!$pdo) {
-            return null;
-        }
-
-        try {
-            // Check for exact reference match first
-            $stmt = $pdo->prepare("
-                SELECT * FROM transactions 
-                WHERE reference_number = :ref_number 
-                LIMIT 1
-            ");
-            $stmt->execute([':ref_number' => $referenceNumber]);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($result) {
-                return $result;
-            }
-
-            // Check for similar transactions (same amount and approximate date)
-            if ($amount && $date) {
-                $stmt = $pdo->prepare("
-                    SELECT * FROM transactions 
-                    WHERE amount = :amount 
-                    AND DATE(transaction_date) = DATE(:date)
-                    AND sender_account = :sender_account
-                    LIMIT 1
-                ");
-                $stmt->execute([
-                    ':amount' => floatval($amount),
-                    ':date' => $date,
-                    ':sender_account' => '' // Would need sender account to check
-                ]);
-                return $stmt->fetch(PDO::FETCH_ASSOC);
-            }
-
-            return null;
-        } catch (PDOException $e) {
-            error_log('Database query error: ' . $e->getMessage());
-            return null;
+            return $db->find(self::$fraudCollection, [], $options);
+        } catch (Exception $e) {
+            error_log('MongoDB Query Error: ' . $e->getMessage());
+            return [];
         }
     }
 
@@ -237,77 +205,39 @@ class TransactionDatabase {
      * Get statistics
      */
     public static function getStats() {
-        $pdo = self::getConnection();
-        if (!$pdo) {
-            return ['total' => 0, 'valid' => 0, 'suspicious' => 0];
-        }
+        $db = self::getConnection();
+        if (!$db) return [];
 
         try {
-            $total = $pdo->query("SELECT COUNT(*) as count FROM transactions")
-                ->fetch(PDO::FETCH_ASSOC)['count'];
-
-            $valid = $pdo->query("SELECT COUNT(*) as count FROM transactions WHERE is_valid = 'valid'")
-                ->fetch(PDO::FETCH_ASSOC)['count'];
-
-            $suspicious = $pdo->query("SELECT COUNT(*) as count FROM transactions WHERE is_valid = 'suspicious'")
-                ->fetch(PDO::FETCH_ASSOC)['count'];
-
             return [
-                'total' => $total,
-                'valid' => $valid,
-                'suspicious' => $suspicious
+                'total_transactions' => $db->count(self::$collection),
+                'successful_transactions' => $db->count(self::$collection, ['status' => 'success']),
+                'pending_transactions' => $db->count(self::$collection, ['status' => 'pending']),
+                'fraud_attempts' => $db->count(self::$fraudCollection)
             ];
-        } catch (PDOException $e) {
-            error_log('Statistics query error: ' . $e->getMessage());
-            return ['total' => 0, 'valid' => 0, 'suspicious' => 0];
+        } catch (Exception $e) {
+            error_log('MongoDB Count Error: ' . $e->getMessage());
+            return [];
         }
     }
 
     /**
-     * Get all transactions (with pagination)
+     * Get all transactions
      */
     public static function getAllTransactions($limit = 50, $offset = 0) {
-        $pdo = self::getConnection();
-        if (!$pdo) {
-            return [];
-        }
+        $db = self::getConnection();
+        if (!$db) return [];
 
         try {
-            $stmt = $pdo->prepare("
-                SELECT 
-                    id, amount, currency, sender_account, sender_name,
-                    receiver_name, receiver_phone, reference_number,
-                    transaction_date, is_valid, confidence_score, created_at
-                FROM transactions
-                ORDER BY created_at DESC
-                LIMIT :limit OFFSET :offset
-            ");
-            $stmt->bindValue(':limit', intval($limit), PDO::PARAM_INT);
-            $stmt->bindValue(':offset', intval($offset), PDO::PARAM_INT);
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log('Database query error: ' . $e->getMessage());
+            $options = [
+                'sort' => ['created_at' => -1],
+                'limit' => intval($limit),
+                'skip' => intval($offset)
+            ];
+            return $db->find(self::$collection, [], $options);
+        } catch (Exception $e) {
+            error_log('MongoDB Query Error: ' . $e->getMessage());
             return [];
-        }
-    }
-
-    /**
-     * Get transaction by reference number
-     */
-    public static function getByReference($referenceNumber) {
-        $pdo = self::getConnection();
-        if (!$pdo) {
-            return null;
-        }
-
-        try {
-            $stmt = $pdo->prepare("SELECT * FROM transactions WHERE reference_number = :ref");
-            $stmt->execute([':ref' => $referenceNumber]);
-            return $stmt->fetch(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log('Database query error: ' . $e->getMessage());
-            return null;
         }
     }
 
@@ -319,20 +249,151 @@ class TransactionDatabase {
             return $_SERVER['HTTP_CF_CONNECTING_IP'];
         } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
             return explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0];
-        } elseif (!empty($_SERVER['HTTP_X_FORWARDED'])) {
-            return $_SERVER['HTTP_X_FORWARDED'];
-        } elseif (!empty($_SERVER['HTTP_FORWARDED_FOR'])) {
-            return $_SERVER['HTTP_FORWARDED_FOR'];
-        } elseif (!empty($_SERVER['HTTP_FORWARDED'])) {
-            return $_SERVER['HTTP_FORWARDED'];
-        } elseif (!empty($_SERVER['REMOTE_ADDR'])) {
-            return $_SERVER['REMOTE_ADDR'];
         }
-        return '0.0.0.0';
+        return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    }
+
+    /**
+     * Update a transaction
+     */
+    public static function updateTransaction($filter, $update) {
+        $db = self::getConnection();
+        if (!$db) return false;
+
+        try {
+            return $db->update(self::$collection, $filter, $update);
+        } catch (Exception $e) {
+            error_log('MongoDB Update Error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Delete a transaction
+     */
+    public static function deleteTransaction($filter) {
+        $db = self::getConnection();
+        if (!$db) return false;
+
+        try {
+            return $db->delete(self::$collection, $filter);
+        } catch (Exception $e) {
+            error_log('MongoDB Delete Error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Aggregate transactions for analytics
+     */
+    public static function aggregateTransactions($pipeline) {
+        $db = self::getConnection();
+        if (!$db) return [];
+
+        try {
+            return $db->aggregate(self::$collection, $pipeline);
+        } catch (Exception $e) {
+            error_log('MongoDB Aggregate Error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get transaction analytics/stats using aggregation
+     */
+    public static function getAnalytics() {
+        $db = self::getConnection();
+        if (!$db) return [];
+
+        try {
+            // Aggregate by status
+            $statusPipeline = [
+                ['$group' => [
+                    '_id' => '$status',
+                    'count' => ['$sum' => 1],
+                    'totalAmount' => ['$sum' => '$amount']
+                ]]
+            ];
+            $byStatus = $db->aggregate(self::$collection, $statusPipeline);
+
+            // Aggregate by date (daily)
+            $datePipeline = [
+                ['$group' => [
+                    '_id' => ['$dateToString' => ['format' => '%Y-%m-%d', 'date' => '$created_at']],
+                    'count' => ['$sum' => 1],
+                    'avgAmount' => ['$avg' => '$amount']
+                ]],
+                ['$sort' => ['_id' => -1]],
+                ['$limit' => 7]
+            ];
+            $byDate = $db->aggregate(self::$collection, $datePipeline);
+
+            // Aggregate by sender
+            $senderPipeline = [
+                ['$group' => [
+                    '_id' => '$sender_account',
+                    'count' => ['$sum' => 1],
+                    'totalAmount' => ['$sum' => '$amount']
+                ]],
+                ['$sort' => ['count' => -1]],
+                ['$limit' => 5]
+            ];
+            $bySender = $db->aggregate(self::$collection, $senderPipeline);
+
+            return [
+                'by_status' => $byStatus,
+                'by_date' => $byDate,
+                'top_senders' => $bySender
+            ];
+        } catch (Exception $e) {
+            error_log('MongoDB Analytics Error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Search transactions with multiple criteria
+     */
+    public static function searchTransactions($criteria, $limit = 50) {
+        $db = self::getConnection();
+        if (!$db) return [];
+
+        $filter = [];
+        if (!empty($criteria['reference'])) {
+            $filter['reference_number'] = ['$regex' => $criteria['reference'], '$options' => 'i'];
+        }
+        if (!empty($criteria['sender'])) {
+            $filter['sender_account'] = ['$regex' => $criteria['sender'], '$options' => 'i'];
+        }
+        if (!empty($criteria['receiver'])) {
+            $filter['receiver_name'] = ['$regex' => $criteria['receiver'], '$options' => 'i'];
+        }
+        if (!empty($criteria['min_amount'])) {
+            $filter['amount'] = ['$gte' => (float)$criteria['min_amount']];
+        }
+        if (!empty($criteria['max_amount'])) {
+            $filter['amount'] = isset($filter['amount']) 
+                ? array_merge($filter['amount'], ['$lte' => (float)$criteria['max_amount']])
+                : ['$lte' => (float)$criteria['max_amount']];
+        }
+        if (!empty($criteria['status'])) {
+            $filter['status'] = $criteria['status'];
+        }
+
+        try {
+            $options = [
+                'sort' => ['created_at' => -1],
+                'limit' => intval($limit)
+            ];
+            return $db->find(self::$collection, $filter, $options);
+        } catch (Exception $e) {
+            error_log('MongoDB Search Error: ' . $e->getMessage());
+            return [];
+        }
     }
 }
 
-// Wrapper functions for backward compatibility
+// Global Wrapper Functions for Backward Compatibility
 function initializeDatabase() {
     return TransactionDatabase::initialize();
 }
@@ -354,6 +415,30 @@ function getAllTransactionsFromDB($limit = 50, $offset = 0) {
 }
 
 function getTransactionByRef($ref) {
-    return TransactionDatabase::getByReference($ref);
+    return TransactionDatabase::getTransactionByRef($ref);
+}
+
+function getRecentFraudAttempts($limit = 50) {
+    return TransactionDatabase::getFraudAttempts($limit);
+}
+
+function updateTransactionInDB($filter, $update) {
+    return TransactionDatabase::updateTransaction($filter, $update);
+}
+
+function deleteTransactionFromDB($filter) {
+    return TransactionDatabase::deleteTransaction($filter);
+}
+
+function getTransactionAnalytics() {
+    return TransactionDatabase::getAnalytics();
+}
+
+function searchTransactionsInDB($criteria, $limit = 50) {
+    return TransactionDatabase::searchTransactions($criteria, $limit);
+}
+
+function aggregateTransactionsInDB($pipeline) {
+    return TransactionDatabase::aggregateTransactions($pipeline);
 }
 ?>
